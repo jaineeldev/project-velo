@@ -17,7 +17,7 @@ Removes the business admin headache for freelance devs and agencies. Send a prop
 
 ## Team
 
-- [@lostastr0](https://github.com/lostastr0)
+- [@jaineeldev](https://github.com/jaineeldev)
 - [@JuiceM00n](https://github.com/JuiceM00n)
 - [@Rockmancheese](https://github.com/Rockmancheese)
 

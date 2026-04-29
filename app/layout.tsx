@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
+import { Inter } from "next/font/google";
+import { ThemeProvider } from "@/components/theme-provider";
+import { ThemedClerkProvider } from "@/components/clerk-provider";
 import "./globals.css";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
   title: "Velo",
@@ -13,10 +17,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <body>{children}</body>
-      </html>
-    </ClerkProvider>
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
+      <body className="bg-neutral-50 font-sans text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-100">
+        <ThemeProvider>
+          <ThemedClerkProvider>{children}</ThemedClerkProvider>
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }

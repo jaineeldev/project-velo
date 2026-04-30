@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getProposal } from "../actions";
 import { SendProposalButton } from "./send-proposal-button";
 import { ShareLinkDisplay } from "./share-link-display";
+import { DeleteProposalButton } from "./delete-proposal-button";
 
 const dateFmt = new Intl.DateTimeFormat("en-US", {
   month: "long",
@@ -72,13 +73,18 @@ export default async function ProposalDetailPage({
           >
             {proposal.status.replace("_", " ")}
           </span>
-          {proposal.status === "draft" && (
+          {(proposal.status === "draft" ||
+            proposal.status === "changes_requested") && (
             <Link
               href={`/dashboard/proposals/${params.id}/edit`}
               className="rounded-md border border-neutral-200 px-3.5 py-1.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900"
             >
               Edit proposal
             </Link>
+          )}
+          {(proposal.status === "draft" ||
+            proposal.status === "changes_requested") && (
+            <DeleteProposalButton proposalId={params.id} />
           )}
         </div>
       </div>
@@ -87,6 +93,22 @@ export default async function ProposalDetailPage({
         <p className="mt-6 max-w-2xl text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
           {proposal.description}
         </p>
+      )}
+
+      {proposal.status === "changes_requested" && proposal.latestChangeRequest && (
+        <section className="mt-8 rounded-lg border border-amber-200 bg-amber-50 p-5 dark:border-amber-900 dark:bg-amber-950">
+          <div className="flex items-baseline justify-between gap-4">
+            <h2 className="text-sm font-semibold text-amber-900 dark:text-amber-200">
+              Client requested changes
+            </h2>
+            <span className="text-xs text-amber-700/70 dark:text-amber-300/70">
+              {eventFmt.format(new Date(proposal.latestChangeRequest.created_at))}
+            </span>
+          </div>
+          <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-amber-900 dark:text-amber-100">
+            {proposal.latestChangeRequest.message}
+          </p>
+        </section>
       )}
 
       {/* Line items */}
@@ -179,7 +201,7 @@ export default async function ProposalDetailPage({
             <p className="mb-3 text-sm font-medium text-neutral-600 dark:text-neutral-400">
               Client link
             </p>
-            <ShareLinkDisplay token={proposal.share_token} />
+            <ShareLinkDisplay proposal={{ share_token: proposal.share_token }} />
           </div>
         ) : null}
       </div>
@@ -196,7 +218,7 @@ export default async function ProposalDetailPage({
                 <span className="w-40 shrink-0 text-xs text-neutral-400 dark:text-neutral-600">
                   {eventFmt.format(new Date(ev.created_at))}
                 </span>
-                <span className="text-sm text-neutral-700 dark:text-neutral-300">
+                <span className="whitespace-pre-wrap text-sm text-neutral-700 dark:text-neutral-300">
                   {ev.description}
                 </span>
               </li>

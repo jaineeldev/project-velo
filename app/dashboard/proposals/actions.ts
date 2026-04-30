@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
 import { proposalSchema, uuidSchema } from "@/lib/validation";
+import { sendProposalEmail, getAppBaseUrl } from "@/lib/email";
 
 const GST_RATE = 0.1;
 
@@ -48,8 +49,8 @@ export async function createProposal(input: CreateProposalInput): Promise<string
       `,
     ),
     sql`
-      INSERT INTO proposal_events (proposal_id, description)
-      VALUES (${proposal.id}, 'Proposal created')
+      INSERT INTO proposal_events (proposal_id, event_type, description)
+      VALUES (${proposal.id}, 'created', 'Proposal created')
     `,
   ]);
 
@@ -71,8 +72,9 @@ export async function updateProposal(
     SELECT id, status FROM proposals WHERE id = ${proposalId} AND user_id = ${user.id}
   `;
   if (existing.length === 0) throw new Error("Proposal not found.");
-  if (existing[0].status !== "draft")
-    throw new Error("Only draft proposals can be edited.");
+  const currentStatus = existing[0].status as string;
+  if (currentStatus !== "draft" && currentStatus !== "changes_requested")
+    throw new Error("Only draft or changes-requested proposals can be edited.");
 
   const result = proposalSchema.safeParse(input);
   if (!result.success) throw new Error(result.error.issues[0].message);
@@ -87,12 +89,26 @@ export async function updateProposal(
   const subtotal = lineItems.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
   const totalAmount = subtotal * (1 + GST_RATE);
 
-  await sql`
-    UPDATE proposals
-    SET client_id = ${clientId}, title = ${title}, description = ${description},
-        deposit_percentage = ${depositPercentage}, total_amount = ${totalAmount}
-    WHERE id = ${proposalId} AND user_id = ${user.id}
-  `;
+  // Reset to draft when the agency edits a changes_requested proposal so it
+  // can be re-reviewed and re-sent. Clearing the share_token invalidates the
+  // old client-facing link.
+  const wasChangesRequested = currentStatus === "changes_requested";
+  if (wasChangesRequested) {
+    await sql`
+      UPDATE proposals
+      SET client_id = ${clientId}, title = ${title}, description = ${description},
+          deposit_percentage = ${depositPercentage}, total_amount = ${totalAmount},
+          status = 'draft', share_token = NULL
+      WHERE id = ${proposalId} AND user_id = ${user.id}
+    `;
+  } else {
+    await sql`
+      UPDATE proposals
+      SET client_id = ${clientId}, title = ${title}, description = ${description},
+          deposit_percentage = ${depositPercentage}, total_amount = ${totalAmount}
+      WHERE id = ${proposalId} AND user_id = ${user.id}
+    `;
+  }
 
   // Replace all line items atomically (delete-then-insert keeps things simple).
   await sql`DELETE FROM line_items WHERE proposal_id = ${proposalId}`;
@@ -105,9 +121,17 @@ export async function updateProposal(
       `,
     ),
     sql`
-      INSERT INTO proposal_events (proposal_id, description)
-      VALUES (${proposalId}, 'Proposal edited')
+      INSERT INTO proposal_events (proposal_id, event_type, description)
+      VALUES (${proposalId}, 'edited', 'Proposal edited')
     `,
+    ...(wasChangesRequested
+      ? [
+          sql`
+            INSERT INTO proposal_events (proposal_id, event_type, description)
+            VALUES (${proposalId}, 'reset_to_draft', 'Proposal reset to draft after addressing requested changes')
+          `,
+        ]
+      : []),
   ]);
 
   revalidatePath(`/dashboard/proposals/${proposalId}`);
@@ -122,7 +146,12 @@ export async function sendProposal(proposalId: string): Promise<string> {
   const user = await getOrCreateUser();
 
   const rows = await sql`
-    SELECT id, status FROM proposals WHERE id = ${proposalId} AND user_id = ${user.id}
+    SELECT
+      p.id, p.status, p.title, p.total_amount,
+      c.name AS client_name, c.email AS client_email
+    FROM proposals p
+    JOIN clients c ON c.id = p.client_id
+    WHERE p.id = ${proposalId} AND p.user_id = ${user.id}
   `;
   if (rows.length === 0) throw new Error("Proposal not found.");
   if (rows[0].status !== "draft") throw new Error("Only draft proposals can be sent.");
@@ -136,9 +165,51 @@ export async function sendProposal(proposalId: string): Promise<string> {
   `;
 
   await sql`
-    INSERT INTO proposal_events (proposal_id, description)
-    VALUES (${proposalId}, 'Proposal sent to client')
+    INSERT INTO proposal_events (proposal_id, event_type, description)
+    VALUES (${proposalId}, 'sent', 'Proposal sent to client')
   `;
+
+  // Best-effort email delivery — never block the action on email failure since
+  // the share link is also displayed in the UI as a fallback.
+  const proposal = rows[0] as {
+    title: string;
+    total_amount: string;
+    client_name: string;
+    client_email: string | null;
+  };
+  if (proposal.client_email) {
+    const reviewUrl = `${getAppBaseUrl()}/share/proposal/${token}`;
+    const result = await sendProposalEmail({
+      to: proposal.client_email,
+      agencyName: user.name ?? user.email,
+      clientName: proposal.client_name,
+      proposalTitle: proposal.title,
+      totalAmount: Number(proposal.total_amount),
+      reviewUrl,
+    });
+
+    await sql`
+      INSERT INTO proposal_events (proposal_id, event_type, description)
+      VALUES (
+        ${proposalId},
+        ${result.ok ? "email_sent" : "email_failed"},
+        ${
+          result.ok
+            ? `Email sent to ${proposal.client_email}`
+            : `Email to ${proposal.client_email} failed: ${result.reason}`
+        }
+      )
+    `;
+  } else {
+    await sql`
+      INSERT INTO proposal_events (proposal_id, event_type, description)
+      VALUES (
+        ${proposalId},
+        'email_skipped',
+        'Email not sent — client has no email address on file'
+      )
+    `;
+  }
 
   revalidatePath(`/dashboard/proposals/${proposalId}`);
   revalidatePath("/dashboard/proposals");
@@ -146,9 +217,38 @@ export async function sendProposal(proposalId: string): Promise<string> {
   return token;
 }
 
+// ── deleteProposal ───────────────────────────────────────────────────────────
+
+export async function deleteProposal(proposalId: string): Promise<void> {
+  if (!uuidSchema.safeParse(proposalId).success) throw new Error("Proposal not found.");
+
+  const user = await getOrCreateUser();
+
+  const rows = await sql`
+    SELECT id, status FROM proposals WHERE id = ${proposalId} AND user_id = ${user.id}
+  `;
+  if (rows.length === 0) throw new Error("Proposal not found.");
+  const status = rows[0].status as string;
+  if (status !== "draft" && status !== "changes_requested")
+    throw new Error("Only draft or changes-requested proposals can be deleted.");
+
+  // line_items, proposal_events, and change_requests all have ON DELETE CASCADE
+  // FKs to proposals, so a single delete tears down everything.
+  await sql`
+    DELETE FROM proposals
+    WHERE id = ${proposalId}
+      AND user_id = ${user.id}
+      AND status IN ('draft', 'changes_requested')
+  `;
+
+  revalidatePath("/dashboard/proposals");
+}
+
 // ── getProposal ──────────────────────────────────────────────────────────────
 
 export type ProposalEvent = { description: string; created_at: string };
+
+export type ChangeRequest = { message: string; created_at: string };
 
 export type ProposalDetail = {
   id: string;
@@ -164,6 +264,7 @@ export type ProposalDetail = {
   client_email: string | null;
   lineItems: { id: string; description: string; quantity: string; unit_price: string }[];
   events: ProposalEvent[];
+  latestChangeRequest: ChangeRequest | null;
 };
 
 export async function getProposal(proposalId: string): Promise<ProposalDetail | null> {
@@ -182,7 +283,7 @@ export async function getProposal(proposalId: string): Promise<ProposalDetail | 
   `;
   if (rows.length === 0) return null;
 
-  const [items, events] = await Promise.all([
+  const [items, events, changeRequests] = await Promise.all([
     sql`
       SELECT id, description, quantity, unit_price
       FROM line_items
@@ -195,11 +296,19 @@ export async function getProposal(proposalId: string): Promise<ProposalDetail | 
       WHERE proposal_id = ${proposalId}
       ORDER BY created_at ASC
     `,
+    sql`
+      SELECT message, created_at
+      FROM change_requests
+      WHERE proposal_id = ${proposalId}
+      ORDER BY created_at DESC
+      LIMIT 1
+    `,
   ]);
 
   return {
-    ...(rows[0] as Omit<ProposalDetail, "lineItems" | "events">),
+    ...(rows[0] as Omit<ProposalDetail, "lineItems" | "events" | "latestChangeRequest">),
     lineItems: items as ProposalDetail["lineItems"],
     events: events as ProposalEvent[],
+    latestChangeRequest: (changeRequests[0] as ChangeRequest) ?? null,
   };
 }

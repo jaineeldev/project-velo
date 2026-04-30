@@ -12,17 +12,24 @@ export async function createClient(formData: FormData) {
     name: formData.get("name"),
     email: formData.get("email"),
     phone: formData.get("phone"),
+    companyName: formData.get("companyName"),
+    industry: formData.get("industry"),
+    website: formData.get("website"),
+    notes: formData.get("notes"),
   });
 
   if (!result.success) {
     throw new Error(result.error.issues[0].message);
   }
 
-  const { name, email, phone } = result.data;
+  const { name, email, phone, companyName, industry, website, notes } = result.data;
 
   await sql`
-    INSERT INTO clients (user_id, name, email, phone)
-    VALUES (${user.id}, ${name}, ${email}, ${phone})
+    INSERT INTO clients (user_id, name, email, phone, company_name, industry, website, notes)
+    VALUES (
+      ${user.id}, ${name}, ${email}, ${phone},
+      ${companyName}, ${industry}, ${website}, ${notes}
+    )
   `;
 
   revalidatePath("/dashboard/clients");

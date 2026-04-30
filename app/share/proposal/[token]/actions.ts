@@ -77,8 +77,8 @@ export async function approveProposal(token: string): Promise<void> {
   `;
 
   await sql`
-    INSERT INTO proposal_events (proposal_id, description)
-    VALUES (${proposalId}, 'Proposal approved by client')
+    INSERT INTO proposal_events (proposal_id, event_type, description)
+    VALUES (${proposalId}, 'approved', 'Proposal approved by client')
   `;
 }
 
@@ -113,7 +113,11 @@ export async function submitChangeRequest(
   `;
 
   await sql`
-    INSERT INTO proposal_events (proposal_id, description)
-    VALUES (${proposalId}, 'Client requested changes')
+    INSERT INTO proposal_events (proposal_id, event_type, description)
+    VALUES (
+      ${proposalId},
+      'changes_requested',
+      ${`Client requested changes: ${trimmed}`}
+    )
   `;
 }

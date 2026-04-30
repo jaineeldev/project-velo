@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { createClient } from "./actions";
+import { CLIENT_INDUSTRIES } from "@/lib/validation";
 
 const inputCls =
   "w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-300 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-600 dark:focus:ring-neutral-700";
@@ -49,7 +50,7 @@ export function NewClientButton() {
       <dialog
         ref={dialogRef}
         onClose={() => setError(null)}
-        className="w-full max-w-md rounded-lg border border-neutral-200 bg-white p-6 shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900"
+        className="w-full max-w-lg rounded-lg border border-neutral-200 bg-white p-6 shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900"
       >
         <h2 className="text-base font-medium text-neutral-900 dark:text-neutral-100">
           New client
@@ -69,6 +70,8 @@ export function NewClientButton() {
               type="text"
               required
               autoComplete="off"
+              placeholder="e.g. Jane Smith"
+              maxLength={100}
               className={inputCls}
             />
           </div>
@@ -82,6 +85,8 @@ export function NewClientButton() {
               name="email"
               type="email"
               autoComplete="off"
+              placeholder="e.g. jane@acme.com"
+              maxLength={254}
               className={inputCls}
             />
           </div>
@@ -95,6 +100,74 @@ export function NewClientButton() {
               name="phone"
               type="tel"
               autoComplete="off"
+              placeholder="e.g. +1 (555) 123-4567"
+              maxLength={20}
+              className={inputCls}
+            />
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              Digits, spaces, and <code>+ - ( ) .</code> only — 7 to 15 digits.
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="companyName" className={labelCls}>
+              Company name
+            </label>
+            <input
+              id="companyName"
+              name="companyName"
+              type="text"
+              autoComplete="off"
+              placeholder="e.g. Acme Corp"
+              maxLength={150}
+              className={inputCls}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="industry" className={labelCls}>
+              Industry
+            </label>
+            <select
+              id="industry"
+              name="industry"
+              defaultValue=""
+              className={inputCls}
+            >
+              <option value="">Select an industry…</option>
+              {CLIENT_INDUSTRIES.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="website" className={labelCls}>
+              Website
+            </label>
+            <input
+              id="website"
+              name="website"
+              type="url"
+              autoComplete="off"
+              placeholder="e.g. https://acme.com"
+              maxLength={255}
+              className={inputCls}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="notes" className={labelCls}>
+              Notes
+            </label>
+            <textarea
+              id="notes"
+              name="notes"
+              rows={3}
+              maxLength={1000}
+              placeholder="Internal notes about this client (not shared)…"
               className={inputCls}
             />
           </div>

@@ -2,9 +2,14 @@
 
 import { useState } from "react";
 
-export function ShareLinkDisplay({ token }: { token: string }) {
+export function ShareLinkDisplay({
+  proposal,
+}: {
+  proposal: { share_token: string };
+}) {
   const [copied, setCopied] = useState(false);
 
+  const token = proposal.share_token;
   const url =
     typeof window !== "undefined"
       ? `${window.location.origin}/share/proposal/${token}`

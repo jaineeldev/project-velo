@@ -8,6 +8,9 @@ type ClientRow = {
   name: string;
   email: string | null;
   phone: string | null;
+  company_name: string | null;
+  industry: string | null;
+  website: string | null;
   created_at: string | Date;
 };
 
@@ -21,7 +24,7 @@ export default async function ClientsPage() {
   const user = await getOrCreateUser();
 
   const clients = (await sql`
-    SELECT id, name, email, phone, created_at
+    SELECT id, name, email, phone, company_name, industry, website, created_at
     FROM clients
     WHERE user_id = ${user.id}
     ORDER BY created_at DESC
@@ -52,10 +55,26 @@ export default async function ClientsPage() {
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium text-neutral-900 dark:text-neutral-100">
                   {c.name}
+                  {c.company_name && (
+                    <span className="ml-2 font-normal text-neutral-500 dark:text-neutral-400">
+                      · {c.company_name}
+                    </span>
+                  )}
                 </p>
                 <div className="mt-1 flex flex-wrap gap-x-4 text-sm text-neutral-500 dark:text-neutral-400">
                   {c.email && <span>{c.email}</span>}
                   {c.phone && <span>{c.phone}</span>}
+                  {c.industry && <span>{c.industry}</span>}
+                  {c.website && (
+                    <a
+                      href={c.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline-offset-2 hover:text-neutral-900 hover:underline dark:hover:text-neutral-100"
+                    >
+                      {c.website.replace(/^https?:\/\//, "")}
+                    </a>
+                  )}
                 </div>
               </div>
               <div className="ml-4 flex shrink-0 items-center gap-4">

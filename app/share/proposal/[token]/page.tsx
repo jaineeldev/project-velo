@@ -243,7 +243,7 @@ export default async function ShareProposalPage({
                   <span className="w-40 shrink-0 text-xs text-neutral-400 dark:text-neutral-600">
                     {eventFmt.format(new Date(ev.created_at))}
                   </span>
-                  <span className="text-sm text-neutral-700 dark:text-neutral-300">
+                  <span className="whitespace-pre-wrap text-sm text-neutral-700 dark:text-neutral-300">
                     {ev.description}
                   </span>
                 </li>

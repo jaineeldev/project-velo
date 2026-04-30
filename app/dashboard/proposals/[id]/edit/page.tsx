@@ -15,8 +15,9 @@ export default async function EditProposalPage({
   const proposal = await getProposal(params.id);
   if (!proposal) notFound();
 
-  // Non-draft proposals cannot be edited — send the user back to the detail page.
-  if (proposal.status !== "draft") {
+  // Only draft and changes_requested proposals can be edited — anything else
+  // bounces back to the detail page.
+  if (proposal.status !== "draft" && proposal.status !== "changes_requested") {
     redirect(`/dashboard/proposals/${params.id}`);
   }
 

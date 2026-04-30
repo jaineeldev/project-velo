@@ -8,6 +8,22 @@ const toTrimmedStringOrNull = (val: unknown): string | null => {
   return s === "" ? null : s;
 };
 
+export const CLIENT_INDUSTRIES = [
+  "Technology",
+  "Marketing",
+  "E-commerce",
+  "Healthcare",
+  "Finance",
+  "Education",
+  "Real Estate",
+  "Hospitality",
+  "Legal",
+  "Non-profit",
+  "Other",
+] as const;
+
+export type ClientIndustry = (typeof CLIENT_INDUSTRIES)[number];
+
 export const clientSchema = z.object({
   // Required — kept as string so .min(1) catches an empty-after-trim name.
   name: z.preprocess(
@@ -28,16 +44,65 @@ export const clientSchema = z.object({
   ),
 
   // Optional — null means "not provided".
-  // Allows digits, spaces, +, -, (, ), . — rejects everything else.
+  // Allows digits, spaces, -, (, ), ., and a single leading '+'. Must contain
+  // 7–15 actual digits (E.164 range), so junk like "(((", "---", or "   "
+  // can't sneak through.
   phone: z.preprocess(
     toTrimmedStringOrNull,
     z
       .string()
-      .max(15, "Phone must be 15 characters or fewer")
+      .max(20, "Phone must be 20 characters or fewer")
       .regex(
-        /^[\d\s+\-().]+$/,
+        /^\+?[\d\s\-().]+$/,
         "Phone contains invalid characters",
       )
+      .refine(
+        (s) => {
+          const digits = s.replace(/\D/g, "").length;
+          return digits >= 7 && digits <= 15;
+        },
+        "Phone must contain 7 to 15 digits",
+      )
+      .nullable(),
+  ),
+
+  // Optional — null means "not provided".
+  companyName: z.preprocess(
+    toTrimmedStringOrNull,
+    z
+      .string()
+      .max(150, "Company name must be 150 characters or fewer")
+      .nullable(),
+  ),
+
+  // Optional — must be one of the allowed values, or null.
+  industry: z.preprocess(
+    toTrimmedStringOrNull,
+    z
+      .enum(CLIENT_INDUSTRIES, "Please choose a valid industry")
+      .nullable(),
+  ),
+
+  // Optional — must parse as a URL when provided. We tolerate users typing
+  // "acme.com" by prepending https:// before validation.
+  website: z.preprocess(
+    (val) => {
+      const s = toTrimmedStringOrNull(val);
+      if (s === null) return null;
+      return /^https?:\/\//i.test(s) ? s : `https://${s}`;
+    },
+    z
+      .url("Website must be a valid URL")
+      .max(255, "Website must be 255 characters or fewer")
+      .nullable(),
+  ),
+
+  // Optional — null means "not provided".
+  notes: z.preprocess(
+    toTrimmedStringOrNull,
+    z
+      .string()
+      .max(1000, "Notes must be 1000 characters or fewer")
       .nullable(),
   ),
 });

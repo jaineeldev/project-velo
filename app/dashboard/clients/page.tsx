@@ -1,6 +1,7 @@
 import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
 import { NewClientButton } from "./new-client-button";
+import { DeleteClientButton } from "./delete-client-button";
 
 type ClientRow = {
   id: string;
@@ -57,9 +58,12 @@ export default async function ClientsPage() {
                   {c.phone && <span>{c.phone}</span>}
                 </div>
               </div>
-              <p className="ml-4 shrink-0 text-sm text-neutral-500 dark:text-neutral-400">
-                Added {dateFmt.format(new Date(c.created_at))}
-              </p>
+              <div className="ml-4 flex shrink-0 items-center gap-4">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                  Added {dateFmt.format(new Date(c.created_at))}
+                </p>
+                <DeleteClientButton clientId={c.id} clientName={c.name} />
+              </div>
             </li>
           ))}
         </ul>

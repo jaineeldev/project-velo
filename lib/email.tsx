@@ -1,9 +1,6 @@
 import { Resend } from "resend";
-import { ProposalReadyEmail } from "@/emails/proposal-ready";
 
-// Resend's onboarding sender — works without a verified domain. Replace once
-// the Velo domain is verified.
-const FROM_ADDRESS = "Velo <onboarding@resend.dev>";
+const FROM_ADDRESS = "onboarding@resend.dev";
 
 let _resend: Resend | null = null;
 function getResend(): Resend | null {
@@ -38,21 +35,35 @@ export async function sendProposalEmail(
     return { ok: false, reason: "RESEND_API_KEY is not configured" };
   }
 
+  const templateId = process.env.RESEND_PROPOSAL_TEMPLATE_ID;
+  if (!templateId) {
+    return { ok: false, reason: "RESEND_PROPOSAL_TEMPLATE_ID is not configured" };
+  }
+
+  const payload = {
+    from: FROM_ADDRESS,
+    to: input.to,
+    subject: input.proposalTitle,
+    template: {
+      id: templateId,
+      variables: {
+        agencyName: input.agencyName,
+        clientName: input.clientName,
+        proposalTitle: input.proposalTitle,
+        totalAmount: currencyFmt.format(input.totalAmount),
+        reviewUrl: input.reviewUrl,
+      },
+    },
+  };
+
+  console.log(
+    "[sendProposalEmail] variables:",
+    JSON.stringify(payload.template.variables, null, 2),
+  );
+  console.log("[sendProposalEmail] payload:", JSON.stringify(payload, null, 2));
+
   try {
-    const { data, error } = await resend.emails.send({
-      from: FROM_ADDRESS,
-      to: input.to,
-      subject: `${input.proposalTitle} — your proposal is ready to review`,
-      react: (
-        <ProposalReadyEmail
-          agencyName={input.agencyName}
-          clientName={input.clientName}
-          proposalTitle={input.proposalTitle}
-          totalAmount={currencyFmt.format(input.totalAmount)}
-          reviewUrl={input.reviewUrl}
-        />
-      ),
-    });
+    const { data, error } = await resend.emails.send(payload);
 
     if (error) return { ok: false, reason: error.message };
     return { ok: true, id: data?.id ?? "" };

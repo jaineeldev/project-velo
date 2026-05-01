@@ -54,7 +54,7 @@ export async function approveProposal(token: string): Promise<void> {
       const amount = Number(item.quantity) * Number(item.unit_price);
       return sql`
         INSERT INTO milestones (proposal_id, title, amount, status)
-        VALUES (${proposalId}, ${item.description}, ${amount}, 'pending')
+        VALUES (${proposalId}, ${item.description}, ${amount}, 'not_started')
       `;
     }),
   );
@@ -66,8 +66,8 @@ export async function approveProposal(token: string): Promise<void> {
   const depositGst = depositTotal / 11;
 
   await sql`
-    INSERT INTO invoices (project_id, user_id, client_id, total_amount, gst_amount, status)
-    VALUES (${project.id}, ${p.user_id}, ${p.client_id}, ${depositTotal}, ${depositGst}, 'draft')
+    INSERT INTO invoices (project_id, user_id, client_id, total_amount, gst_amount, status, type)
+    VALUES (${project.id}, ${p.user_id}, ${p.client_id}, ${depositTotal}, ${depositGst}, 'unpaid', 'deposit')
   `;
 
   // Mark approved and record event last — keeps the proposal in 'sent' if

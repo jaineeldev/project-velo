@@ -162,3 +162,36 @@ export const proposalSchema = z.object({
 });
 
 export type ProposalInput = z.infer<typeof proposalSchema>;
+
+export const MILESTONE_STATUSES = [
+  "not_started",
+  "in_progress",
+  "completed",
+] as const;
+
+export type MilestoneStatus = (typeof MILESTONE_STATUSES)[number];
+
+export const milestoneStatusSchema = z.enum(
+  MILESTONE_STATUSES,
+  "Invalid milestone status",
+);
+
+export const timeEntrySchema = z.object({
+  description: z.preprocess(
+    (val) => String(val ?? "").trim(),
+    z
+      .string()
+      .min(1, "Description is required")
+      .max(500, "Description must be 500 characters or fewer"),
+  ),
+  hours: z.coerce
+    .number()
+    .positive("Hours must be greater than 0")
+    .max(999.99, "Hours is too large")
+    .refine(
+      (n) => Math.round(n * 100) === n * 100,
+      "Hours can have at most 2 decimal places",
+    ),
+});
+
+export type TimeEntryInput = z.infer<typeof timeEntrySchema>;

@@ -130,9 +130,21 @@ export async function markInvoiceAsPaid(invoiceId: string): Promise<void> {
     UPDATE invoices
     SET status = 'paid'
     WHERE id = ${invoiceId} AND user_id = ${user.id} AND status = 'unpaid'
-    RETURNING id
+    RETURNING id, type, project_id
   `;
   if (result.length === 0) throw new Error("Invoice not found or already paid.");
+
+  const invoice = result[0] as { id: string; type: string; project_id: string };
+
+  // Paying the final invoice marks the project as delivered.
+  if (invoice.type === "final") {
+    await sql`
+      UPDATE projects SET status = 'delivered'
+      WHERE id = ${invoice.project_id} AND user_id = ${user.id}
+    `;
+    revalidatePath(`/dashboard/projects/${invoice.project_id}`);
+    revalidatePath("/dashboard/projects");
+  }
 
   revalidatePath(`/dashboard/invoices/${invoiceId}`);
   revalidatePath("/dashboard/invoices");

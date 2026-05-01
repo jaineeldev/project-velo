@@ -9,9 +9,10 @@ const dateFmt = new Intl.DateTimeFormat("en-US", {
 
 const statusStyles: Record<string, string> = {
   active: "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400",
-  completed: "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400",
-  on_hold: "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400",
-  cancelled: "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-400",
+  completed:
+    "bg-yellow-50 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-400",
+  delivered:
+    "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400",
 };
 
 export default async function ProjectsPage() {

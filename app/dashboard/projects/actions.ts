@@ -222,11 +222,34 @@ export async function updateMilestoneStatus(
       AND m.proposal_id = p.proposal_id
       AND p.id = ${projectId}
       AND p.user_id = ${user.id}
-    RETURNING m.id
+    RETURNING m.id, m.proposal_id
   `;
   if (result.length === 0) throw new Error("Milestone not found.");
 
+  // Keep project status in sync with milestone state, but never override
+  // 'delivered' (set after a final invoice is paid).
+  const proposalId = result[0].proposal_id as string;
+  const milestoneRows = await sql`
+    SELECT status FROM milestones WHERE proposal_id = ${proposalId}
+  `;
+  const allCompleted =
+    milestoneRows.length > 0 &&
+    milestoneRows.every((m) => m.status === "completed");
+
+  if (allCompleted) {
+    await sql`
+      UPDATE projects SET status = 'completed'
+      WHERE id = ${projectId} AND user_id = ${user.id} AND status = 'active'
+    `;
+  } else {
+    await sql`
+      UPDATE projects SET status = 'active'
+      WHERE id = ${projectId} AND user_id = ${user.id} AND status = 'completed'
+    `;
+  }
+
   revalidatePath(`/dashboard/projects/${projectId}`);
+  revalidatePath("/dashboard/projects");
 }
 
 export async function addTimeEntry(

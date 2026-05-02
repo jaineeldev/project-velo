@@ -50,6 +50,7 @@ export type ProjectDetail = {
   status: string;
   created_at: string | Date;
   proposal_id: string;
+  share_token: string;
   client: {
     id: string;
     name: string;
@@ -73,7 +74,7 @@ export async function getProject(projectId: string): Promise<ProjectDetail | nul
 
   const rows = await sql`
     SELECT
-      p.id, p.title, p.status, p.created_at, p.proposal_id,
+      p.id, p.title, p.status, p.created_at, p.proposal_id, p.share_token,
       c.id AS client_id, c.name AS client_name, c.email AS client_email,
       c.phone AS client_phone, c.company_name AS client_company_name,
       pr.total_amount AS proposal_total_amount
@@ -126,6 +127,7 @@ export async function getProject(projectId: string): Promise<ProjectDetail | nul
     status: row.status as string,
     created_at: row.created_at as string,
     proposal_id: row.proposal_id as string,
+    share_token: row.share_token as string,
     client: {
       id: row.client_id as string,
       name: row.client_name as string,

@@ -37,7 +37,7 @@ export function ProposalReadyEmail({
         <Body className="bg-neutral-50 font-sans">
           <Container className="mx-auto my-10 max-w-[560px] rounded-lg border border-solid border-neutral-200 bg-white px-8 py-10">
             <Heading className="m-0 text-xl font-semibold tracking-tight text-neutral-900">
-              Velo
+              whereismyapp
             </Heading>
 
             <Section className="mt-8">
@@ -78,7 +78,7 @@ export function ProposalReadyEmail({
 
             <Text className="m-0 text-xs text-neutral-400">
               You received this email because {agencyName} sent you a proposal
-              through Velo.
+              through whereismyapp.
             </Text>
           </Container>
         </Body>

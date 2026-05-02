@@ -195,3 +195,96 @@ export const timeEntrySchema = z.object({
 });
 
 export type TimeEntryInput = z.infer<typeof timeEntrySchema>;
+
+export const AU_STATES = [
+  "ACT",
+  "NSW",
+  "NT",
+  "QLD",
+  "SA",
+  "TAS",
+  "VIC",
+  "WA",
+] as const;
+
+export type AuState = (typeof AU_STATES)[number];
+
+export const userProfileSchema = z.object({
+  businessName: z.preprocess(
+    toTrimmedStringOrNull,
+    z
+      .string()
+      .max(150, "Business name must be 150 characters or fewer")
+      .nullable(),
+  ),
+
+  // ABN: 11 digits with optional spaces. We strip whitespace before checking.
+  abn: z.preprocess(
+    (val) => {
+      const s = toTrimmedStringOrNull(val);
+      if (s === null) return null;
+      const digitsOnly = s.replace(/\s+/g, "");
+      return digitsOnly === "" ? null : digitsOnly;
+    },
+    z
+      .string()
+      .regex(/^\d{11}$/, "ABN must be exactly 11 digits")
+      .nullable(),
+  ),
+
+  addressStreet: z.preprocess(
+    toTrimmedStringOrNull,
+    z
+      .string()
+      .max(200, "Street must be 200 characters or fewer")
+      .nullable(),
+  ),
+
+  addressCity: z.preprocess(
+    toTrimmedStringOrNull,
+    z
+      .string()
+      .max(100, "City must be 100 characters or fewer")
+      .nullable(),
+  ),
+
+  addressState: z.preprocess(
+    toTrimmedStringOrNull,
+    z.enum(AU_STATES, "Please choose a valid state").nullable(),
+  ),
+
+  addressPostcode: z.preprocess(
+    toTrimmedStringOrNull,
+    z
+      .string()
+      .regex(/^\d{4}$/, "Postcode must be 4 digits")
+      .nullable(),
+  ),
+
+  phone: z.preprocess(
+    toTrimmedStringOrNull,
+    z
+      .string()
+      .max(20, "Phone must be 20 characters or fewer")
+      .regex(/^\+?[\d\s\-().]+$/, "Phone contains invalid characters")
+      .refine((s) => {
+        const digits = s.replace(/\D/g, "").length;
+        return digits >= 7 && digits <= 15;
+      }, "Phone must contain 7 to 15 digits")
+      .nullable(),
+  ),
+
+  website: z.preprocess(
+    (val) => {
+      const s = toTrimmedStringOrNull(val);
+      if (s === null) return null;
+      return /^https?:\/\//i.test(s) ? s : `https://${s}`;
+    },
+    z
+      .url("Website must be a valid URL")
+      .max(255, "Website must be 255 characters or fewer")
+      .nullable(),
+  ),
+});
+
+export type UserProfileInput = z.infer<typeof userProfileSchema>;

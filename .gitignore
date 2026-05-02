@@ -40,3 +40,8 @@ next-env.d.ts
 
 # clerk configuration (can include secrets)
 /.clerk/
+
+# Claude Code (local agent state, settings, MCP config — may contain secrets)
+/.claude/
+CLAUDE.md
+.mcp.json

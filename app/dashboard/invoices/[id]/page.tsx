@@ -2,6 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getInvoice } from "../actions";
 import { MarkAsPaidButton } from "./mark-as-paid-button";
+import { getOrCreateUser } from "@/lib/auth";
+import {
+  getUserProfile,
+  formatAbn,
+  formatAddressLine,
+} from "@/lib/user-profile";
 
 const dateFmt = new Intl.DateTimeFormat("en-US", {
   month: "long",
@@ -33,6 +39,12 @@ export default async function InvoiceDetailPage({
 }) {
   const invoice = await getInvoice(params.id);
   if (!invoice) notFound();
+
+  const user = await getOrCreateUser();
+  const profile = await getUserProfile(user.id);
+  const agencyName = profile.business_name ?? user.name ?? user.email;
+  const agencyAddress = formatAddressLine(profile);
+  const agencyAbn = formatAbn(profile.abn);
 
   // The proposal's total_amount is stored inclusive of GST. We back out the
   // subtotal and GST portion so the line-item context is accurate.
@@ -81,11 +93,33 @@ export default async function InvoiceDetailPage({
           {invoice.status === "unpaid" && (
             <MarkAsPaidButton invoiceId={invoice.id} />
           )}
+          <a
+            href={`/api/invoices/${invoice.id}/pdf`}
+            className="rounded-md border border-neutral-200 px-3.5 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900"
+          >
+            Download PDF
+          </a>
         </div>
       </div>
 
+      {/* Agency "From" block */}
+      <section className="mt-8 rounded-lg border border-neutral-200 p-5 dark:border-neutral-800">
+        <p className="text-xs uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+          From
+        </p>
+        <p className="mt-1 text-sm font-medium text-neutral-900 dark:text-neutral-100">
+          {agencyName}
+        </p>
+        <div className="mt-1 flex flex-wrap gap-x-4 text-sm text-neutral-500 dark:text-neutral-400">
+          {agencyAbn && <span>ABN {agencyAbn}</span>}
+          {agencyAddress && <span>{agencyAddress}</span>}
+          {profile.phone && <span>{profile.phone}</span>}
+          {profile.website && <span>{profile.website}</span>}
+        </div>
+      </section>
+
       {/* Client + project meta */}
-      <section className="mt-8 grid grid-cols-1 gap-3 rounded-lg border border-neutral-200 p-5 sm:grid-cols-3 dark:border-neutral-800">
+      <section className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-neutral-200 p-5 sm:grid-cols-3 dark:border-neutral-800">
         <div>
           <p className="text-xs uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
             Client

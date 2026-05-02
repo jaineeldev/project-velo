@@ -31,7 +31,7 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
         <div className="relative z-10 flex items-center gap-2.5">
           <span className="block h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.55)]" />
           <span className="text-xs font-medium uppercase tracking-[0.22em] text-neutral-300">
-            Velo
+            whereismyapp
           </span>
         </div>
 
@@ -43,7 +43,7 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
             to paid.
           </h1>
           <p className="mt-6 text-[15px] leading-relaxed text-neutral-400">
-            Velo turns a signed proposal into a project, milestones, and
+            whereismyapp turns a signed proposal into a project, milestones, and
             invoices automatically — so you can spend more time shipping and
             less on the busywork.
           </p>
@@ -72,7 +72,7 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
 
         {/* Bottom — meta */}
         <div className="relative z-10 border-t border-white/10 pt-6 text-xs text-neutral-500">
-          © 2026 Velo
+          © 2026 whereismyapp
         </div>
       </aside>
 
@@ -82,7 +82,7 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
         <div className="mb-8 flex items-center gap-2.5 lg:hidden">
           <span className="block h-1.5 w-1.5 rounded-full bg-emerald-500" />
           <span className="text-xs font-medium uppercase tracking-[0.22em] text-neutral-500 dark:text-neutral-400">
-            Velo
+            whereismyapp
           </span>
         </div>
         {children}

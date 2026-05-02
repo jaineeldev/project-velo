@@ -4,6 +4,12 @@ import { getProposal } from "../actions";
 import { SendProposalButton } from "./send-proposal-button";
 import { ShareLinkDisplay } from "./share-link-display";
 import { DeleteProposalButton } from "./delete-proposal-button";
+import { getOrCreateUser } from "@/lib/auth";
+import {
+  getUserProfile,
+  formatAbn,
+  formatAddressLine,
+} from "@/lib/user-profile";
 
 const dateFmt = new Intl.DateTimeFormat("en-US", {
   month: "long",
@@ -41,6 +47,12 @@ export default async function ProposalDetailPage({
 }) {
   const proposal = await getProposal(params.id);
   if (!proposal) notFound();
+
+  const user = await getOrCreateUser();
+  const profile = await getUserProfile(user.id);
+  const agencyName = profile.business_name ?? user.name ?? user.email;
+  const agencyAddress = formatAddressLine(profile);
+  const agencyAbn = formatAbn(profile.abn);
 
   const total = Number(proposal.total_amount);
   const subtotal = total / 1.1;
@@ -86,8 +98,30 @@ export default async function ProposalDetailPage({
             proposal.status === "changes_requested") && (
             <DeleteProposalButton proposalId={params.id} />
           )}
+          <a
+            href={`/api/proposals/${params.id}/pdf`}
+            className="rounded-md border border-neutral-200 px-3.5 py-1.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900"
+          >
+            Download PDF
+          </a>
         </div>
       </div>
+
+      {/* Agency "From" block */}
+      <section className="mt-6 rounded-lg border border-neutral-200 p-5 dark:border-neutral-800">
+        <p className="text-xs uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+          From
+        </p>
+        <p className="mt-1 text-sm font-medium text-neutral-900 dark:text-neutral-100">
+          {agencyName}
+        </p>
+        <div className="mt-1 flex flex-wrap gap-x-4 text-sm text-neutral-500 dark:text-neutral-400">
+          {agencyAbn && <span>ABN {agencyAbn}</span>}
+          {agencyAddress && <span>{agencyAddress}</span>}
+          {profile.phone && <span>{profile.phone}</span>}
+          {profile.website && <span>{profile.website}</span>}
+        </div>
+      </section>
 
       {proposal.description && (
         <p className="mt-6 max-w-2xl text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">

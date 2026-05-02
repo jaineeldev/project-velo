@@ -20,7 +20,7 @@ export function Sidebar() {
     <aside className="flex h-screen w-60 flex-col border-r border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950">
       <div className="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
         <span className="text-sm font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
-          Velo
+          whereismyapp
         </span>
       </div>
 

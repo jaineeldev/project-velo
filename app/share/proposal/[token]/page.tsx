@@ -253,7 +253,7 @@ export default async function ShareProposalPage({
         )}
 
         <p className="mt-16 text-center text-xs text-neutral-300 dark:text-neutral-700">
-          Powered by Velo
+          Powered by whereismyapp
         </p>
       </div>
     </main>

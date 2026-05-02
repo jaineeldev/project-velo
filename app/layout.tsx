@@ -7,7 +7,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Velo",
+  title: "whereismyapp",
   description: "A client workflow PWA for freelance developers and dev agencies.",
 };
 

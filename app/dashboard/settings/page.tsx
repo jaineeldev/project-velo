@@ -1,6 +1,10 @@
 import { AppearanceToggle } from "@/components/appearance-toggle";
+import { getProfile } from "./actions";
+import { ProfileForm } from "./profile-form";
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const profile = await getProfile();
+
   return (
     <div className="max-w-3xl px-10 py-12">
       <h1 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
@@ -9,10 +13,21 @@ export default function SettingsPage() {
 
       <section className="mt-10 border-t border-neutral-200 pt-8 dark:border-neutral-800">
         <h2 className="text-base font-medium text-neutral-900 dark:text-neutral-100">
+          Business profile
+        </h2>
+        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+          These details appear on your proposals and invoices, including the
+          PDFs you send to clients.
+        </p>
+        <ProfileForm profile={profile} />
+      </section>
+
+      <section className="mt-10 border-t border-neutral-200 pt-8 dark:border-neutral-800">
+        <h2 className="text-base font-medium text-neutral-900 dark:text-neutral-100">
           Appearance
         </h2>
         <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-          Choose how Velo looks to you.
+          Choose how whereismyapp looks to you.
         </p>
         <div className="mt-4">
           <AppearanceToggle />

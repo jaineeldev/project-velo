@@ -1,5 +1,6 @@
 "use server";
 
+import { randomBytes } from "crypto";
 import { sql } from "@/lib/db";
 
 // 64 hex chars = 32 random bytes = 256 bits of entropy.
@@ -34,10 +35,12 @@ export async function approveProposal(token: string): Promise<void> {
     throw new Error("This proposal has already been approved.");
   }
 
-  // Create the project.
+  // Create the project. The share_token powers the public client portal at
+  // /share/project/[token] — 32 random bytes => 256 bits of entropy.
+  const projectShareToken = randomBytes(32).toString("hex");
   const [project] = await sql`
-    INSERT INTO projects (proposal_id, client_id, user_id, title, status)
-    VALUES (${proposalId}, ${p.client_id}, ${p.user_id}, ${p.title}, 'active')
+    INSERT INTO projects (proposal_id, client_id, user_id, title, status, share_token)
+    VALUES (${proposalId}, ${p.client_id}, ${p.user_id}, ${p.title}, 'active', ${projectShareToken})
     RETURNING id
   `;
 

@@ -5,6 +5,7 @@ import { MilestoneStatusSelect } from "./milestone-status-select";
 import { TimeEntryForm } from "./time-entry-form";
 import { DeleteTimeEntryButton } from "./delete-time-entry-button";
 import { GenerateFinalInvoiceButton } from "./generate-final-invoice-button";
+import { PortalLinkDisplay } from "./portal-link-display";
 
 const dateFmt = new Intl.DateTimeFormat("en-US", {
   month: "long",
@@ -82,6 +83,18 @@ export default async function ProjectDetailPage({
           {project.status.replace("_", " ")}
         </span>
       </div>
+
+      {/* Client portal share link */}
+      <section className="mt-8 rounded-lg border border-neutral-200 p-5 dark:border-neutral-800">
+        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+          Client portal
+        </p>
+        <p className="mt-1 mb-3 text-sm text-neutral-500 dark:text-neutral-400">
+          Send this link to your client so they can track milestones, hours
+          logged, and invoices for this project.
+        </p>
+        <PortalLinkDisplay shareToken={project.share_token} />
+      </section>
 
       {/* Client details */}
       <section className="mt-8 grid grid-cols-1 gap-3 rounded-lg border border-neutral-200 p-5 sm:grid-cols-3 dark:border-neutral-800">

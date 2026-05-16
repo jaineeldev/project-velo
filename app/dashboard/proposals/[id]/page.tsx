@@ -10,6 +10,7 @@ import {
   formatAbn,
   formatAddressLine,
 } from "@/lib/user-profile";
+import { formatStatus } from "@/lib/format";
 
 const dateFmt = new Intl.DateTimeFormat("en-US", {
   month: "long",
@@ -81,9 +82,9 @@ export default async function ProposalDetailPage({
         </div>
         <div className="flex shrink-0 items-center gap-3">
           <span
-            className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${statusStyles[proposal.status] ?? statusStyles.draft}`}
+            className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[proposal.status] ?? statusStyles.draft}`}
           >
-            {proposal.status.replace("_", " ")}
+            {formatStatus(proposal.status)}
           </span>
           {(proposal.status === "draft" ||
             proposal.status === "changes_requested") && (

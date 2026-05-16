@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getProjects } from "./actions";
+import { formatStatus } from "@/lib/format";
 
 const dateFmt = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -51,9 +52,9 @@ export default async function ProjectsPage() {
                 </div>
                 <div className="ml-4 flex shrink-0 items-center gap-4">
                   <span
-                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${statusStyles[p.status] ?? statusStyles.active}`}
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[p.status] ?? statusStyles.active}`}
                   >
-                    {p.status.replace("_", " ")}
+                    {formatStatus(p.status)}
                   </span>
                   <p className="w-28 text-right text-sm text-neutral-500 dark:text-neutral-400">
                     {dateFmt.format(new Date(p.created_at))}

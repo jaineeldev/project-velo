@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getInvoices } from "./actions";
+import { formatStatus } from "@/lib/format";
 
 const dateFmt = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -60,14 +61,14 @@ export default async function InvoicesPage() {
                 </div>
                 <div className="ml-4 flex shrink-0 items-center gap-4">
                   <span
-                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${typeStyles[i.type] ?? typeStyles.deposit}`}
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${typeStyles[i.type] ?? typeStyles.deposit}`}
                   >
-                    {i.type}
+                    {formatStatus(i.type)}
                   </span>
                   <span
-                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${statusStyles[i.status] ?? statusStyles.unpaid}`}
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[i.status] ?? statusStyles.unpaid}`}
                   >
-                    {i.status}
+                    {formatStatus(i.status)}
                   </span>
                   <p className="w-24 text-right text-sm font-medium text-neutral-900 dark:text-neutral-100">
                     {currencyFmt.format(Number(i.total_amount))}

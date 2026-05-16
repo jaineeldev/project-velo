@@ -8,6 +8,7 @@ import {
   formatAbn,
   formatAddressLine,
 } from "@/lib/user-profile";
+import { formatStatus } from "@/lib/format";
 
 const dateFmt = new Intl.DateTimeFormat("en-US", {
   month: "long",
@@ -81,14 +82,14 @@ export default async function InvoiceDetailPage({
         </div>
         <div className="flex shrink-0 items-center gap-3">
           <span
-            className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${typeStyles[invoice.type] ?? typeStyles.deposit}`}
+            className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${typeStyles[invoice.type] ?? typeStyles.deposit}`}
           >
-            {invoice.type} invoice
+            {formatStatus(invoice.type)} invoice
           </span>
           <span
-            className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${statusStyles[invoice.status] ?? statusStyles.unpaid}`}
+            className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[invoice.status] ?? statusStyles.unpaid}`}
           >
-            {invoice.status}
+            {formatStatus(invoice.status)}
           </span>
           {invoice.status === "unpaid" && (
             <MarkAsPaidButton invoiceId={invoice.id} />

@@ -60,11 +60,18 @@ export type ProjectDetail = {
   };
   milestones: ProjectMilestone[];
   timeEntries: ProjectTimeEntry[];
+  pendingChangeRequests: PendingChangeRequest[];
   finalInvoice: {
     canGenerate: boolean;
     existingId: string | null;
     remainingAmount: number;
   };
+};
+
+export type PendingChangeRequest = {
+  id: string;
+  message: string;
+  created_at: string | Date;
 };
 
 export async function getProject(projectId: string): Promise<ProjectDetail | null> {
@@ -87,7 +94,7 @@ export async function getProject(projectId: string): Promise<ProjectDetail | nul
 
   const row = rows[0];
 
-  const [milestones, timeEntries, invoices] = await Promise.all([
+  const [milestones, timeEntries, invoices, pendingChangeRequests] = await Promise.all([
     sql`
       SELECT id, title, status, amount
       FROM milestones
@@ -104,6 +111,19 @@ export async function getProject(projectId: string): Promise<ProjectDetail | nul
       SELECT id, type, total_amount
       FROM invoices
       WHERE project_id = ${projectId}
+    `,
+    // Join change_requests → proposals → projects so the data path from a
+    // project to its pending CRs is explicit in SQL (CRs are stored against
+    // the proposal, but we look them up by the project being viewed).
+    sql`
+      SELECT cr.id, cr.message, cr.created_at
+      FROM change_requests cr
+      JOIN proposals pr ON pr.id = cr.proposal_id
+      JOIN projects pj ON pj.proposal_id = pr.id
+      WHERE pj.id = ${projectId}
+        AND pj.user_id = ${user.id}
+        AND cr.status = 'pending'
+      ORDER BY cr.created_at DESC
     `,
   ]);
 
@@ -137,6 +157,7 @@ export async function getProject(projectId: string): Promise<ProjectDetail | nul
     },
     milestones: milestoneRows,
     timeEntries: timeEntries as ProjectTimeEntry[],
+    pendingChangeRequests: pendingChangeRequests as PendingChangeRequest[],
     finalInvoice: {
       canGenerate: allCompleted && !finalInvoice && remainingAmount > 0,
       existingId: finalInvoice?.id ?? null,
@@ -276,6 +297,64 @@ export async function addTimeEntry(
   `;
 
   revalidatePath(`/dashboard/projects/${projectId}`);
+}
+
+export async function respondToChangeRequest(
+  projectId: string,
+  changeRequestId: string,
+  decision: "approved" | "rejected",
+  note: string,
+): Promise<void> {
+  if (!uuidSchema.safeParse(projectId).success) throw new Error("Project not found.");
+  if (!uuidSchema.safeParse(changeRequestId).success)
+    throw new Error("Change request not found.");
+  if (decision !== "approved" && decision !== "rejected")
+    throw new Error("Invalid decision.");
+
+  const trimmedNote = note.trim();
+  if (trimmedNote.length > 2000)
+    throw new Error("Note must be 2000 characters or fewer.");
+
+  const user = await getOrCreateUser();
+
+  // Authorization + atomic state transition: only act on a still-pending row
+  // belonging to a project owned by this user.
+  const result = await sql`
+    UPDATE change_requests cr
+    SET status = ${decision},
+        response_note = ${trimmedNote === "" ? null : trimmedNote},
+        responded_at = now()
+    FROM projects p
+    WHERE cr.id = ${changeRequestId}
+      AND cr.proposal_id = p.proposal_id
+      AND p.id = ${projectId}
+      AND p.user_id = ${user.id}
+      AND cr.status = 'pending'
+    RETURNING cr.id, cr.proposal_id
+  `;
+  if (result.length === 0)
+    throw new Error("Change request not found or already responded to.");
+
+  const proposalId = result[0].proposal_id as string;
+
+  // Activity log entry that mirrors the existing change-request submission
+  // event, for parity in the proposal's Activity timeline.
+  const description =
+    decision === "approved"
+      ? trimmedNote
+        ? `Change request approved: ${trimmedNote}`
+        : "Change request approved"
+      : trimmedNote
+        ? `Change request rejected: ${trimmedNote}`
+        : "Change request rejected";
+
+  await sql`
+    INSERT INTO proposal_events (proposal_id, event_type, description)
+    VALUES (${proposalId}, ${`change_request_${decision}`}, ${description})
+  `;
+
+  revalidatePath(`/dashboard/projects/${projectId}`);
+  revalidatePath(`/dashboard/proposals/${proposalId}`);
 }
 
 export async function deleteTimeEntry(

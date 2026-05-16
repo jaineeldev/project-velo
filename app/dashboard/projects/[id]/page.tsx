@@ -6,6 +6,8 @@ import { TimeEntryForm } from "./time-entry-form";
 import { DeleteTimeEntryButton } from "./delete-time-entry-button";
 import { GenerateFinalInvoiceButton } from "./generate-final-invoice-button";
 import { PortalLinkDisplay } from "./portal-link-display";
+import { ChangeRequestActions } from "./change-request-actions";
+import { formatStatus } from "@/lib/format";
 
 const dateFmt = new Intl.DateTimeFormat("en-US", {
   month: "long",
@@ -78,9 +80,9 @@ export default async function ProjectDetailPage({
           </p>
         </div>
         <span
-          className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${projectStatusStyles[project.status] ?? projectStatusStyles.active}`}
+          className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${projectStatusStyles[project.status] ?? projectStatusStyles.active}`}
         >
-          {project.status.replace("_", " ")}
+          {formatStatus(project.status)}
         </span>
       </div>
 
@@ -95,6 +97,39 @@ export default async function ProjectDetailPage({
         </p>
         <PortalLinkDisplay shareToken={project.share_token} />
       </section>
+
+      {/* Pending change requests */}
+      {project.pendingChangeRequests.length > 0 && (
+        <section className="mt-8">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+            Pending change requests
+          </h2>
+          <ul className="space-y-4">
+            {project.pendingChangeRequests.map((cr) => (
+              <li
+                key={cr.id}
+                className="rounded-lg border border-amber-200 bg-amber-50 p-5 dark:border-amber-900 dark:bg-amber-950"
+              >
+                <div className="flex items-baseline justify-between gap-4">
+                  <p className="text-xs font-medium uppercase tracking-wider text-amber-800 dark:text-amber-300">
+                    Submitted by client
+                  </p>
+                  <span className="text-xs text-amber-700/70 dark:text-amber-300/70">
+                    {entryFmt.format(new Date(cr.created_at))}
+                  </span>
+                </div>
+                <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-amber-900 dark:text-amber-100">
+                  {cr.message}
+                </p>
+                <ChangeRequestActions
+                  projectId={project.id}
+                  changeRequestId={cr.id}
+                />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {/* Client details */}
       <section className="mt-8 grid grid-cols-1 gap-3 rounded-lg border border-neutral-200 p-5 sm:grid-cols-3 dark:border-neutral-800">
@@ -146,9 +181,9 @@ export default async function ProjectDetailPage({
                   </p>
                   <div className="mt-1 flex items-center gap-3">
                     <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${milestoneStatusStyles[m.status] ?? milestoneStatusStyles.not_started}`}
+                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${milestoneStatusStyles[m.status] ?? milestoneStatusStyles.not_started}`}
                     >
-                      {m.status.replace("_", " ")}
+                      {formatStatus(m.status)}
                     </span>
                     <span className="text-sm text-neutral-500 dark:text-neutral-400">
                       {currencyFmt.format(Number(m.amount))}

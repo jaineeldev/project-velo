@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
+import { formatStatus } from "@/lib/format";
 
 type ProposalRow = {
   id: string;
@@ -77,9 +78,9 @@ export default async function ProposalsPage() {
                 </div>
                 <div className="ml-4 flex shrink-0 items-center gap-4">
                   <span
-                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${statusStyles[p.status] ?? statusStyles.draft}`}
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[p.status] ?? statusStyles.draft}`}
                   >
-                    {p.status}
+                    {formatStatus(p.status)}
                   </span>
                   <p className="w-24 text-right text-sm text-neutral-500 dark:text-neutral-400">
                     ${Number(p.total_amount).toFixed(2)}

@@ -1,5 +1,12 @@
 import { notFound } from "next/navigation";
 import { sql } from "@/lib/db";
+import { formatStatus } from "@/lib/format";
+
+// Public portal must always reflect the current milestone/invoice state —
+// otherwise a status change in the dashboard is invisible to the client until
+// the route cache happens to expire.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const TOKEN_RE = /^[0-9a-f]{64}$/;
 
@@ -126,9 +133,9 @@ export default async function ShareProjectPage({
               {project.title}
             </h1>
             <span
-              className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${projectStatusStyles[project.status] ?? projectStatusStyles.active}`}
+              className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${projectStatusStyles[project.status] ?? projectStatusStyles.active}`}
             >
-              {project.status}
+              {formatStatus(project.status)}
             </span>
           </div>
         </div>
@@ -153,9 +160,9 @@ export default async function ShareProjectPage({
                     {m.title}
                   </span>
                   <span
-                    className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium capitalize ${milestoneStatusStyles[m.status] ?? milestoneStatusStyles.not_started}`}
+                    className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${milestoneStatusStyles[m.status] ?? milestoneStatusStyles.not_started}`}
                   >
-                    {m.status.replace("_", " ")}
+                    {formatStatus(m.status)}
                   </span>
                 </li>
               ))}
@@ -199,9 +206,9 @@ export default async function ShareProjectPage({
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${invoiceTypeStyles[inv.type] ?? invoiceTypeStyles.deposit}`}
+                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${invoiceTypeStyles[inv.type] ?? invoiceTypeStyles.deposit}`}
                       >
-                        {inv.type}
+                        {formatStatus(inv.type)}
                       </span>
                       <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                         {currencyFmt.format(Number(inv.total_amount))}
@@ -212,9 +219,9 @@ export default async function ShareProjectPage({
                     </p>
                   </div>
                   <span
-                    className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium capitalize ${invoiceStatusStyles[inv.status] ?? invoiceStatusStyles.unpaid}`}
+                    className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${invoiceStatusStyles[inv.status] ?? invoiceStatusStyles.unpaid}`}
                   >
-                    {inv.status}
+                    {formatStatus(inv.status)}
                   </span>
                 </li>
               ))}

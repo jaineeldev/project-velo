@@ -1,18 +1,23 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
+import { getClientOptions } from "@/lib/clients-data";
 import { getProposal } from "../../actions";
 import { ProposalForm } from "../../new/proposal-form";
-
-type ClientOption = { id: string; name: string };
 
 export default async function EditProposalPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const proposal = await getProposal(params.id);
+  // Proposal + client list are independent — fetch in parallel after the
+  // cached user lookup. Client list is also unstable_cache'd so this is
+  // typically a single proposal round-trip in steady state.
+  const user = await getOrCreateUser();
+  const [proposal, clients] = await Promise.all([
+    getProposal(params.id),
+    getClientOptions(user.id),
+  ]);
   if (!proposal) notFound();
 
   // Only draft and changes_requested proposals can be edited — anything else
@@ -20,11 +25,6 @@ export default async function EditProposalPage({
   if (proposal.status !== "draft" && proposal.status !== "changes_requested") {
     redirect(`/dashboard/proposals/${params.id}`);
   }
-
-  const user = await getOrCreateUser();
-  const clients = (await sql`
-    SELECT id, name FROM clients WHERE user_id = ${user.id} ORDER BY name ASC
-  `) as ClientOption[];
 
   return (
     <div className="px-10 py-12">

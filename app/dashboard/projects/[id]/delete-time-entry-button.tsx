@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { cn, focusRing } from "@/lib/utils";
 import { deleteTimeEntry } from "../actions";
 
 type Props = {
@@ -26,8 +27,12 @@ export function DeleteTimeEntryButton({ projectId, entryId }: Props) {
       type="button"
       onClick={handleClick}
       disabled={isPending}
+      aria-busy={isPending}
       aria-label="Delete time entry"
-      className="text-xs text-neutral-400 transition-colors hover:text-red-600 disabled:opacity-50 dark:text-neutral-600 dark:hover:text-red-400"
+      className={cn(
+        "rounded text-xs text-neutral-400 transition-colors hover:text-red-600 disabled:opacity-50 dark:text-neutral-600 dark:hover:text-red-400",
+        focusRing,
+      )}
     >
       Remove
     </button>

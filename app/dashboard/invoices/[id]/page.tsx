@@ -8,62 +8,49 @@ import {
   formatAbn,
   formatAddressLine,
 } from "@/lib/user-profile";
-import { formatStatus } from "@/lib/format";
-
-const dateFmt = new Intl.DateTimeFormat("en-US", {
-  month: "long",
-  day: "numeric",
-  year: "numeric",
-});
-
-const currencyFmt = new Intl.NumberFormat("en-AU", {
-  style: "currency",
-  currency: "AUD",
-});
-
-const statusStyles: Record<string, string> = {
-  unpaid: "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400",
-  paid: "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400",
-};
-
-const typeStyles: Record<string, string> = {
-  deposit:
-    "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300",
-  final:
-    "bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-400",
-};
+import { currencyFmt, dateLongFmt, splitGst } from "@/lib/format";
+import { cn, focusRing } from "@/lib/utils";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 export default async function InvoiceDetailPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const invoice = await getInvoice(params.id);
+  // Resolve user first (cached for the request), then fetch the invoice and
+  // the agency profile in parallel — the "From" block doesn't depend on
+  // invoice data, so there's no reason for it to wait.
+  const user = await getOrCreateUser();
+  const [invoice, profile] = await Promise.all([
+    getInvoice(params.id),
+    getUserProfile(user.id),
+  ]);
   if (!invoice) notFound();
 
-  const user = await getOrCreateUser();
-  const profile = await getUserProfile(user.id);
   const agencyName = profile.business_name ?? user.name ?? user.email;
   const agencyAddress = formatAddressLine(profile);
   const agencyAbn = formatAbn(profile.abn);
 
-  // The proposal's total_amount is stored inclusive of GST. We back out the
-  // subtotal and GST portion so the line-item context is accurate.
-  const proposalTotal = Number(invoice.proposal.total_amount);
-  const proposalSubtotal = proposalTotal / 1.1;
-  const proposalGst = proposalTotal - proposalSubtotal;
+  // `invoice.total_amount` is the GST-inclusive amount the client owes for
+  // this specific invoice — the deposit slice of the proposal for a deposit
+  // invoice, or the remaining balance for a final invoice. The breakdown
+  // below splits *that* amount into its ex-GST and GST components, so the
+  // figures on screen match what the client is actually paying.
   const depositPct = Number(invoice.proposal.deposit_percentage);
-  const invoiceAmount = Number(invoice.total_amount);
-  const dueLabel =
+  const invoiceSplit = splitGst(Number(invoice.total_amount));
+  const totalLabel =
     invoice.type === "final"
-      ? "Final balance due now"
-      : `Deposit (${depositPct}%) due now`;
+      ? "Final balance"
+      : `Deposit (${depositPct}%)`;
 
   return (
     <div className="px-10 py-12">
       <Link
         href="/dashboard/invoices"
-        className="inline-flex items-center gap-1 text-sm text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+        className={cn(
+          "inline-flex items-center gap-1 rounded text-sm text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100",
+          focusRing,
+        )}
       >
         ← Invoices
       </Link>
@@ -81,22 +68,17 @@ export default async function InvoiceDetailPage({
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-3">
-          <span
-            className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${typeStyles[invoice.type] ?? typeStyles.deposit}`}
-          >
-            {formatStatus(invoice.type)} invoice
-          </span>
-          <span
-            className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[invoice.status] ?? statusStyles.unpaid}`}
-          >
-            {formatStatus(invoice.status)}
-          </span>
+          <StatusBadge status={invoice.type} />
+          <StatusBadge status={invoice.status} />
           {invoice.status === "unpaid" && (
             <MarkAsPaidButton invoiceId={invoice.id} />
           )}
           <a
             href={`/api/invoices/${invoice.id}/pdf`}
-            className="rounded-md border border-neutral-200 px-3.5 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900"
+            className={cn(
+              "rounded-md border border-neutral-200 px-3.5 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900",
+              focusRing,
+            )}
           >
             Download PDF
           </a>
@@ -155,11 +137,11 @@ export default async function InvoiceDetailPage({
             Issued
           </p>
           <p className="mt-1 text-sm text-neutral-900 dark:text-neutral-100">
-            {dateFmt.format(new Date(invoice.created_at))}
+            {dateLongFmt.format(new Date(invoice.created_at))}
           </p>
           {invoice.due_date && (
             <p className="mt-0.5 text-sm text-neutral-500 dark:text-neutral-400">
-              Due {dateFmt.format(new Date(invoice.due_date))}
+              Due {dateLongFmt.format(new Date(invoice.due_date))}
             </p>
           )}
         </div>
@@ -205,34 +187,28 @@ export default async function InvoiceDetailPage({
         })}
       </div>
 
-      {/* Totals */}
+      {/* Totals — for this invoice only, not the full project value. */}
       <div className="mt-6 flex flex-col items-end gap-2 text-sm">
         <div className="flex w-72 justify-between gap-8">
-          <span className="text-neutral-500 dark:text-neutral-400">Subtotal</span>
+          <span className="text-neutral-500 dark:text-neutral-400">
+            {totalLabel} (ex. GST)
+          </span>
           <span className="font-medium text-neutral-900 dark:text-neutral-100">
-            {currencyFmt.format(proposalSubtotal)}
+            {currencyFmt.format(invoiceSplit.subtotal)}
           </span>
         </div>
         <div className="flex w-72 justify-between gap-8">
           <span className="text-neutral-500 dark:text-neutral-400">GST (10%)</span>
           <span className="font-medium text-neutral-900 dark:text-neutral-100">
-            {currencyFmt.format(proposalGst)}
+            {currencyFmt.format(invoiceSplit.gst)}
           </span>
         </div>
         <div className="flex w-72 justify-between gap-8 border-t border-neutral-200 pt-2 dark:border-neutral-800">
           <span className="font-semibold text-neutral-900 dark:text-neutral-100">
-            Total
+            {totalLabel} due now
           </span>
           <span className="font-semibold text-neutral-900 dark:text-neutral-100">
-            {currencyFmt.format(proposalTotal)}
-          </span>
-        </div>
-        <div className="flex w-72 justify-between gap-8 border-t border-neutral-200 pt-2 dark:border-neutral-800">
-          <span className="font-semibold text-neutral-900 dark:text-neutral-100">
-            {dueLabel}
-          </span>
-          <span className="font-semibold text-neutral-900 dark:text-neutral-100">
-            {currencyFmt.format(invoiceAmount)}
+            {currencyFmt.format(invoiceSplit.total)}
           </span>
         </div>
       </div>

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { CheckCircle2, MessageSquare } from "lucide-react";
+import { cn, focusRing } from "@/lib/utils";
 import { approveProposal, submitChangeRequest } from "./actions";
 
 type Phase =
@@ -66,14 +68,17 @@ export function ProposalActions({
   // ── Approved confirmation ─────────────────────────────────────────────────
   if (phase === "approved") {
     return (
-      <div className="rounded-lg border border-green-200 bg-green-50 p-6 dark:border-green-900 dark:bg-green-950">
-        <p className="font-semibold text-green-800 dark:text-green-200">
-          Proposal approved
-        </p>
-        <p className="mt-1 text-sm text-green-700 dark:text-green-300">
-          Thank you for approving this proposal. The team will be in touch
-          shortly to get started.
-        </p>
+      <div className="flex items-start gap-3 rounded-lg border border-border bg-card p-6 shadow-sm">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10">
+          <CheckCircle2 aria-hidden className="h-5 w-5 text-primary" />
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">Proposal approved</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Thank you for approving this proposal. The team will be in touch
+            shortly to get started.
+          </p>
+        </div>
       </div>
     );
   }
@@ -81,14 +86,20 @@ export function ProposalActions({
   // ── Changes sent confirmation ─────────────────────────────────────────────
   if (phase === "changes-sent") {
     return (
-      <div className="rounded-lg border border-amber-200 bg-amber-50 p-6 dark:border-amber-900 dark:bg-amber-950">
-        <p className="font-semibold text-amber-800 dark:text-amber-200">
-          Changes requested
-        </p>
-        <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
-          Your feedback has been received. The team will review your request and
-          be in touch with a revised proposal.
-        </p>
+      <div className="flex items-start gap-3 rounded-lg border border-border bg-card p-6 shadow-sm">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted">
+          <MessageSquare
+            aria-hidden
+            className="h-5 w-5 text-muted-foreground"
+          />
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">Changes requested</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Your feedback has been received. The team will review your request
+            and be in touch with a revised proposal.
+          </p>
+        </div>
       </div>
     );
   }
@@ -96,17 +107,20 @@ export function ProposalActions({
   // ── Approve error ─────────────────────────────────────────────────────────
   if (phase === "approve-error") {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-6 dark:border-red-900 dark:bg-red-950">
-        <p className="font-semibold text-red-800 dark:text-red-200">
-          Something went wrong
-        </p>
-        <p className="mt-1 text-sm text-red-700 dark:text-red-300">
-          {errorMessage}
-        </p>
+      <div
+        role="alert"
+        aria-live="polite"
+        className="rounded-lg border border-border bg-card p-6 shadow-sm"
+      >
+        <p className="font-semibold text-destructive">Something went wrong</p>
+        <p className="mt-1 text-sm text-muted-foreground">{errorMessage}</p>
         <button
           type="button"
           onClick={() => setPhase("idle")}
-          className="mt-3 text-sm text-red-700 underline underline-offset-2 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200"
+          className={cn(
+            "mt-3 rounded text-sm text-foreground underline underline-offset-2 hover:text-primary",
+            focusRing,
+          )}
         >
           Go back
         </button>
@@ -115,13 +129,18 @@ export function ProposalActions({
   }
 
   // ── Change-request form ───────────────────────────────────────────────────
-  if (phase === "changes" || phase === "submitting-changes" || phase === "changes-error") {
+  if (
+    phase === "changes" ||
+    phase === "submitting-changes" ||
+    phase === "changes-error"
+  ) {
+    const submitting = phase === "submitting-changes";
     return (
       <div className="space-y-4">
         <div className="space-y-1.5">
           <label
             htmlFor="changeMessage"
-            className="block text-sm font-medium text-neutral-900 dark:text-neutral-100"
+            className="block text-sm font-medium text-foreground"
           >
             What would you like changed?
           </label>
@@ -131,13 +150,16 @@ export function ProposalActions({
             value={changeMessage}
             onChange={(e) => setChangeMessage(e.target.value)}
             placeholder="Please describe the changes you'd like…"
-            disabled={phase === "submitting-changes"}
-            className="w-full rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-300 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-600 dark:focus:ring-neutral-700"
+            disabled={submitting}
+            className={cn(
+              "w-full rounded-lg border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50",
+              focusRing,
+            )}
           />
         </div>
 
         {phase === "changes-error" && (
-          <p className="text-sm text-red-600 dark:text-red-400">
+          <p role="alert" aria-live="polite" className="text-sm text-destructive">
             {errorMessage}
           </p>
         )}
@@ -146,20 +168,25 @@ export function ProposalActions({
           <button
             type="button"
             onClick={() => setPhase("idle")}
-            disabled={phase === "submitting-changes"}
-            className="rounded-lg border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            disabled={submitting}
+            className={cn(
+              "rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-50",
+              focusRing,
+            )}
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleSubmitChanges}
-            disabled={phase === "submitting-changes" || !changeMessage.trim()}
-            className="rounded-lg bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-neutral-700 disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-300"
+            disabled={submitting || !changeMessage.trim()}
+            aria-busy={submitting}
+            className={cn(
+              "rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50",
+              focusRing,
+            )}
           >
-            {phase === "submitting-changes"
-              ? "Submitting…"
-              : "Submit feedback"}
+            {submitting ? "Submitting…" : "Submit feedback"}
           </button>
         </div>
       </div>
@@ -173,7 +200,11 @@ export function ProposalActions({
         type="button"
         onClick={handleApprove}
         disabled={isPending}
-        className="flex-1 rounded-lg bg-neutral-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-neutral-700 disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-300"
+        aria-busy={phase === "approving"}
+        className={cn(
+          "flex-1 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50",
+          focusRing,
+        )}
       >
         {phase === "approving" ? "Approving…" : "Approve proposal"}
       </button>
@@ -181,7 +212,10 @@ export function ProposalActions({
         type="button"
         onClick={handleRequestChanges}
         disabled={isPending}
-        className="flex-1 rounded-lg border border-neutral-200 px-6 py-3 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+        className={cn(
+          "flex-1 rounded-lg border border-border px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-accent disabled:opacity-50",
+          focusRing,
+        )}
       >
         Request changes
       </button>

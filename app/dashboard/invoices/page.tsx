@@ -1,29 +1,10 @@
 import Link from "next/link";
+import { Receipt } from "lucide-react";
 import { getInvoices } from "./actions";
-import { formatStatus } from "@/lib/format";
-
-const dateFmt = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-});
-
-const currencyFmt = new Intl.NumberFormat("en-AU", {
-  style: "currency",
-  currency: "AUD",
-});
-
-const statusStyles: Record<string, string> = {
-  unpaid: "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400",
-  paid: "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400",
-};
-
-const typeStyles: Record<string, string> = {
-  deposit:
-    "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300",
-  final:
-    "bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-400",
-};
+import { currencyFmt, dateShortFmt } from "@/lib/format";
+import { cn, focusRing } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 export default async function InvoicesPage() {
   const invoices = await getInvoices();
@@ -31,56 +12,58 @@ export default async function InvoicesPage() {
   return (
     <div className="px-10 py-12">
       <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
           Invoices
         </h1>
       </header>
 
       {invoices.length === 0 ? (
-        <div className="mt-10 rounded-lg border border-dashed border-neutral-200 px-6 py-16 text-center dark:border-neutral-800">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            No invoices yet. Invoices are created automatically when a client
-            approves a proposal.
-          </p>
-        </div>
+        <Card className="mt-10 border-dashed shadow-none">
+          <CardContent className="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+              <Receipt aria-hidden className="h-5 w-5 text-primary" />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              No invoices yet. Invoices are created automatically when a client
+              approves a proposal.
+            </p>
+          </CardContent>
+        </Card>
       ) : (
-        <ul className="mt-10 divide-y divide-neutral-200 border-t border-neutral-200 dark:divide-neutral-800 dark:border-neutral-800">
-          {invoices.map((i) => (
-            <li key={i.id}>
-              <Link
-                href={`/dashboard/invoices/${i.id}`}
-                className="flex items-center justify-between py-4 transition-colors hover:text-neutral-700 dark:hover:text-neutral-300"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                    {i.project_title}
-                  </p>
-                  <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-                    {i.client_name}
-                  </p>
-                </div>
-                <div className="ml-4 flex shrink-0 items-center gap-4">
-                  <span
-                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${typeStyles[i.type] ?? typeStyles.deposit}`}
-                  >
-                    {formatStatus(i.type)}
-                  </span>
-                  <span
-                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[i.status] ?? statusStyles.unpaid}`}
-                  >
-                    {formatStatus(i.status)}
-                  </span>
-                  <p className="w-24 text-right text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                    {currencyFmt.format(Number(i.total_amount))}
-                  </p>
-                  <p className="w-28 text-right text-sm text-neutral-500 dark:text-neutral-400">
-                    {dateFmt.format(new Date(i.created_at))}
-                  </p>
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <Card className="mt-10 overflow-hidden">
+          <ul className="divide-y divide-border">
+            {invoices.map((i) => (
+              <li key={i.id}>
+                <Link
+                  href={`/dashboard/invoices/${i.id}`}
+                  className={cn(
+                    "flex items-center gap-4 px-5 py-4 transition-colors hover:bg-accent",
+                    focusRing,
+                  )}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-foreground">
+                      {i.project_title}
+                    </p>
+                    <p className="mt-0.5 truncate text-sm text-muted-foreground">
+                      {i.client_name}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-4">
+                    <StatusBadge status={i.type} />
+                    <StatusBadge status={i.status} />
+                    <p className="w-24 text-right text-sm font-medium text-foreground">
+                      {currencyFmt.format(Number(i.total_amount))}
+                    </p>
+                    <p className="w-28 text-right text-xs text-muted-foreground">
+                      {dateShortFmt.format(new Date(i.created_at))}
+                    </p>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Card>
       )}
     </div>
   );

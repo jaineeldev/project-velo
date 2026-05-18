@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { cn, focusRing } from "@/lib/utils";
 import { deleteProposal } from "../actions";
 
 export function DeleteProposalButton({ proposalId }: { proposalId: string }) {
@@ -28,13 +29,23 @@ export function DeleteProposalButton({ proposalId }: { proposalId: string }) {
       <button
         type="button"
         onClick={() => setConfirming(true)}
-        className="rounded-md border border-red-200 px-3.5 py-1.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950"
+        aria-label="Delete proposal"
+        className={cn(
+          "rounded-md border border-red-200 px-3.5 py-1.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950",
+          focusRing,
+        )}
       >
         Delete proposal
       </button>
 
       {error && (
-        <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>
+        <p
+          role="alert"
+          aria-live="polite"
+          className="mt-2 text-sm text-red-600 dark:text-red-400"
+        >
+          {error}
+        </p>
       )}
 
       {confirming && (
@@ -58,7 +69,10 @@ export function DeleteProposalButton({ proposalId }: { proposalId: string }) {
                 type="button"
                 onClick={() => setConfirming(false)}
                 disabled={isPending}
-                className="rounded-md border border-neutral-200 px-3.5 py-1.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 disabled:opacity-50 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900"
+                className={cn(
+                  "rounded-md border border-neutral-200 px-3.5 py-1.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 disabled:opacity-50 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900",
+                  focusRing,
+                )}
               >
                 Cancel
               </button>
@@ -66,7 +80,11 @@ export function DeleteProposalButton({ proposalId }: { proposalId: string }) {
                 type="button"
                 onClick={handleDelete}
                 disabled={isPending}
-                className="rounded-md bg-red-600 px-3.5 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50"
+                aria-busy={isPending}
+                className={cn(
+                  "rounded-md bg-red-600 px-3.5 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50",
+                  focusRing,
+                )}
               >
                 {isPending ? "Deleting…" : "Delete"}
               </button>

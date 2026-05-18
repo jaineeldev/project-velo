@@ -1,6 +1,12 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
+import { ExternalLink } from "lucide-react";
 import { sql } from "@/lib/db";
-import { formatStatus } from "@/lib/format";
+import { getClientIp } from "@/lib/rate-limit";
+import { logSecurityEvent } from "@/lib/security-log";
+import { currencyFmt, dateShortFmt } from "@/lib/format";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 // Public portal must always reflect the current milestone/invoice state —
 // otherwise a status change in the dashboard is invisible to the client until
@@ -9,46 +15,6 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const TOKEN_RE = /^[0-9a-f]{64}$/;
-
-const dateFmt = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-});
-
-const currencyFmt = new Intl.NumberFormat("en-AU", {
-  style: "currency",
-  currency: "AUD",
-});
-
-const projectStatusStyles: Record<string, string> = {
-  active: "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400",
-  completed:
-    "bg-yellow-50 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-400",
-  delivered:
-    "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400",
-};
-
-const milestoneStatusStyles: Record<string, string> = {
-  not_started:
-    "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400",
-  in_progress:
-    "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400",
-  completed:
-    "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400",
-};
-
-const invoiceStatusStyles: Record<string, string> = {
-  unpaid: "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400",
-  paid: "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400",
-};
-
-const invoiceTypeStyles: Record<string, string> = {
-  deposit:
-    "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300",
-  final:
-    "bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-400",
-};
 
 type PortalProject = {
   id: string;
@@ -59,6 +25,7 @@ type PortalProject = {
 };
 
 type MilestoneRow = { id: string; title: string; status: string };
+type DeliverableRow = { milestone_id: string; label: string; url: string };
 type TimeRow = { hours: string };
 type InvoiceRow = {
   id: string;
@@ -69,7 +36,16 @@ type InvoiceRow = {
 };
 
 async function getPortalProject(token: string) {
-  if (!TOKEN_RE.test(token)) return null;
+  if (!TOKEN_RE.test(token)) {
+    logSecurityEvent({
+      event: "invalid_share_token",
+      route: "share/project",
+      ip: getClientIp(headers()),
+      outcome: "denied",
+      reason: "token_format",
+    });
+    return null;
+  }
 
   // Query by share_token only — no user_id, client email/phone, or any
   // internal IDs leak. Mirror of the proposal share-page approach.
@@ -83,12 +59,25 @@ async function getPortalProject(token: string) {
 
   const project = rows[0] as PortalProject;
 
-  const [milestones, timeEntries, invoices] = await Promise.all([
+  const [milestones, deliverables, timeEntries, invoices] = await Promise.all([
     sql`
       SELECT id, title, status
       FROM milestones
       WHERE proposal_id = ${project.proposal_id}
       ORDER BY created_at
+    `,
+    // Deliverables join up through projects.share_token → proposals →
+    // milestones, scoped to completed milestones only. The client never
+    // supplies a deliverable or milestone ID directly — this query is the
+    // single way the public portal sees them.
+    sql`
+      SELECT d.milestone_id, d.label, d.url
+      FROM deliverables d
+      JOIN milestones m ON m.id = d.milestone_id
+      JOIN projects p ON p.proposal_id = m.proposal_id
+      WHERE p.share_token = ${token}
+        AND m.status = 'completed'
+      ORDER BY d.created_at
     `,
     sql`
       SELECT hours FROM time_entries WHERE project_id = ${project.id}
@@ -104,6 +93,7 @@ async function getPortalProject(token: string) {
   return {
     project,
     milestones: milestones as MilestoneRow[],
+    deliverables: deliverables as DeliverableRow[],
     timeEntries: timeEntries as TimeRow[],
     invoices: invoices as InvoiceRow[],
   };
@@ -117,69 +107,97 @@ export default async function ShareProjectPage({
   const data = await getPortalProject(params.token);
   if (!data) notFound();
 
-  const { project, milestones, timeEntries, invoices } = data;
+  const { project, milestones, deliverables, timeEntries, invoices } = data;
   const totalHours = timeEntries.reduce((sum, e) => sum + Number(e.hours), 0);
 
+  // Group deliverables by milestone for rendering. The milestone_id is used
+  // only as a map key in this server-rendered tree — it never appears in the
+  // HTML, so the public portal stays free of internal IDs.
+  const deliverablesByMilestone = new Map<string, { label: string; url: string }[]>();
+  for (const d of deliverables) {
+    const list = deliverablesByMilestone.get(d.milestone_id) ?? [];
+    list.push({ label: d.label, url: d.url });
+    deliverablesByMilestone.set(d.milestone_id, list);
+  }
+
   return (
-    <main className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+    <main className="min-h-screen bg-background">
       <div className="mx-auto max-w-2xl px-6 py-16">
         {/* Header */}
-        <div className="mb-10 border-b border-neutral-200 pb-8 dark:border-neutral-800">
-          <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400 dark:text-neutral-600">
+        <div className="mb-10 border-b border-border pb-8">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Project for {project.client_name}
           </p>
           <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
-            <h1 className="text-3xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
               {project.title}
             </h1>
-            <span
-              className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${projectStatusStyles[project.status] ?? projectStatusStyles.active}`}
-            >
-              {formatStatus(project.status)}
-            </span>
+            <StatusBadge status={project.status} />
           </div>
         </div>
 
         {/* Milestones */}
         <section>
-          <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-neutral-400 dark:text-neutral-600">
+          <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Milestones
           </h2>
           {milestones.length === 0 ? (
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+            <p className="text-sm text-muted-foreground">
               No milestones for this project.
             </p>
           ) : (
-            <ul className="overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-800">
-              {milestones.map((m, i) => (
-                <li
-                  key={m.id}
-                  className={`flex items-center justify-between gap-4 px-4 py-3 ${i > 0 ? "border-t border-neutral-100 dark:border-neutral-900" : ""}`}
-                >
-                  <span className="truncate text-sm text-neutral-900 dark:text-neutral-100">
-                    {m.title}
-                  </span>
-                  <span
-                    className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${milestoneStatusStyles[m.status] ?? milestoneStatusStyles.not_started}`}
+            <ul className="overflow-hidden rounded-lg border border-border">
+              {milestones.map((m, i) => {
+                const items = deliverablesByMilestone.get(m.id) ?? [];
+                const showDeliverables = m.status === "completed" && items.length > 0;
+                return (
+                  <li
+                    key={m.id}
+                    className={i > 0 ? "border-t border-border" : ""}
                   >
-                    {formatStatus(m.status)}
-                  </span>
-                </li>
-              ))}
+                    <div className="flex items-center justify-between gap-4 px-4 py-3">
+                      <span className="truncate text-sm text-foreground">
+                        {m.title}
+                      </span>
+                      <StatusBadge status={m.status} />
+                    </div>
+                    {showDeliverables && (
+                      <ul className="border-t border-border bg-muted/40 px-4 py-3 space-y-1.5">
+                        {items.map((d, j) => (
+                          <li key={j}>
+                            <a
+                              href={d.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 text-sm text-primary underline-offset-2 hover:underline"
+                            >
+                              <ExternalLink aria-hidden className="h-3.5 w-3.5" />
+                              <span className="truncate">{d.label}</span>
+                              <span className="text-xs text-muted-foreground">
+                                · View deliverable
+                              </span>
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </section>
 
         {/* Time logged */}
         <section className="mt-12">
-          <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-neutral-400 dark:text-neutral-600">
+          <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Time logged
           </h2>
-          <div className="rounded-lg border border-neutral-200 px-4 py-3 dark:border-neutral-800">
-            <p className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+          <div className="rounded-lg border border-border bg-card px-4 py-3">
+            <p className="text-2xl font-semibold tracking-tight text-foreground">
               {totalHours.toFixed(2)} hrs
             </p>
-            <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+            <p className="mt-1 text-sm text-muted-foreground">
               {timeEntries.length === 0
                 ? "No time logged yet."
                 : `Across ${timeEntries.length} ${timeEntries.length === 1 ? "entry" : "entries"}.`}
@@ -189,49 +207,45 @@ export default async function ShareProjectPage({
 
         {/* Invoices */}
         <section className="mt-12">
-          <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-neutral-400 dark:text-neutral-600">
+          <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Invoices
           </h2>
           {invoices.length === 0 ? (
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">
-              No invoices yet.
-            </p>
+            <p className="text-sm text-muted-foreground">No invoices yet.</p>
           ) : (
-            <ul className="overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-800">
+            <ul className="overflow-hidden rounded-lg border border-border">
               {invoices.map((inv, i) => (
                 <li
                   key={inv.id}
-                  className={`flex items-center justify-between gap-4 px-4 py-3 ${i > 0 ? "border-t border-neutral-100 dark:border-neutral-900" : ""}`}
+                  className={`flex items-center justify-between gap-4 px-4 py-3 ${i > 0 ? "border-t border-border" : ""}`}
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${invoiceTypeStyles[inv.type] ?? invoiceTypeStyles.deposit}`}
-                      >
-                        {formatStatus(inv.type)}
-                      </span>
-                      <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                      <StatusBadge status={inv.type} />
+                      <span className="text-sm font-medium text-foreground">
                         {currencyFmt.format(Number(inv.total_amount))}
                       </span>
                     </div>
-                    <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-                      Issued {dateFmt.format(new Date(inv.created_at))}
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      Issued {dateShortFmt.format(new Date(inv.created_at))}
                     </p>
                   </div>
-                  <span
-                    className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${invoiceStatusStyles[inv.status] ?? invoiceStatusStyles.unpaid}`}
-                  >
-                    {formatStatus(inv.status)}
-                  </span>
+                  <StatusBadge status={inv.status} />
                 </li>
               ))}
             </ul>
           )}
         </section>
 
-        <p className="mt-16 text-center text-xs text-neutral-300 dark:text-neutral-700">
-          Powered by whereismyapp
-        </p>
+        <div className="mt-16 flex flex-col items-center gap-1 text-xs text-muted-foreground">
+          <p>Powered by whereismyapp</p>
+          <Link
+            href="/privacy"
+            className="rounded underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            Privacy Policy
+          </Link>
+        </div>
       </div>
     </main>
   );

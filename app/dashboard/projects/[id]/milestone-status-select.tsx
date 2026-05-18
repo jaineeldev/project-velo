@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { cn, focusRing } from "@/lib/utils";
 import { updateMilestoneStatus } from "../actions";
 import { MILESTONE_STATUSES } from "@/lib/validation";
 
@@ -47,7 +48,12 @@ export function MilestoneStatusSelect({
         value={status}
         onChange={handleChange}
         disabled={isPending}
-        className="rounded-md border border-neutral-200 bg-white px-2.5 py-1 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-900"
+        aria-busy={isPending}
+        aria-label="Milestone status"
+        className={cn(
+          "rounded-md border border-neutral-200 bg-white px-2.5 py-1 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-900",
+          focusRing,
+        )}
       >
         {MILESTONE_STATUSES.map((s) => (
           <option key={s} value={s}>
@@ -56,7 +62,13 @@ export function MilestoneStatusSelect({
         ))}
       </select>
       {error && (
-        <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
+        <p
+          role="alert"
+          aria-live="polite"
+          className="text-xs text-red-600 dark:text-red-400"
+        >
+          {error}
+        </p>
       )}
     </div>
   );

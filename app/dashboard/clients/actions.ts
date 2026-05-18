@@ -1,8 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
+import { clientsTag } from "@/lib/clients-data";
 import { clientSchema, uuidSchema } from "@/lib/validation";
 
 export async function createClient(formData: FormData) {
@@ -32,6 +33,7 @@ export async function createClient(formData: FormData) {
     )
   `;
 
+  revalidateTag(clientsTag(user.id));
   revalidatePath("/dashboard/clients");
 }
 
@@ -117,5 +119,6 @@ export async function deleteClient(clientId: string): Promise<void> {
     DELETE FROM clients WHERE id = ${clientId} AND user_id = ${user.id}
   `;
 
+  revalidateTag(clientsTag(user.id));
   revalidatePath("/dashboard/clients");
 }

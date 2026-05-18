@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
 import {
+  deliverableSchema,
   milestoneStatusSchema,
   timeEntrySchema,
   uuidSchema,
@@ -30,11 +31,18 @@ export async function getProjects(): Promise<ProjectListItem[]> {
   return rows as ProjectListItem[];
 }
 
+export type ProjectDeliverable = {
+  id: string;
+  label: string;
+  url: string;
+};
+
 export type ProjectMilestone = {
   id: string;
   title: string;
   status: string;
   amount: string;
+  deliverables: ProjectDeliverable[];
 };
 
 export type ProjectTimeEntry = {
@@ -94,12 +102,22 @@ export async function getProject(projectId: string): Promise<ProjectDetail | nul
 
   const row = rows[0];
 
-  const [milestones, timeEntries, invoices, pendingChangeRequests] = await Promise.all([
+  const [milestones, deliverables, timeEntries, invoices, pendingChangeRequests] = await Promise.all([
     sql`
       SELECT id, title, status, amount
       FROM milestones
       WHERE proposal_id = ${row.proposal_id}
       ORDER BY created_at
+    `,
+    // Deliverables join up through milestone → proposal → project for the
+    // ownership scope. We fetch them in one query and bucket by milestone_id
+    // in app code rather than running N queries.
+    sql`
+      SELECT d.id, d.milestone_id, d.label, d.url
+      FROM deliverables d
+      JOIN milestones m ON m.id = d.milestone_id
+      WHERE m.proposal_id = ${row.proposal_id}
+      ORDER BY d.created_at
     `,
     sql`
       SELECT id, description, hours, created_at
@@ -127,7 +145,22 @@ export async function getProject(projectId: string): Promise<ProjectDetail | nul
     `,
   ]);
 
-  const milestoneRows = milestones as ProjectMilestone[];
+  const deliverableRows = deliverables as (ProjectDeliverable & {
+    milestone_id: string;
+  })[];
+  const deliverablesByMilestone = new Map<string, ProjectDeliverable[]>();
+  for (const d of deliverableRows) {
+    const list = deliverablesByMilestone.get(d.milestone_id) ?? [];
+    list.push({ id: d.id, label: d.label, url: d.url });
+    deliverablesByMilestone.set(d.milestone_id, list);
+  }
+
+  const milestoneRows = (milestones as Omit<ProjectMilestone, "deliverables">[]).map(
+    (m) => ({
+      ...m,
+      deliverables: deliverablesByMilestone.get(m.id) ?? [],
+    }),
+  );
   const allCompleted =
     milestoneRows.length > 0 &&
     milestoneRows.every((m) => m.status === "completed");
@@ -372,4 +405,59 @@ export async function deleteTimeEntry(
   `;
 
   revalidatePath(`/dashboard/projects/${projectId}`);
+}
+
+export async function addDeliverable(
+  milestoneId: string,
+  label: string,
+  url: string,
+): Promise<void> {
+  if (!uuidSchema.safeParse(milestoneId).success)
+    throw new Error("Milestone not found.");
+
+  const parsed = deliverableSchema.safeParse({ label, url });
+  if (!parsed.success) throw new Error(parsed.error.issues[0].message);
+
+  const user = await getOrCreateUser();
+
+  // Ownership check: the milestone belongs to a proposal that has a project
+  // owned by this user. Without the projects join, anyone with a milestone
+  // UUID could attach links to it.
+  const owned = await sql`
+    SELECT p.id AS project_id
+    FROM milestones m
+    JOIN projects p ON p.proposal_id = m.proposal_id
+    WHERE m.id = ${milestoneId} AND p.user_id = ${user.id}
+    LIMIT 1
+  `;
+  if (owned.length === 0) throw new Error("Milestone not found.");
+
+  await sql`
+    INSERT INTO deliverables (milestone_id, label, url)
+    VALUES (${milestoneId}, ${parsed.data.label}, ${parsed.data.url})
+  `;
+
+  revalidatePath(`/dashboard/projects/${owned[0].project_id}`);
+}
+
+export async function removeDeliverable(deliverableId: string): Promise<void> {
+  if (!uuidSchema.safeParse(deliverableId).success)
+    throw new Error("Deliverable not found.");
+
+  const user = await getOrCreateUser();
+
+  // Delete-and-return enforces ownership in one round trip: the row only
+  // matches when the join chain reaches a project owned by this user.
+  const deleted = await sql`
+    DELETE FROM deliverables d
+    USING milestones m, projects p
+    WHERE d.id = ${deliverableId}
+      AND m.id = d.milestone_id
+      AND p.proposal_id = m.proposal_id
+      AND p.user_id = ${user.id}
+    RETURNING p.id AS project_id
+  `;
+  if (deleted.length === 0) throw new Error("Deliverable not found.");
+
+  revalidatePath(`/dashboard/projects/${deleted[0].project_id}`);
 }

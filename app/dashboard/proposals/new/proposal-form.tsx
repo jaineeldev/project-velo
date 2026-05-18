@@ -1,7 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
+import { currencyFmt, GST_RATE } from "@/lib/format";
+import { cn, focusRing } from "@/lib/utils";
 import { createProposal, updateProposal } from "../actions";
 
 type ClientOption = { id: string; name: string };
@@ -21,17 +23,13 @@ type InitialValues = {
   lineItems: { description: string; quantity: string; unitPrice: string }[];
 };
 
-const GST_RATE = 0.1;
-let nextKey = 1;
-
 const inputCls =
-  "w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-300 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-600 dark:focus:ring-neutral-700";
+  "w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring";
 
-const labelCls =
-  "block text-sm font-medium text-neutral-900 dark:text-neutral-100";
+const labelCls = "block text-sm font-medium text-foreground";
 
 function fmt(n: number) {
-  return `$${n.toFixed(2)}`;
+  return currencyFmt.format(n);
 }
 
 function parseNum(s: string) {
@@ -52,15 +50,21 @@ export function ProposalForm({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
+  // Monotonic key counter scoped to this component instance. Previously this
+  // lived at module scope (`let nextKey = 1`) which leaked state across
+  // simultaneously mounted forms.
+  const nextKeyRef = useRef(1);
+  const makeKey = () => nextKeyRef.current++;
+
   const [lineItems, setLineItems] = useState<LineItem[]>(() =>
     initialValues?.lineItems.length
       ? initialValues.lineItems.map((item) => ({
-          key: nextKey++,
+          key: makeKey(),
           description: item.description,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
         }))
-      : [{ key: nextKey++, description: "", quantity: "1", unitPrice: "" }],
+      : [{ key: makeKey(), description: "", quantity: "1", unitPrice: "" }],
   );
   const [depositPct, setDepositPct] = useState(
     initialValues?.depositPercentage ?? "0",
@@ -79,7 +83,7 @@ export function ProposalForm({
   function addLineItem() {
     setLineItems((prev) => [
       ...prev,
-      { key: nextKey++, description: "", quantity: "1", unitPrice: "" },
+      { key: makeKey(), description: "", quantity: "1", unitPrice: "" },
     ]);
   }
 
@@ -147,7 +151,7 @@ export function ProposalForm({
     <form onSubmit={handleSubmit} className="mt-8 max-w-3xl space-y-10">
       {/* ── Proposal details ─────────────────────────────────────────────── */}
       <section className="space-y-5">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Proposal details
         </h2>
 
@@ -192,7 +196,7 @@ export function ProposalForm({
         <div className="space-y-1.5">
           <label htmlFor="description" className={labelCls}>
             Description{" "}
-            <span className="font-normal text-neutral-400 dark:text-neutral-600">
+            <span className="font-normal text-muted-foreground">
               (optional)
             </span>
           </label>
@@ -207,11 +211,11 @@ export function ProposalForm({
         </div>
       </section>
 
-      <hr className="border-neutral-200 dark:border-neutral-800" />
+      <hr className="border-border" />
 
       {/* ── Line items ───────────────────────────────────────────────────── */}
       <section className="space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Line items
         </h2>
 
@@ -219,7 +223,7 @@ export function ProposalForm({
           {["Description", "Qty", "Unit price", "Total", ""].map((h) => (
             <span
               key={h}
-              className="text-xs font-medium text-neutral-500 dark:text-neutral-400"
+              className="text-xs font-medium text-muted-foreground"
             >
               {h}
             </span>
@@ -267,15 +271,18 @@ export function ProposalForm({
                 required
                 className={inputCls}
               />
-              <span className="text-right text-sm text-neutral-700 dark:text-neutral-300">
+              <span className="text-right text-sm text-foreground">
                 {fmt(rowTotal)}
               </span>
               {lineItems.length > 1 ? (
                 <button
                   type="button"
                   onClick={() => removeLineItem(item.key)}
-                  className="flex h-7 w-7 items-center justify-center rounded text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
-                  aria-label="Remove line item"
+                  className={cn(
+                    "flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
+                    focusRing,
+                  )}
+                  aria-label={`Remove line item ${item.description || "(unnamed)"}`}
                 >
                   ×
                 </button>
@@ -289,51 +296,44 @@ export function ProposalForm({
         <button
           type="button"
           onClick={addLineItem}
-          className="mt-1 text-sm text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+          className={cn(
+            "mt-1 rounded text-sm text-muted-foreground transition-colors hover:text-foreground",
+            focusRing,
+          )}
         >
           + Add line item
         </button>
       </section>
 
-      <hr className="border-neutral-200 dark:border-neutral-800" />
+      <hr className="border-border" />
 
       {/* ── Summary ──────────────────────────────────────────────────────── */}
       <section className="space-y-6">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Summary
         </h2>
 
         <div className="flex flex-col items-end gap-2 text-sm">
           <div className="flex w-64 justify-between gap-8">
-            <span className="text-neutral-500 dark:text-neutral-400">
-              Subtotal
-            </span>
-            <span className="font-medium text-neutral-900 dark:text-neutral-100">
+            <span className="text-muted-foreground">Subtotal</span>
+            <span className="font-medium text-foreground">
               {fmt(subtotal)}
             </span>
           </div>
           <div className="flex w-64 justify-between gap-8">
-            <span className="text-neutral-500 dark:text-neutral-400">
-              GST (10%)
-            </span>
-            <span className="font-medium text-neutral-900 dark:text-neutral-100">
-              {fmt(gst)}
-            </span>
+            <span className="text-muted-foreground">GST (10%)</span>
+            <span className="font-medium text-foreground">{fmt(gst)}</span>
           </div>
-          <div className="flex w-64 justify-between gap-8 border-t border-neutral-200 pt-2 dark:border-neutral-800">
-            <span className="font-semibold text-neutral-900 dark:text-neutral-100">
-              Total
-            </span>
-            <span className="font-semibold text-neutral-900 dark:text-neutral-100">
-              {fmt(total)}
-            </span>
+          <div className="flex w-64 justify-between gap-8 border-t border-border pt-2">
+            <span className="font-semibold text-foreground">Total</span>
+            <span className="font-semibold text-foreground">{fmt(total)}</span>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           <label
             htmlFor="depositPct"
-            className="shrink-0 text-sm font-medium text-neutral-900 dark:text-neutral-100"
+            className="shrink-0 text-sm font-medium text-foreground"
           >
             Deposit
           </label>
@@ -348,11 +348,11 @@ export function ProposalForm({
               onChange={(e) => setDepositPct(e.target.value)}
               className={inputCls + " pr-8"}
             />
-            <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-neutral-400 dark:text-neutral-600">
+            <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-muted-foreground">
               %
             </span>
           </div>
-          <span className="text-sm text-neutral-500 dark:text-neutral-400">
+          <span className="text-sm text-muted-foreground">
             = {fmt(deposit)}
           </span>
         </div>
@@ -360,20 +360,29 @@ export function ProposalForm({
 
       {/* ── Error + submit ────────────────────────────────────────────────── */}
       {error && (
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        <p role="alert" aria-live="polite" className="text-sm text-destructive">
+          {error}
+        </p>
       )}
 
       <div className="flex justify-end gap-3">
         <a
           href={cancelHref}
-          className="rounded-md px-3.5 py-2 text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+          className={cn(
+            "rounded-md px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
+            focusRing,
+          )}
         >
           Cancel
         </a>
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-md bg-neutral-900 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200"
+          aria-busy={isPending}
+          className={cn(
+            "rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50",
+            focusRing,
+          )}
         >
           {isPending ? "Saving…" : proposalId ? "Save changes" : "Save proposal"}
         </button>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { cn, focusRing } from "@/lib/utils";
 import { sendProposal } from "../actions";
 
 type State =
@@ -42,7 +43,11 @@ export function SendProposalButton({ proposalId }: { proposalId: string }) {
         type="button"
         onClick={handleSend}
         disabled={isPending}
-        className="rounded-md bg-neutral-900 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200"
+        aria-busy={isPending}
+        className={cn(
+          "rounded-md bg-neutral-900 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200",
+          focusRing,
+        )}
       >
         Send to client
       </button>
@@ -54,7 +59,11 @@ export function SendProposalButton({ proposalId }: { proposalId: string }) {
       <button
         type="button"
         disabled
-        className="rounded-md bg-neutral-900 px-3.5 py-2 text-sm font-medium text-white opacity-50 dark:bg-neutral-100 dark:text-neutral-900"
+        aria-busy
+        className={cn(
+          "rounded-md bg-neutral-900 px-3.5 py-2 text-sm font-medium text-white opacity-50 dark:bg-neutral-100 dark:text-neutral-900",
+          focusRing,
+        )}
       >
         Sending…
       </button>
@@ -64,13 +73,20 @@ export function SendProposalButton({ proposalId }: { proposalId: string }) {
   if (state.phase === "error") {
     return (
       <div className="flex items-center gap-3">
-        <span className="text-sm text-red-600 dark:text-red-400">
+        <span
+          role="alert"
+          aria-live="polite"
+          className="text-sm text-red-600 dark:text-red-400"
+        >
           {state.message}
         </span>
         <button
           type="button"
           onClick={() => setState({ phase: "idle" })}
-          className="text-sm text-neutral-500 underline underline-offset-2 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+          className={cn(
+            "rounded text-sm text-neutral-500 underline underline-offset-2 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100",
+            focusRing,
+          )}
         >
           Try again
         </button>
@@ -90,7 +106,11 @@ export function SendProposalButton({ proposalId }: { proposalId: string }) {
       <button
         type="button"
         onClick={() => handleCopy(state.token)}
-        className="shrink-0 rounded-md border border-neutral-200 px-3.5 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900"
+        aria-label={copied ? "Link copied" : "Copy share link"}
+        className={cn(
+          "shrink-0 rounded-md border border-neutral-200 px-3.5 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900",
+          focusRing,
+        )}
       >
         {copied ? "Copied!" : "Copy link"}
       </button>

@@ -1,7 +1,11 @@
 import Link from "next/link";
+import { FileText } from "lucide-react";
 import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
-import { formatStatus } from "@/lib/format";
+import { currencyFmt, dateShortFmt } from "@/lib/format";
+import { cn, focusRing } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 type ProposalRow = {
   id: string;
@@ -10,23 +14,6 @@ type ProposalRow = {
   total_amount: string;
   created_at: string | Date;
   client_name: string;
-};
-
-const dateFmt = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-});
-
-const statusStyles: Record<string, string> = {
-  draft:
-    "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400",
-  sent: "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400",
-  pending:
-    "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400",
-  accepted:
-    "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400",
-  declined: "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-400",
 };
 
 export default async function ProposalsPage() {
@@ -43,56 +30,65 @@ export default async function ProposalsPage() {
   return (
     <div className="px-10 py-12">
       <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
           Proposals
         </h1>
         <Link
           href="/dashboard/proposals/new"
-          className="rounded-md bg-neutral-900 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200"
+          className={cn(
+            "rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90",
+            focusRing,
+          )}
         >
           New proposal
         </Link>
       </header>
 
       {proposals.length === 0 ? (
-        <div className="mt-10 rounded-lg border border-dashed border-neutral-200 px-6 py-16 text-center dark:border-neutral-800">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            No proposals yet. Create your first proposal to get started.
-          </p>
-        </div>
+        <Card className="mt-10 border-dashed shadow-none">
+          <CardContent className="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+              <FileText aria-hidden className="h-5 w-5 text-primary" />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              No proposals yet. Create your first proposal to get started.
+            </p>
+          </CardContent>
+        </Card>
       ) : (
-        <ul className="mt-10 divide-y divide-neutral-200 border-t border-neutral-200 dark:divide-neutral-800 dark:border-neutral-800">
-          {proposals.map((p) => (
-            <li key={p.id}>
-              <Link
-                href={`/dashboard/proposals/${p.id}`}
-                className="flex items-center justify-between py-4 transition-colors hover:text-neutral-700 dark:hover:text-neutral-300"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                    {p.title}
-                  </p>
-                  <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-                    {p.client_name}
-                  </p>
-                </div>
-                <div className="ml-4 flex shrink-0 items-center gap-4">
-                  <span
-                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[p.status] ?? statusStyles.draft}`}
-                  >
-                    {formatStatus(p.status)}
-                  </span>
-                  <p className="w-24 text-right text-sm text-neutral-500 dark:text-neutral-400">
-                    ${Number(p.total_amount).toFixed(2)}
-                  </p>
-                  <p className="w-28 text-right text-sm text-neutral-500 dark:text-neutral-400">
-                    {dateFmt.format(new Date(p.created_at))}
-                  </p>
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <Card className="mt-10 overflow-hidden">
+          <ul className="divide-y divide-border">
+            {proposals.map((p) => (
+              <li key={p.id}>
+                <Link
+                  href={`/dashboard/proposals/${p.id}`}
+                  className={cn(
+                    "flex items-center gap-4 px-5 py-4 transition-colors hover:bg-accent",
+                    focusRing,
+                  )}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-foreground">
+                      {p.title}
+                    </p>
+                    <p className="mt-0.5 truncate text-sm text-muted-foreground">
+                      {p.client_name}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-4">
+                    <StatusBadge status={p.status} />
+                    <p className="w-24 text-right text-sm font-medium text-foreground">
+                      {currencyFmt.format(Number(p.total_amount))}
+                    </p>
+                    <p className="w-28 text-right text-xs text-muted-foreground">
+                      {dateShortFmt.format(new Date(p.created_at))}
+                    </p>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Card>
       )}
     </div>
   );

@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { sql } from "@/lib/db";
@@ -9,7 +10,10 @@ export type AppUser = {
   name: string | null;
 };
 
-export async function getOrCreateUser(): Promise<AppUser> {
+// `cache()` dedupes within a single render tree. A typical dashboard request
+// hits this from the layout, the page, and any server action helpers; without
+// dedup, that's 3+ Clerk + DB round-trips per navigation.
+export const getOrCreateUser = cache(async (): Promise<AppUser> => {
   const clerkUser = await currentUser();
   if (!clerkUser) redirect("/sign-in");
 
@@ -31,4 +35,4 @@ export async function getOrCreateUser(): Promise<AppUser> {
   `;
 
   return rows[0] as AppUser;
-}
+});

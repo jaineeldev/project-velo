@@ -1,17 +1,31 @@
 "use server";
 
-import { randomBytes } from "crypto";
+import { randomBytes, randomUUID } from "crypto";
+import { headers } from "next/headers";
 import { sql } from "@/lib/db";
+import { getClientIp } from "@/lib/rate-limit";
+import { logSecurityEvent } from "@/lib/security-log";
 
 // 64 hex chars = 32 random bytes = 256 bits of entropy.
 const TOKEN_RE = /^[0-9a-f]{64}$/;
 
-function assertToken(token: string) {
-  if (!TOKEN_RE.test(token)) throw new Error("Invalid link.");
+function assertToken(token: string, route: string) {
+  if (!TOKEN_RE.test(token)) {
+    logSecurityEvent({
+      event: "invalid_share_token",
+      route,
+      ip: getClientIp(headers()),
+      outcome: "denied",
+      reason: "token_format",
+    });
+    // Identical error message regardless of failure reason — prevents
+    // attackers distinguishing "bad format" from "not found".
+    throw new Error("This link is no longer valid.");
+  }
 }
 
 export async function approveProposal(token: string): Promise<void> {
-  assertToken(token);
+  assertToken(token, "share/proposal/approve");
 
   const rows = await sql`
     SELECT p.id, p.user_id, p.client_id, p.title,
@@ -21,7 +35,14 @@ export async function approveProposal(token: string): Promise<void> {
       AND p.status = 'sent'
   `;
   if (rows.length === 0) {
-    throw new Error("This proposal is no longer available for approval.");
+    logSecurityEvent({
+      event: "invalid_share_token",
+      route: "share/proposal/approve",
+      ip: getClientIp(headers()),
+      outcome: "denied",
+      reason: "not_found_or_wrong_status",
+    });
+    throw new Error("This link is no longer valid.");
   }
 
   const p = rows[0];
@@ -35,16 +56,6 @@ export async function approveProposal(token: string): Promise<void> {
     throw new Error("This proposal has already been approved.");
   }
 
-  // Create the project. The share_token powers the public client portal at
-  // /share/project/[token] — 32 random bytes => 256 bits of entropy.
-  const projectShareToken = randomBytes(32).toString("hex");
-  const [project] = await sql`
-    INSERT INTO projects (proposal_id, client_id, user_id, title, status, share_token)
-    VALUES (${proposalId}, ${p.client_id}, ${p.user_id}, ${p.title}, 'active', ${projectShareToken})
-    RETURNING id
-  `;
-
-  // Fetch line items and create a milestone for each.
   const items = await sql`
     SELECT description, quantity, unit_price
     FROM line_items
@@ -52,56 +63,81 @@ export async function approveProposal(token: string): Promise<void> {
     ORDER BY created_at
   `;
 
-  await Promise.all(
-    items.map((item) => {
+  // Generate the project UUID up-front so the invoice insert can reference it
+  // inside the same atomic batch — Neon's sql.transaction() can't pass values
+  // between queries. The share_token powers the public client portal at
+  // /share/project/[token] — 32 random bytes => 256 bits of entropy.
+  const projectId = randomUUID();
+  const projectShareToken = randomBytes(32).toString("hex");
+
+  const total = Number(p.total_amount);
+  const depositPct = Number(p.deposit_percentage);
+  const depositTotal = total * (depositPct / 100);
+  const depositGst = depositTotal / 11;
+
+  // All writes in a single transaction — partial state on mid-batch failure
+  // would otherwise leave a project with no invoice or vice-versa.
+  await sql.transaction([
+    sql`
+      INSERT INTO projects (id, proposal_id, client_id, user_id, title, status, share_token)
+      VALUES (${projectId}, ${proposalId}, ${p.client_id}, ${p.user_id}, ${p.title}, 'active', ${projectShareToken})
+    `,
+    ...items.map((item) => {
       const amount = Number(item.quantity) * Number(item.unit_price);
       return sql`
         INSERT INTO milestones (proposal_id, title, amount, status)
         VALUES (${proposalId}, ${item.description}, ${amount}, 'not_started')
       `;
     }),
-  );
-
-  // Create a deposit invoice.
-  const total = Number(p.total_amount);
-  const depositPct = Number(p.deposit_percentage);
-  const depositTotal = total * (depositPct / 100);
-  const depositGst = depositTotal / 11;
-
-  await sql`
-    INSERT INTO invoices (project_id, user_id, client_id, total_amount, gst_amount, status, type)
-    VALUES (${project.id}, ${p.user_id}, ${p.client_id}, ${depositTotal}, ${depositGst}, 'unpaid', 'deposit')
-  `;
-
-  // Mark approved and record event last — keeps the proposal in 'sent' if
-  // something above fails so the client can retry.
-  await sql`
-    UPDATE proposals SET status = 'approved' WHERE id = ${proposalId}
-  `;
-
-  await sql`
-    INSERT INTO proposal_events (proposal_id, event_type, description)
-    VALUES (${proposalId}, 'approved', 'Proposal approved by client')
-  `;
+    sql`
+      INSERT INTO invoices (project_id, user_id, client_id, total_amount, gst_amount, status, type)
+      VALUES (${projectId}, ${p.user_id}, ${p.client_id}, ${depositTotal}, ${depositGst}, 'unpaid', 'deposit')
+    `,
+    sql`
+      UPDATE proposals SET status = 'approved' WHERE id = ${proposalId}
+    `,
+    sql`
+      INSERT INTO proposal_events (proposal_id, event_type, description)
+      VALUES (${proposalId}, 'approved', 'Proposal approved by client')
+    `,
+  ]);
 }
 
 export async function submitChangeRequest(
   token: string,
   message: string,
 ): Promise<void> {
-  assertToken(token);
+  assertToken(token, "share/proposal/change");
 
   const trimmed = message.trim();
-  if (!trimmed) throw new Error("Please describe what changes you'd like.");
-  if (trimmed.length > 2000)
-    throw new Error("Message must be 2000 characters or fewer.");
+  if (!trimmed || trimmed.length > 2000) {
+    logSecurityEvent({
+      event: "validation_failed",
+      route: "share/proposal/change",
+      ip: getClientIp(headers()),
+      outcome: "denied",
+      reason: trimmed ? "message_too_long" : "message_empty",
+    });
+    throw new Error(
+      trimmed
+        ? "Message must be 2000 characters or fewer."
+        : "Please describe what changes you'd like.",
+    );
+  }
 
   const rows = await sql`
     SELECT id FROM proposals
     WHERE share_token = ${token} AND status = 'sent'
   `;
   if (rows.length === 0) {
-    throw new Error("This proposal is no longer available for changes.");
+    logSecurityEvent({
+      event: "invalid_share_token",
+      route: "share/proposal/change",
+      ip: getClientIp(headers()),
+      outcome: "denied",
+      reason: "not_found_or_wrong_status",
+    });
+    throw new Error("This link is no longer valid.");
   }
 
   const proposalId = rows[0].id as string;

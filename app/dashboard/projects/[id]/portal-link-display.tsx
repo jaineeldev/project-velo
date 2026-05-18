@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { cn, focusRing } from "@/lib/utils";
 
 export function PortalLinkDisplay({ shareToken }: { shareToken: string }) {
   const [copied, setCopied] = useState(false);
@@ -28,7 +29,11 @@ export function PortalLinkDisplay({ shareToken }: { shareToken: string }) {
       <button
         type="button"
         onClick={handleCopy}
-        className="shrink-0 rounded-md border border-neutral-200 px-3.5 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900"
+        aria-label={copied ? "Link copied" : "Copy portal link"}
+        className={cn(
+          "shrink-0 rounded-md border border-neutral-200 px-3.5 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900",
+          focusRing,
+        )}
       >
         {copied ? "Copied!" : "Copy link"}
       </button>

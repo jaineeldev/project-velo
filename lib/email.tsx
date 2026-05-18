@@ -15,6 +15,7 @@ const currencyFmt = new Intl.NumberFormat("en-AU", {
 });
 
 export type SendProposalEmailInput = {
+  proposalId: string;
   to: string;
   agencyName: string;
   clientName: string;
@@ -56,18 +57,17 @@ export async function sendProposalEmail(
     },
   };
 
-  console.log(
-    "[sendProposalEmail] variables:",
-    JSON.stringify(payload.template.variables, null, 2),
-  );
-  console.log("[sendProposalEmail] payload:", JSON.stringify(payload, null, 2));
-
   try {
     const { data, error } = await resend.emails.send(payload);
 
-    if (error) return { ok: false, reason: error.message };
+    if (error) {
+      logEmailOutcome(input.proposalId, "failed");
+      return { ok: false, reason: error.message };
+    }
+    logEmailOutcome(input.proposalId, "sent");
     return { ok: true, id: data?.id ?? "" };
   } catch (err) {
+    logEmailOutcome(input.proposalId, "failed");
     return {
       ok: false,
       reason: err instanceof Error ? err.message : "Unknown email error",
@@ -75,10 +75,24 @@ export async function sendProposalEmail(
   }
 }
 
-export function getAppBaseUrl(): string {
-  return (
-    process.env.NEXT_PUBLIC_APP_URL ??
-    process.env.APP_URL ??
-    "http://localhost:3000"
+function logEmailOutcome(proposalId: string, outcome: "sent" | "failed") {
+  console.log(
+    JSON.stringify({
+      ts: new Date().toISOString(),
+      event: "proposal_email",
+      proposal_id: proposalId,
+      outcome,
+    }),
   );
+}
+
+export function getAppBaseUrl(): string {
+  const url = process.env.NEXT_PUBLIC_APP_URL ?? process.env.APP_URL;
+  if (url) return url;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "NEXT_PUBLIC_APP_URL is not set. Set it to the production domain (e.g. https://your-app.example.com) in the Vercel environment variables — proposal emails must not be sent with localhost share links.",
+    );
+  }
+  return "http://localhost:3000";
 }

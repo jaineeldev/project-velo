@@ -1,16 +1,11 @@
 import Link from "next/link";
-import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
+import { getClientOptions } from "@/lib/clients-data";
 import { ProposalForm } from "./proposal-form";
-
-type ClientOption = { id: string; name: string };
 
 export default async function NewProposalPage() {
   const user = await getOrCreateUser();
-
-  const clients = (await sql`
-    SELECT id, name FROM clients WHERE user_id = ${user.id} ORDER BY name ASC
-  `) as ClientOption[];
+  const clients = await getClientOptions(user.id);
 
   return (
     <div className="px-10 py-12">

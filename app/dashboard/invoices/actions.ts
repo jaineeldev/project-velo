@@ -68,30 +68,37 @@ export async function getInvoice(invoiceId: string): Promise<InvoiceDetail | nul
 
   const user = await getOrCreateUser();
 
-  const rows = await sql`
-    SELECT
-      i.id, i.status, i.type, i.total_amount, i.gst_amount, i.due_date, i.created_at,
-      p.id AS project_id, p.title AS project_title, p.proposal_id,
-      c.name AS client_name, c.email AS client_email,
-      c.phone AS client_phone, c.company_name AS client_company_name,
-      pr.title AS proposal_title, pr.total_amount AS proposal_total_amount,
-      pr.deposit_percentage AS proposal_deposit_percentage
-    FROM invoices i
-    JOIN projects p ON p.id = i.project_id
-    JOIN clients c ON c.id = i.client_id
-    JOIN proposals pr ON pr.id = p.proposal_id
-    WHERE i.id = ${invoiceId} AND i.user_id = ${user.id}
-  `;
+  // Main row + line items in parallel. The line_items query joins through
+  // invoices so it can enforce ownership and target the right proposal
+  // without waiting on the main query to return `proposal_id` first.
+  const [rows, lineItems] = await Promise.all([
+    sql`
+      SELECT
+        i.id, i.status, i.type, i.total_amount, i.gst_amount, i.due_date, i.created_at,
+        p.id AS project_id, p.title AS project_title, p.proposal_id,
+        c.name AS client_name, c.email AS client_email,
+        c.phone AS client_phone, c.company_name AS client_company_name,
+        pr.title AS proposal_title, pr.total_amount AS proposal_total_amount,
+        pr.deposit_percentage AS proposal_deposit_percentage
+      FROM invoices i
+      JOIN projects p ON p.id = i.project_id
+      JOIN clients c ON c.id = i.client_id
+      JOIN proposals pr ON pr.id = p.proposal_id
+      WHERE i.id = ${invoiceId} AND i.user_id = ${user.id}
+    `,
+    sql`
+      SELECT li.description, li.quantity, li.unit_price
+      FROM line_items li
+      JOIN proposals pr ON pr.id = li.proposal_id
+      JOIN projects p ON p.proposal_id = pr.id
+      JOIN invoices i ON i.project_id = p.id
+      WHERE i.id = ${invoiceId} AND i.user_id = ${user.id}
+      ORDER BY li.created_at
+    `,
+  ]);
   if (rows.length === 0) return null;
 
   const row = rows[0];
-
-  const lineItems = await sql`
-    SELECT description, quantity, unit_price
-    FROM line_items
-    WHERE proposal_id = ${row.proposal_id}
-    ORDER BY created_at
-  `;
 
   return {
     id: row.id as string,

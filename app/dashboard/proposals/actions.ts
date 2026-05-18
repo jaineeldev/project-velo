@@ -180,6 +180,7 @@ export async function sendProposal(proposalId: string): Promise<string> {
   if (proposal.client_email) {
     const reviewUrl = `${getAppBaseUrl()}/share/proposal/${token}`;
     const result = await sendProposalEmail({
+      proposalId,
       to: proposal.client_email,
       agencyName: user.name ?? user.email,
       clientName: proposal.client_name,

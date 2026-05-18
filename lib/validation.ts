@@ -112,7 +112,7 @@ export type ClientInput = z.infer<typeof clientSchema>;
 // Validates user data extracted from a trusted Clerk webhook payload (after
 // signature verification). Provides defence-in-depth before the DB insert.
 export const webhookUserSchema = z.object({
-  clerk_id: z.string().min(1),
+  clerk_id: z.string().min(1).max(255),
   email: z
     .email("Webhook user has invalid email address")
     .trim()
@@ -195,6 +195,30 @@ export const timeEntrySchema = z.object({
 });
 
 export type TimeEntryInput = z.infer<typeof timeEntrySchema>;
+
+export const deliverableSchema = z.object({
+  label: z.preprocess(
+    (val) => String(val ?? "").trim(),
+    z
+      .string()
+      .min(1, "Label is required")
+      .max(100, "Label must be 100 characters or fewer"),
+  ),
+  // URL must be http(s) — reject anything else so we never render a
+  // javascript:, data:, or file: link on the public portal.
+  url: z.preprocess(
+    (val) => String(val ?? "").trim(),
+    z
+      .url("URL must be valid")
+      .max(500, "URL must be 500 characters or fewer")
+      .refine(
+        (s) => /^https?:\/\//i.test(s),
+        "URL must start with http:// or https://",
+      ),
+  ),
+});
+
+export type DeliverableInput = z.infer<typeof deliverableSchema>;
 
 export const AU_STATES = [
   "ACT",

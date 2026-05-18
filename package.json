@@ -14,17 +14,23 @@
     "@clerk/nextjs": "^6.39.3",
     "@clerk/themes": "^2.4.57",
     "@neondatabase/serverless": "^1.1.0",
-    "@react-email/components": "^1.0.12",
+    "@radix-ui/react-dialog": "^1.1.15",
     "@react-pdf/renderer": "^4.5.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.16.0",
     "next": "^14.2.35",
     "next-themes": "^0.4.6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "resend": "^6.12.2",
     "svix": "^1.92.2",
+    "tailwind-merge": "^3.6.0",
+    "tailwindcss-animate": "^1.0.7",
     "zod": "^4.4.1"
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
@@ -42,5 +48,13 @@
   "bugs": {
     "url": "https://github.com/jaineeldev/project-velo/issues"
   },
-  "homepage": "https://github.com/jaineeldev/project-velo#readme"
+  "homepage": "https://github.com/jaineeldev/project-velo#readme",
+  "_securityAudit": {
+    "lastChecked": "2026-05-17",
+    "unresolved": [
+      "next@14.2.35 — multiple advisories (DoS via Server Components, cache poisoning in middleware/RSC, image optimizer DoS, XSS in CSP-nonce paths). All fixes require a major upgrade to Next 15.5.x+ which is out of scope for this milestone (PRD locks the stack to Next 14). Re-audit after the Next 15 upgrade.",
+      "eslint-config-next / @next/eslint-plugin-next / glob — transitive `glob` CLI command injection (CVE-2025-…). Dev-only dependency; never executed in production runtime. Fix requires bumping eslint-config-next to 16.x which tracks Next 15+.",
+      "postcss <8.5.10 (nested under next/node_modules) — XSS via unescaped `</style>` in stringify output. Pinned by Next; resolves on Next 15 upgrade."
+    ]
+  }
 }

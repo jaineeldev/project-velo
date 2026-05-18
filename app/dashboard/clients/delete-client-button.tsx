@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import { cn, focusRing } from "@/lib/utils";
 import { checkClientDeletable, deleteClient } from "./actions";
 
 type Phase = "idle" | "checking" | "blocked" | "confirming" | "deleting";
@@ -62,7 +63,12 @@ export function DeleteClientButton({
         type="button"
         onClick={handleDeleteClick}
         disabled={isPending}
-        className="text-sm text-neutral-400 transition-colors hover:text-red-600 disabled:opacity-50 dark:text-neutral-600 dark:hover:text-red-400"
+        aria-busy={isPending}
+        aria-label={`Delete ${clientName}`}
+        className={cn(
+          "rounded text-sm text-neutral-400 transition-colors hover:text-red-600 disabled:opacity-50 dark:text-neutral-600 dark:hover:text-red-400",
+          focusRing,
+        )}
       >
         {phase === "checking" ? "Checking…" : "Delete"}
       </button>
@@ -84,7 +90,10 @@ export function DeleteClientButton({
               <button
                 type="button"
                 onClick={closeDialog}
-                className="rounded-md bg-neutral-900 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200"
+                className={cn(
+                  "rounded-md bg-neutral-900 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200",
+                  focusRing,
+                )}
               >
                 Close
               </button>
@@ -104,7 +113,11 @@ export function DeleteClientButton({
             </p>
 
             {message && (
-              <p className="mt-3 text-sm text-red-600 dark:text-red-400">
+              <p
+                role="alert"
+                aria-live="polite"
+                className="mt-3 text-sm text-red-600 dark:text-red-400"
+              >
                 {message}
               </p>
             )}
@@ -114,7 +127,10 @@ export function DeleteClientButton({
                 type="button"
                 onClick={closeDialog}
                 disabled={phase === "deleting"}
-                className="rounded-md px-3.5 py-2 text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-400 dark:hover:text-neutral-100"
+                className={cn(
+                  "rounded-md px-3.5 py-2 text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-400 dark:hover:text-neutral-100",
+                  focusRing,
+                )}
               >
                 Cancel
               </button>
@@ -122,7 +138,11 @@ export function DeleteClientButton({
                 type="button"
                 onClick={handleConfirm}
                 disabled={phase === "deleting"}
-                className="rounded-md bg-red-600 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50"
+                aria-busy={phase === "deleting"}
+                className={cn(
+                  "rounded-md bg-red-600 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50",
+                  focusRing,
+                )}
               >
                 {phase === "deleting" ? "Deleting…" : "Delete client"}
               </button>

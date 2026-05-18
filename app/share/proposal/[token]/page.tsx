@@ -1,16 +1,19 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
+import { CheckCircle2, MessageSquare } from "lucide-react";
 import { sql } from "@/lib/db";
+import { getClientIp } from "@/lib/rate-limit";
+import { logSecurityEvent } from "@/lib/security-log";
+import { currencyFmt, dateTimeFmt, splitGst } from "@/lib/format";
 import { ProposalActions } from "./proposal-actions";
 
-const TOKEN_RE = /^[0-9a-f]{64}$/;
+// Public portal — always fetch fresh and never let a CDN cache token-keyed
+// content. The Cache-Control header is also enforced from middleware.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
-const eventFmt = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
-});
+const TOKEN_RE = /^[0-9a-f]{64}$/;
 
 type LineItemRow = {
   description: string;
@@ -31,7 +34,16 @@ type PublicProposal = {
 type EventRow = { description: string; created_at: string };
 
 async function getPublicProposal(token: string) {
-  if (!TOKEN_RE.test(token)) return null;
+  if (!TOKEN_RE.test(token)) {
+    logSecurityEvent({
+      event: "invalid_share_token",
+      route: "share/proposal",
+      ip: getClientIp(headers()),
+      outcome: "denied",
+      reason: "token_format",
+    });
+    return null;
+  }
 
   // Query by share_token only — no user or client IDs in the WHERE clause.
   // We never return user_id, client_id, client_email, or any internal IDs.
@@ -79,27 +91,25 @@ export default async function ShareProposalPage({
   const proposal = await getPublicProposal(params.token);
   if (!proposal) notFound();
 
-  const total = Number(proposal.total_amount);
-  const subtotal = total / 1.1;
-  const gst = total - subtotal;
+  const { total, subtotal, gst } = splitGst(Number(proposal.total_amount));
   const depositPct = Number(proposal.deposit_percentage);
   const deposit = total * (depositPct / 100);
 
   const isActionable = proposal.status === "sent";
 
   return (
-    <main className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+    <main className="min-h-screen bg-background">
       <div className="mx-auto max-w-2xl px-6 py-16">
         {/* Header */}
-        <div className="mb-10 border-b border-neutral-200 pb-8 dark:border-neutral-800">
-          <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400 dark:text-neutral-600">
+        <div className="mb-10 border-b border-border pb-8">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Proposal for {proposal.client_name}
           </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground">
             {proposal.title}
           </h1>
           {proposal.description && (
-            <p className="mt-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
               {proposal.description}
             </p>
           )}
@@ -107,16 +117,16 @@ export default async function ShareProposalPage({
 
         {/* Line items */}
         <section>
-          <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-neutral-400 dark:text-neutral-600">
+          <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Scope of work
           </h2>
 
-          <div className="overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-800">
-            <div className="grid grid-cols-[1fr_4rem_7rem_6rem] gap-3 border-b border-neutral-200 bg-neutral-100 px-4 py-2 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="overflow-hidden rounded-lg border border-border">
+            <div className="grid grid-cols-[1fr_4rem_7rem_6rem] gap-3 border-b border-border bg-muted px-4 py-2">
               {["Description", "Qty", "Unit price", "Total"].map((h) => (
                 <span
                   key={h}
-                  className="text-xs font-medium text-neutral-500 dark:text-neutral-400"
+                  className="text-xs font-medium text-muted-foreground"
                 >
                   {h}
                 </span>
@@ -129,19 +139,17 @@ export default async function ShareProposalPage({
               return (
                 <div
                   key={i}
-                  className="grid grid-cols-[1fr_4rem_7rem_6rem] gap-3 border-b border-neutral-100 px-4 py-3 last:border-0 dark:border-neutral-900"
+                  className="grid grid-cols-[1fr_4rem_7rem_6rem] gap-3 border-b border-border px-4 py-3 last:border-0"
                 >
-                  <span className="text-sm text-neutral-900 dark:text-neutral-100">
+                  <span className="text-sm text-foreground">
                     {item.description}
                   </span>
-                  <span className="text-sm text-neutral-500 dark:text-neutral-400">
-                    {qty}
+                  <span className="text-sm text-muted-foreground">{qty}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {currencyFmt.format(price)}
                   </span>
-                  <span className="text-sm text-neutral-500 dark:text-neutral-400">
-                    ${price.toFixed(2)}
-                  </span>
-                  <span className="text-right text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                    ${(qty * price).toFixed(2)}
+                  <span className="text-right text-sm font-medium text-foreground">
+                    {currencyFmt.format(qty * price)}
                   </span>
                 </div>
               );
@@ -152,36 +160,30 @@ export default async function ShareProposalPage({
         {/* Totals */}
         <section className="mt-6 flex flex-col items-end gap-2 text-sm">
           <div className="flex w-56 justify-between">
-            <span className="text-neutral-500 dark:text-neutral-400">
-              Subtotal
-            </span>
-            <span className="font-medium text-neutral-900 dark:text-neutral-100">
-              ${subtotal.toFixed(2)}
+            <span className="text-muted-foreground">Subtotal</span>
+            <span className="font-medium text-foreground">
+              {currencyFmt.format(subtotal)}
             </span>
           </div>
           <div className="flex w-56 justify-between">
-            <span className="text-neutral-500 dark:text-neutral-400">
-              GST (10%)
-            </span>
-            <span className="font-medium text-neutral-900 dark:text-neutral-100">
-              ${gst.toFixed(2)}
+            <span className="text-muted-foreground">GST (10%)</span>
+            <span className="font-medium text-foreground">
+              {currencyFmt.format(gst)}
             </span>
           </div>
-          <div className="flex w-56 justify-between border-t border-neutral-200 pt-2 dark:border-neutral-800">
-            <span className="font-semibold text-neutral-900 dark:text-neutral-100">
-              Total
-            </span>
-            <span className="font-semibold text-neutral-900 dark:text-neutral-100">
-              ${total.toFixed(2)}
+          <div className="flex w-56 justify-between border-t border-border pt-2">
+            <span className="font-semibold text-foreground">Total</span>
+            <span className="font-semibold text-foreground">
+              {currencyFmt.format(total)}
             </span>
           </div>
           {depositPct > 0 && (
             <div className="flex w-56 justify-between pt-1">
-              <span className="text-neutral-500 dark:text-neutral-400">
+              <span className="text-muted-foreground">
                 Deposit ({depositPct}%)
               </span>
-              <span className="font-medium text-neutral-900 dark:text-neutral-100">
-                ${deposit.toFixed(2)}
+              <span className="font-medium text-foreground">
+                {currencyFmt.format(deposit)}
               </span>
             </div>
           )}
@@ -189,11 +191,11 @@ export default async function ShareProposalPage({
 
         {/* Client actions */}
         {isActionable && (
-          <section className="mt-12 border-t border-neutral-200 pt-8 dark:border-neutral-800">
-            <h2 className="mb-2 text-base font-semibold text-neutral-900 dark:text-neutral-100">
+          <section className="mt-12 border-t border-border pt-8">
+            <h2 className="mb-2 text-base font-semibold text-foreground">
               Your response
             </h2>
-            <p className="mb-6 text-sm text-neutral-500 dark:text-neutral-400">
+            <p className="mb-6 text-sm text-muted-foreground">
               Review the proposal above and let us know how you&apos;d like to
               proceed.
             </p>
@@ -208,24 +210,41 @@ export default async function ShareProposalPage({
         {!isActionable && (
           <section className="mt-12">
             {proposal.status === "approved" && (
-              <div className="rounded-lg border border-green-200 bg-green-50 p-6 dark:border-green-900 dark:bg-green-950">
-                <p className="font-semibold text-green-800 dark:text-green-200">
-                  Proposal approved
-                </p>
-                <p className="mt-1 text-sm text-green-700 dark:text-green-300">
-                  This proposal has been approved. The team is getting started.
-                </p>
+              <div className="flex items-start gap-3 rounded-lg border border-border bg-card p-6 shadow-sm">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10">
+                  <CheckCircle2
+                    aria-hidden
+                    className="h-5 w-5 text-primary"
+                  />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">
+                    Proposal approved
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    This proposal has been approved. The team is getting
+                    started.
+                  </p>
+                </div>
               </div>
             )}
             {proposal.status === "changes_requested" && (
-              <div className="rounded-lg border border-amber-200 bg-amber-50 p-6 dark:border-amber-900 dark:bg-amber-950">
-                <p className="font-semibold text-amber-800 dark:text-amber-200">
-                  Changes requested
-                </p>
-                <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
-                  Your change request has been received. The team will be in
-                  touch with an updated proposal.
-                </p>
+              <div className="flex items-start gap-3 rounded-lg border border-border bg-card p-6 shadow-sm">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted">
+                  <MessageSquare
+                    aria-hidden
+                    className="h-5 w-5 text-muted-foreground"
+                  />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">
+                    Changes requested
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Your change request has been received. The team will be in
+                    touch with an updated proposal.
+                  </p>
+                </div>
               </div>
             )}
           </section>
@@ -233,17 +252,17 @@ export default async function ShareProposalPage({
 
         {/* Event log */}
         {proposal.events.length > 0 && (
-          <section className="mt-12 border-t border-neutral-200 pt-8 dark:border-neutral-800">
-            <h2 className="mb-5 text-xs font-semibold uppercase tracking-widest text-neutral-400 dark:text-neutral-600">
+          <section className="mt-12 border-t border-border pt-8">
+            <h2 className="mb-5 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               Activity
             </h2>
             <ol className="space-y-4">
               {proposal.events.map((ev, i) => (
                 <li key={i} className="flex items-baseline gap-4">
-                  <span className="w-40 shrink-0 text-xs text-neutral-400 dark:text-neutral-600">
-                    {eventFmt.format(new Date(ev.created_at))}
+                  <span className="w-40 shrink-0 text-xs text-muted-foreground">
+                    {dateTimeFmt.format(new Date(ev.created_at))}
                   </span>
-                  <span className="whitespace-pre-wrap text-sm text-neutral-700 dark:text-neutral-300">
+                  <span className="whitespace-pre-wrap text-sm text-foreground">
                     {ev.description}
                   </span>
                 </li>
@@ -252,9 +271,15 @@ export default async function ShareProposalPage({
           </section>
         )}
 
-        <p className="mt-16 text-center text-xs text-neutral-300 dark:text-neutral-700">
-          Powered by whereismyapp
-        </p>
+        <div className="mt-16 flex flex-col items-center gap-1 text-xs text-muted-foreground">
+          <p>Powered by whereismyapp</p>
+          <Link
+            href="/privacy"
+            className="rounded underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            Privacy Policy
+          </Link>
+        </div>
       </div>
     </main>
   );

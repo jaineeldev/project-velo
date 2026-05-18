@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import { cn, focusRing } from "@/lib/utils";
 import { createClient } from "./actions";
 import { CLIENT_INDUSTRIES } from "@/lib/validation";
 
@@ -42,7 +43,10 @@ export function NewClientButton() {
       <button
         type="button"
         onClick={open}
-        className="rounded-md bg-neutral-900 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200"
+        className={cn(
+          "rounded-md bg-neutral-900 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200",
+          focusRing,
+        )}
       >
         New client
       </button>
@@ -173,21 +177,34 @@ export function NewClientButton() {
           </div>
 
           {error && (
-            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <p
+              role="alert"
+              aria-live="polite"
+              className="text-sm text-red-600 dark:text-red-400"
+            >
+              {error}
+            </p>
           )}
 
           <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={close}
-              className="rounded-md px-3.5 py-2 text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+              className={cn(
+                "rounded-md px-3.5 py-2 text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100",
+                focusRing,
+              )}
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="rounded-md bg-neutral-900 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200"
+              aria-busy={isPending}
+              className={cn(
+                "rounded-md bg-neutral-900 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200",
+                focusRing,
+              )}
             >
               {isPending ? "Saving…" : "Save client"}
             </button>

@@ -10,54 +10,35 @@ import {
   formatAbn,
   formatAddressLine,
 } from "@/lib/user-profile";
-import { formatStatus } from "@/lib/format";
-
-const dateFmt = new Intl.DateTimeFormat("en-US", {
-  month: "long",
-  day: "numeric",
-  year: "numeric",
-});
-
-const eventFmt = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
-});
-
-const statusStyles: Record<string, string> = {
-  draft:
-    "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400",
-  sent: "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400",
-  pending:
-    "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400",
-  approved:
-    "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400",
-  changes_requested:
-    "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400",
-  accepted:
-    "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400",
-  declined: "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-400",
-};
+import {
+  currencyFmt,
+  dateLongFmt,
+  dateTimeFmt,
+  splitGst,
+} from "@/lib/format";
+import { cn, focusRing } from "@/lib/utils";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 export default async function ProposalDetailPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const proposal = await getProposal(params.id);
+  // Resolve user first (cached for the request), then fetch the proposal and
+  // the agency profile in parallel — the "From" block doesn't depend on
+  // proposal data, so there's no reason for it to wait.
+  const user = await getOrCreateUser();
+  const [proposal, profile] = await Promise.all([
+    getProposal(params.id),
+    getUserProfile(user.id),
+  ]);
   if (!proposal) notFound();
 
-  const user = await getOrCreateUser();
-  const profile = await getUserProfile(user.id);
   const agencyName = profile.business_name ?? user.name ?? user.email;
   const agencyAddress = formatAddressLine(profile);
   const agencyAbn = formatAbn(profile.abn);
 
-  const total = Number(proposal.total_amount);
-  const subtotal = total / 1.1;
-  const gst = total - subtotal;
+  const { total, subtotal, gst } = splitGst(Number(proposal.total_amount));
   const depositPct = Number(proposal.deposit_percentage);
   const deposit = total * (depositPct / 100);
 
@@ -65,32 +46,34 @@ export default async function ProposalDetailPage({
     <div className="px-10 py-12">
       <Link
         href="/dashboard/proposals"
-        className="inline-flex items-center gap-1 text-sm text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+        className={cn(
+          "inline-flex items-center gap-1 rounded text-sm text-muted-foreground transition-colors hover:text-foreground",
+          focusRing,
+        )}
       >
         ← Proposals
       </Link>
 
       <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             {proposal.title}
           </h1>
-          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+          <p className="mt-1 text-sm text-muted-foreground">
             {proposal.client_name}
             {proposal.client_email ? ` · ${proposal.client_email}` : ""}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-3">
-          <span
-            className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[proposal.status] ?? statusStyles.draft}`}
-          >
-            {formatStatus(proposal.status)}
-          </span>
+          <StatusBadge status={proposal.status} />
           {(proposal.status === "draft" ||
             proposal.status === "changes_requested") && (
             <Link
               href={`/dashboard/proposals/${params.id}/edit`}
-              className="rounded-md border border-neutral-200 px-3.5 py-1.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900"
+              className={cn(
+                "rounded-md border border-border px-3.5 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-accent",
+                focusRing,
+              )}
             >
               Edit proposal
             </Link>
@@ -101,7 +84,10 @@ export default async function ProposalDetailPage({
           )}
           <a
             href={`/api/proposals/${params.id}/pdf`}
-            className="rounded-md border border-neutral-200 px-3.5 py-1.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900"
+            className={cn(
+              "rounded-md border border-border px-3.5 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-accent",
+              focusRing,
+            )}
           >
             Download PDF
           </a>
@@ -109,14 +95,14 @@ export default async function ProposalDetailPage({
       </div>
 
       {/* Agency "From" block */}
-      <section className="mt-6 rounded-lg border border-neutral-200 p-5 dark:border-neutral-800">
-        <p className="text-xs uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+      <section className="mt-6 rounded-lg border border-border bg-card p-5">
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">
           From
         </p>
-        <p className="mt-1 text-sm font-medium text-neutral-900 dark:text-neutral-100">
+        <p className="mt-1 text-sm font-medium text-foreground">
           {agencyName}
         </p>
-        <div className="mt-1 flex flex-wrap gap-x-4 text-sm text-neutral-500 dark:text-neutral-400">
+        <div className="mt-1 flex flex-wrap gap-x-4 text-sm text-muted-foreground">
           {agencyAbn && <span>ABN {agencyAbn}</span>}
           {agencyAddress && <span>{agencyAddress}</span>}
           {profile.phone && <span>{profile.phone}</span>}
@@ -125,22 +111,22 @@ export default async function ProposalDetailPage({
       </section>
 
       {proposal.description && (
-        <p className="mt-6 max-w-2xl text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+        <p className="mt-6 max-w-2xl text-sm leading-relaxed text-muted-foreground">
           {proposal.description}
         </p>
       )}
 
       {proposal.status === "changes_requested" && proposal.latestChangeRequest && (
-        <section className="mt-8 rounded-lg border border-amber-200 bg-amber-50 p-5 dark:border-amber-900 dark:bg-amber-950">
+        <section className="mt-8 rounded-lg border border-warning/30 bg-warning/10 p-5">
           <div className="flex items-baseline justify-between gap-4">
-            <h2 className="text-sm font-semibold text-amber-900 dark:text-amber-200">
+            <h2 className="text-sm font-semibold text-warning">
               Client requested changes
             </h2>
-            <span className="text-xs text-amber-700/70 dark:text-amber-300/70">
-              {eventFmt.format(new Date(proposal.latestChangeRequest.created_at))}
+            <span className="text-xs text-muted-foreground">
+              {dateTimeFmt.format(new Date(proposal.latestChangeRequest.created_at))}
             </span>
           </div>
-          <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-amber-900 dark:text-amber-100">
+          <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
             {proposal.latestChangeRequest.message}
           </p>
         </section>
@@ -148,11 +134,11 @@ export default async function ProposalDetailPage({
 
       {/* Line items */}
       <div className="mt-10">
-        <div className="grid grid-cols-[1fr_5rem_8rem_7rem] gap-3 border-b border-neutral-200 pb-2 dark:border-neutral-800">
+        <div className="grid grid-cols-[1fr_5rem_8rem_7rem] gap-3 border-b border-border pb-2">
           {["Description", "Qty", "Unit price", "Total"].map((h) => (
             <span
               key={h}
-              className="text-xs font-medium text-neutral-500 dark:text-neutral-400"
+              className="text-xs font-medium text-muted-foreground"
             >
               {h}
             </span>
@@ -165,19 +151,17 @@ export default async function ProposalDetailPage({
           return (
             <div
               key={i}
-              className="grid grid-cols-[1fr_5rem_8rem_7rem] gap-3 border-b border-neutral-100 py-3 dark:border-neutral-900"
+              className="grid grid-cols-[1fr_5rem_8rem_7rem] gap-3 border-b border-border py-3"
             >
-              <span className="text-sm text-neutral-900 dark:text-neutral-100">
+              <span className="text-sm text-foreground">
                 {item.description}
               </span>
-              <span className="text-sm text-neutral-500 dark:text-neutral-400">
-                {qty}
+              <span className="text-sm text-muted-foreground">{qty}</span>
+              <span className="text-sm text-muted-foreground">
+                {currencyFmt.format(price)}
               </span>
-              <span className="text-sm text-neutral-500 dark:text-neutral-400">
-                ${price.toFixed(2)}
-              </span>
-              <span className="text-right text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                ${(qty * price).toFixed(2)}
+              <span className="text-right text-sm font-medium text-foreground">
+                {currencyFmt.format(qty * price)}
               </span>
             </div>
           );
@@ -187,53 +171,47 @@ export default async function ProposalDetailPage({
       {/* Totals */}
       <div className="mt-6 flex flex-col items-end gap-2 text-sm">
         <div className="flex w-64 justify-between gap-8">
-          <span className="text-neutral-500 dark:text-neutral-400">
-            Subtotal
-          </span>
-          <span className="font-medium text-neutral-900 dark:text-neutral-100">
-            ${subtotal.toFixed(2)}
+          <span className="text-muted-foreground">Subtotal</span>
+          <span className="font-medium text-foreground">
+            {currencyFmt.format(subtotal)}
           </span>
         </div>
         <div className="flex w-64 justify-between gap-8">
-          <span className="text-neutral-500 dark:text-neutral-400">
-            GST (10%)
-          </span>
-          <span className="font-medium text-neutral-900 dark:text-neutral-100">
-            ${gst.toFixed(2)}
+          <span className="text-muted-foreground">GST (10%)</span>
+          <span className="font-medium text-foreground">
+            {currencyFmt.format(gst)}
           </span>
         </div>
-        <div className="flex w-64 justify-between gap-8 border-t border-neutral-200 pt-2 dark:border-neutral-800">
-          <span className="font-semibold text-neutral-900 dark:text-neutral-100">
-            Total
-          </span>
-          <span className="font-semibold text-neutral-900 dark:text-neutral-100">
-            ${total.toFixed(2)}
+        <div className="flex w-64 justify-between gap-8 border-t border-border pt-2">
+          <span className="font-semibold text-foreground">Total</span>
+          <span className="font-semibold text-foreground">
+            {currencyFmt.format(total)}
           </span>
         </div>
         {depositPct > 0 && (
           <div className="flex w-64 justify-between gap-8 pt-1">
-            <span className="text-neutral-500 dark:text-neutral-400">
+            <span className="text-muted-foreground">
               Deposit ({depositPct}%)
             </span>
-            <span className="font-medium text-neutral-900 dark:text-neutral-100">
-              ${deposit.toFixed(2)}
+            <span className="font-medium text-foreground">
+              {currencyFmt.format(deposit)}
             </span>
           </div>
         )}
       </div>
 
       {/* Send / share-link section */}
-      <div className="mt-10 border-t border-neutral-200 pt-6 dark:border-neutral-800">
+      <div className="mt-10 border-t border-border pt-6">
         {proposal.status === "draft" ? (
           <div className="flex flex-wrap items-center gap-4">
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+            <p className="text-sm text-muted-foreground">
               Ready to share with your client?
             </p>
             <SendProposalButton proposalId={params.id} />
           </div>
         ) : proposal.share_token ? (
           <div>
-            <p className="mb-3 text-sm font-medium text-neutral-600 dark:text-neutral-400">
+            <p className="mb-3 text-sm font-medium text-foreground">
               Client link
             </p>
             <ShareLinkDisplay proposal={{ share_token: proposal.share_token }} />
@@ -243,17 +221,17 @@ export default async function ProposalDetailPage({
 
       {/* Event log */}
       {proposal.events.length > 0 && (
-        <div className="mt-10 border-t border-neutral-200 pt-8 dark:border-neutral-800">
-          <h2 className="mb-5 text-sm font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+        <div className="mt-10 border-t border-border pt-8">
+          <h2 className="mb-5 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Activity
           </h2>
           <ol className="space-y-4">
             {proposal.events.map((ev, i) => (
               <li key={i} className="flex items-baseline gap-4">
-                <span className="w-40 shrink-0 text-xs text-neutral-400 dark:text-neutral-600">
-                  {eventFmt.format(new Date(ev.created_at))}
+                <span className="w-40 shrink-0 text-xs text-muted-foreground">
+                  {dateTimeFmt.format(new Date(ev.created_at))}
                 </span>
-                <span className="whitespace-pre-wrap text-sm text-neutral-700 dark:text-neutral-300">
+                <span className="whitespace-pre-wrap text-sm text-foreground">
                   {ev.description}
                 </span>
               </li>
@@ -262,8 +240,8 @@ export default async function ProposalDetailPage({
         </div>
       )}
 
-      <p className="mt-10 text-xs text-neutral-400 dark:text-neutral-600">
-        Created {dateFmt.format(new Date(proposal.created_at))}
+      <p className="mt-10 text-xs text-muted-foreground">
+        Created {dateLongFmt.format(new Date(proposal.created_at))}
       </p>
     </div>
   );

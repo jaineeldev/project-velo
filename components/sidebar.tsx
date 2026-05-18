@@ -2,55 +2,162 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { SignOutButton } from "@clerk/nextjs";
+import { SignOutButton, useUser } from "@clerk/nextjs";
+import {
+  LayoutDashboard,
+  FileText,
+  FolderKanban,
+  Users,
+  Receipt,
+  Settings,
+  LogOut,
+  type LucideIcon,
+} from "lucide-react";
+import { cn, focusRing } from "@/lib/utils";
 
-const links = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/dashboard/proposals", label: "Proposals" },
-  { href: "/dashboard/projects", label: "Projects" },
-  { href: "/dashboard/clients", label: "Clients" },
-  { href: "/dashboard/invoices", label: "Invoices" },
-  { href: "/dashboard/settings", label: "Settings" },
+type NavItem = { href: string; label: string; icon: LucideIcon };
+
+const navItems: NavItem[] = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard/proposals", label: "Proposals", icon: FileText },
+  { href: "/dashboard/projects", label: "Projects", icon: FolderKanban },
+  { href: "/dashboard/clients", label: "Clients", icon: Users },
+  { href: "/dashboard/invoices", label: "Invoices", icon: Receipt },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
-export function Sidebar() {
+// Dashboard is the only route that wants strict equality — every other entry
+// should stay active on its detail pages (e.g. /dashboard/proposals/abc).
+function isActive(pathname: string, href: string) {
+  if (href === "/dashboard") return pathname === "/dashboard";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+// Shared inner content. Rendered inside the desktop `<aside>` AND inside the
+// mobile Sheet, so brand, nav, and user-card logic isn't duplicated. The
+// optional `onNavigate` callback lets the mobile Sheet close itself when the
+// user taps a nav link or sign-out.
+export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-screen w-60 flex-col border-r border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950">
-      <div className="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
-        <span className="text-sm font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+    <div className="flex h-full flex-col">
+      <div className="flex h-14 items-center gap-2.5 border-b border-border px-5">
+        <span
+          aria-hidden
+          className="h-2 w-2 rounded-full bg-primary shadow-[0_0_0_3px_hsl(var(--primary)/0.18)]"
+        />
+        <span className="text-sm font-semibold tracking-tight text-foreground">
           whereismyapp
         </span>
       </div>
 
       <nav className="flex-1 space-y-0.5 p-3">
-        {links.map((link) => {
-          const active = pathname === link.href;
+        {navItems.map(({ href, label, icon: Icon }) => {
+          const active = isActive(pathname, href);
           return (
             <Link
-              key={link.href}
-              href={link.href}
-              className={
-                "block rounded-md px-3 py-1.5 text-sm transition-colors " +
-                (active
-                  ? "bg-neutral-100 text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100"
-                  : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100")
-              }
+              key={href}
+              href={href}
+              onClick={onNavigate}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "group relative flex items-center gap-3 rounded-md py-2 pl-4 pr-3 text-sm font-medium transition-colors",
+                active
+                  ? "bg-primary/15 text-foreground"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                focusRing,
+              )}
             >
-              {link.label}
+              <span
+                aria-hidden
+                className={cn(
+                  "absolute left-0 top-1 bottom-1 w-[3px] rounded-r-full transition-colors",
+                  active ? "bg-primary" : "bg-transparent",
+                )}
+              />
+              <Icon
+                aria-hidden
+                className={cn(
+                  "h-4 w-4 shrink-0 transition-colors",
+                  active
+                    ? "text-primary"
+                    : "text-muted-foreground group-hover:text-foreground",
+                )}
+              />
+              {label}
             </Link>
           );
         })}
       </nav>
 
-      <div className="border-t border-neutral-200 p-3 dark:border-neutral-800">
-        <SignOutButton>
-          <button className="w-full rounded-md px-3 py-1.5 text-left text-sm text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100">
-            Sign out
-          </button>
-        </SignOutButton>
+      <UserCard onSignOut={onNavigate} />
+    </div>
+  );
+}
+
+function UserCard({ onSignOut }: { onSignOut?: () => void }) {
+  const { user, isLoaded } = useUser();
+
+  const name =
+    [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "Account";
+  const email = user?.primaryEmailAddress?.emailAddress ?? "";
+  const initials =
+    [user?.firstName?.[0], user?.lastName?.[0]]
+      .filter(Boolean)
+      .join("")
+      .toUpperCase() ||
+    email.slice(0, 1).toUpperCase() ||
+    "·";
+
+  return (
+    <div className="border-t border-border p-3">
+      <div className="flex items-center gap-3 rounded-md px-2 py-2">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+          {isLoaded ? initials : ""}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-sm font-medium text-foreground">
+            {isLoaded ? name : " "}
+          </div>
+          <div className="truncate text-xs text-muted-foreground">
+            {isLoaded ? email : " "}
+          </div>
+        </div>
       </div>
+
+      <SignOutButton>
+        <button
+          type="button"
+          onClick={onSignOut}
+          aria-label="Sign out"
+          className={cn(
+            "mt-1 flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
+            focusRing,
+          )}
+        >
+          <LogOut aria-hidden className="h-4 w-4 shrink-0" />
+          Sign out
+        </button>
+      </SignOutButton>
+    </div>
+  );
+}
+
+// Desktop sidebar — fixed-width left rail. The mobile Sheet renders
+// SidebarContent directly; this wrapper is the desktop chrome. Default
+// classes include `flex` so the component is visible on its own; callers
+// like the dashboard layout pass `hidden md:flex` to gate it behind a
+// breakpoint (tailwind-merge dedupes the display utility).
+export function Sidebar({ className }: { className?: string }) {
+  return (
+    <aside
+      className={cn(
+        "flex h-screen w-60 flex-col border-r border-border bg-card",
+        className,
+      )}
+    >
+      <SidebarContent />
     </aside>
   );
 }

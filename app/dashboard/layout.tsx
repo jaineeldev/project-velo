@@ -15,7 +15,11 @@ export default async function DashboardLayout({
   if (!(await hasCompletedOnboarding(user.id))) redirect("/onboarding");
 
   return (
-    <div className="flex min-h-screen">
+    // h-screen + overflow-hidden constrains the layout to exactly the viewport
+    // so the sidebar stays put while only <main> scrolls internally. With
+    // min-h-screen, long pages (e.g. settings) would push the layout taller
+    // and the sidebar would slide off the top with the page scroll.
+    <div className="flex h-screen overflow-hidden">
       <Sidebar className="hidden md:flex" />
       <main className="flex min-w-0 flex-1 flex-col overflow-y-auto">
         <MobileNav className="md:hidden" />

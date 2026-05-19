@@ -10,6 +10,7 @@ import {
   Users,
   Receipt,
   Settings,
+  LifeBuoy,
   LogOut,
   type LucideIcon,
 } from "lucide-react";
@@ -24,6 +25,7 @@ const navItems: NavItem[] = [
   { href: "/dashboard/clients", label: "Clients", icon: Users },
   { href: "/dashboard/invoices", label: "Invoices", icon: Receipt },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
+  { href: "/dashboard/support", label: "Help", icon: LifeBuoy },
 ];
 
 // Dashboard is the only route that wants strict equality — every other entry
@@ -52,7 +54,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         </span>
       </div>
 
-      <nav className="flex-1 space-y-0.5 p-3">
+      <nav className="flex-1 space-y-0.5 overflow-y-auto p-3">
         {navItems.map(({ href, label, icon: Icon }) => {
           const active = isActive(pathname, href);
           return (
@@ -111,7 +113,7 @@ function UserCard({ onSignOut }: { onSignOut?: () => void }) {
     "·";
 
   return (
-    <div className="border-t border-border p-3">
+    <div className="mt-auto border-t border-border p-3">
       <div className="flex items-center gap-3 rounded-md px-2 py-2">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
           {isLoaded ? initials : ""}
@@ -153,7 +155,10 @@ export function Sidebar({ className }: { className?: string }) {
   return (
     <aside
       className={cn(
-        "flex h-screen w-60 flex-col border-r border-border bg-card",
+        // h-full inherits the viewport-constrained height from the dashboard
+        // layout container (h-screen + overflow-hidden), keeping the sidebar
+        // pinned while <main> scrolls.
+        "flex h-full w-60 flex-col border-r border-border bg-card",
         className,
       )}
     >

@@ -619,9 +619,7 @@ export default function PrivacyPage() {
             <address className="not-italic">
               Jaineel Khatri
               <br />
-              20 Jessielea Street
-              <br />
-              Wynnum West, Queensland 4178
+              Brisbane, Queensland
               <br />
               Australia
             </address>

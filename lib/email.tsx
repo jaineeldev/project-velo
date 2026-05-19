@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 
 const FROM_ADDRESS = "onboarding@resend.dev";
+const SUPPORT_INBOX = "jaineelk.dev@gmail.com";
 
 let _resend: Resend | null = null;
 function getResend(): Resend | null {
@@ -81,6 +82,87 @@ function logEmailOutcome(proposalId: string, outcome: "sent" | "failed") {
       ts: new Date().toISOString(),
       event: "proposal_email",
       proposal_id: proposalId,
+      outcome,
+    }),
+  );
+}
+
+export type SendSupportEmailInput = {
+  type: "bug" | "feedback" | "help";
+  subject: string | null;
+  message: string;
+  userName: string | null;
+  userEmail: string;
+  userId: string;
+};
+
+export type SendSupportEmailResult =
+  | { ok: true; id: string }
+  | { ok: false; reason: string };
+
+const supportTypeLabel: Record<SendSupportEmailInput["type"], string> = {
+  bug: "Bug report",
+  feedback: "Feedback",
+  help: "Help request",
+};
+
+// Sends a support message from an authenticated user to the support inbox.
+// `replyTo` is set to the user's address so we can hit reply in Gmail and
+// answer them directly without copy-pasting.
+export async function sendSupportEmail(
+  input: SendSupportEmailInput,
+): Promise<SendSupportEmailResult> {
+  const resend = getResend();
+  if (!resend) {
+    return { ok: false, reason: "RESEND_API_KEY is not configured" };
+  }
+
+  const typeText = supportTypeLabel[input.type];
+  const subjectLine = input.subject?.trim() || typeText;
+  const fullSubject = `[Velo support] ${subjectLine}`;
+  const senderLine = input.userName
+    ? `${input.userName} <${input.userEmail}>`
+    : input.userEmail;
+
+  const text = [
+    `From: ${senderLine}`,
+    `User ID: ${input.userId}`,
+    `Type: ${typeText}`,
+    "",
+    "Message:",
+    input.message,
+  ].join("\n");
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_ADDRESS,
+      to: SUPPORT_INBOX,
+      replyTo: input.userEmail,
+      subject: fullSubject,
+      text,
+    });
+
+    if (error) {
+      logSupportOutcome(input.userId, "failed");
+      return { ok: false, reason: error.message };
+    }
+    logSupportOutcome(input.userId, "sent");
+    return { ok: true, id: data?.id ?? "" };
+  } catch (err) {
+    logSupportOutcome(input.userId, "failed");
+    return {
+      ok: false,
+      reason: err instanceof Error ? err.message : "Unknown email error",
+    };
+  }
+}
+
+function logSupportOutcome(userId: string, outcome: "sent" | "failed") {
+  console.log(
+    JSON.stringify({
+      ts: new Date().toISOString(),
+      event: "support_email",
+      user_id: userId,
       outcome,
     }),
   );

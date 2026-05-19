@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   AnimatePresence,
   motion,
@@ -17,6 +17,7 @@ import {
   FileDown,
   FileText,
   FolderKanban,
+  Globe,
   Package,
   Receipt,
   Send,
@@ -61,17 +62,47 @@ const lightTheme = {
 // Single shared easing for the whole page so motion feels coherent.
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 
+// Total preloader lifetime in ms. Beats: dot scales in (0–0.5s), wordmark
+// fades in (0.35–0.75s), shimmer sweeps across (0.8–1.3s), underline draws
+// (1.1–1.7s), brief hold, then AnimatePresence fades the overlay out as the
+// hero cascade rises in.
+const PRELOADER_HOLD_MS = 2100;
+
 export default function MarketingHomePage() {
+  const prefersReduced = useReducedMotion();
+  const [showPreloader, setShowPreloader] = useState(true);
+  const [appReady, setAppReady] = useState(false);
+
+  useEffect(() => {
+    // Reduced-motion users skip the splash entirely.
+    if (prefersReduced) {
+      setShowPreloader(false);
+      setAppReady(true);
+      return;
+    }
+    const t = window.setTimeout(() => {
+      // Flip both at the same time so the hero cascade rises in as the splash
+      // fades out — one continuous handoff rather than sequential beats.
+      setAppReady(true);
+      setShowPreloader(false);
+    }, PRELOADER_HOLD_MS);
+    return () => window.clearTimeout(t);
+  }, [prefersReduced]);
+
   return (
     <div
       style={lightTheme}
       className="min-h-screen bg-background text-foreground"
     >
+      <AnimatePresence>
+        {showPreloader ? <Preloader key="preloader" /> : null}
+      </AnimatePresence>
+      <GeoNotice ready={appReady} />
       <ScrollProgressBar />
       <BetaBanner />
       <MarketingNav />
       <main>
-        <Hero />
+        <Hero ready={appReady} />
         <HowItWorks />
         <Features />
         <Pricing />
@@ -80,6 +111,82 @@ export default function MarketingHomePage() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+// Brief splash with the wordmark drawing itself in. Sized large so it reads
+// as a brand stamp, not a chip: oversized dot with a continuously-pulsing
+// halo, "Velo" fades in beside it, a primary-tinted shimmer sweeps across the
+// letters, and a blue underline draws beneath — echoing the hero's "handled."
+// underline so the entrance previews the page's vocabulary.
+function Preloader() {
+  return (
+    <motion.div
+      role="status"
+      aria-label="Loading Velo"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-background"
+      initial={{ opacity: 1 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.4, ease: EASE_OUT }}
+    >
+      <div className="flex items-center gap-4">
+        <motion.span
+          aria-hidden
+          className="block h-5 w-5 rounded-full bg-primary"
+          initial={{ scale: 0 }}
+          animate={{
+            scale: 1,
+            boxShadow: [
+              "0 0 0 0 hsl(var(--primary) / 0.4)",
+              "0 0 0 18px hsl(var(--primary) / 0)",
+            ],
+          }}
+          transition={{
+            scale: { duration: 0.5, ease: EASE_OUT },
+            boxShadow: {
+              duration: 1.4,
+              repeat: Infinity,
+              ease: "easeOut",
+              delay: 0.5,
+            },
+          }}
+        />
+        <span className="relative inline-block">
+          <motion.span
+            // bg-clip-text + text-transparent renders the linear-gradient
+            // through the glyph shape. Animating backgroundPosition sweeps a
+            // bright primary band across the letters once.
+            className="block bg-clip-text text-4xl font-semibold tracking-tight text-transparent sm:text-5xl"
+            style={{
+              backgroundImage:
+                "linear-gradient(110deg, hsl(var(--foreground)) 35%, hsl(var(--primary)) 50%, hsl(var(--foreground)) 65%)",
+              backgroundSize: "220% 100%",
+            }}
+            initial={{ opacity: 0, x: -8, backgroundPosition: "100% 0%" }}
+            animate={{ opacity: 1, x: 0, backgroundPosition: "-100% 0%" }}
+            transition={{
+              opacity: { duration: 0.4, delay: 0.35, ease: EASE_OUT },
+              x: { duration: 0.4, delay: 0.35, ease: EASE_OUT },
+              backgroundPosition: {
+                duration: 0.55,
+                delay: 0.8,
+                ease: "easeInOut",
+              },
+            }}
+          >
+            Velo
+          </motion.span>
+          <motion.span
+            aria-hidden
+            className="absolute -bottom-1.5 left-0 right-0 h-[3px] origin-left rounded-full bg-primary sm:h-1"
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 0.6, delay: 1.1, ease: EASE_OUT }}
+          />
+        </span>
+      </div>
+    </motion.div>
   );
 }
 
@@ -171,11 +278,141 @@ function MarketingNav() {
   );
 }
 
-function Hero() {
+// Soft notice for visitors outside Australia. Detection uses the browser's
+// IANA timezone — privacy-friendly, no IP lookup, no API call. Anything under
+// the `Australia/...` zone (e.g. Australia/Brisbane, Australia/Sydney) is
+// treated as in-region. Dismissal persists in localStorage so returning
+// visitors don't see it again. Gated behind `ready` so it doesn't fight the
+// preloader exit animation.
+const GEO_NOTICE_KEY = "velo-geo-notice-dismissed";
+
+function GeoNotice({ ready }: { ready: boolean }) {
+  const prefersReduced = useReducedMotion();
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    if (!ready) return;
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone ?? "";
+      const inAustralia = tz.startsWith("Australia/");
+      const dismissed =
+        window.localStorage.getItem(GEO_NOTICE_KEY) === "1";
+      if (!inAustralia && !dismissed) {
+        setShow(true);
+      }
+    } catch {
+      // Private browsing / blocked storage / missing Intl support — silently
+      // skip rather than fail. Better to show no notice than to crash.
+    }
+  }, [ready]);
+
+  const dismiss = useCallback(() => {
+    setShow(false);
+    try {
+      window.localStorage.setItem(GEO_NOTICE_KEY, "1");
+    } catch {
+      // ignore — dismissal still works for this session
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!show) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") dismiss();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [show, dismiss]);
+
+  return (
+    <AnimatePresence>
+      {show ? (
+        <motion.div
+          key="geo-notice"
+          className="fixed inset-0 z-[90] flex items-center justify-center p-4"
+          initial={prefersReduced ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={prefersReduced ? { duration: 0 } : { duration: 0.2 }}
+        >
+          <button
+            type="button"
+            aria-label="Dismiss notice"
+            onClick={dismiss}
+            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+          />
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="geo-notice-title"
+            initial={
+              prefersReduced ? false : { opacity: 0, y: 12, scale: 0.98 }
+            }
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={
+              prefersReduced
+                ? { opacity: 0 }
+                : { opacity: 0, y: 12, scale: 0.98 }
+            }
+            transition={
+              prefersReduced
+                ? { duration: 0 }
+                : { duration: 0.25, ease: EASE_OUT }
+            }
+            className="relative w-full max-w-md rounded-xl bg-card p-6 shadow-xl sm:p-8"
+          >
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Globe aria-hidden className="h-4 w-4" />
+              </span>
+              <h2
+                id="geo-notice-title"
+                className="text-base font-semibold tracking-tight text-foreground"
+              >
+                Heads up — Velo is built for Australia
+              </h2>
+            </div>
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+              Velo is currently focused on Australian freelancers — GST, AUD
+              pricing, and Australian business profiles. You&apos;re still
+              welcome to sign up, test it out, and send feedback, bug reports,
+              or feature requests any time.
+            </p>
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <a
+                href="mailto:jaineelk.dev@gmail.com?subject=Velo%20feedback"
+                className={cn(
+                  "inline-flex h-9 items-center justify-center rounded-md border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent",
+                  focusRing,
+                )}
+              >
+                Send feedback
+              </a>
+              <button
+                type="button"
+                onClick={dismiss}
+                className={cn(
+                  "inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90",
+                  focusRing,
+                )}
+              >
+                Got it
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
+  );
+}
+
+function Hero({ ready }: { ready: boolean }) {
   const prefersReduced = useReducedMotion();
 
   // Build the per-step motion props once. Reduced-motion users get the final
-  // state on first paint with no transition.
+  // state on first paint with no transition. Otherwise the cascade is gated
+  // behind `ready` so it kicks off as the preloader fades out — until then
+  // the elements stay at their initial (hidden) state.
   const fadeUp = (delay: number) =>
     prefersReduced
       ? {
@@ -185,7 +422,7 @@ function Hero() {
         }
       : {
           initial: { opacity: 0, y: 24 },
-          animate: { opacity: 1, y: 0 },
+          animate: ready ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 },
           transition: { duration: 0.6, delay, ease: EASE_OUT },
         };
 
@@ -197,7 +434,7 @@ function Hero() {
       }
     : {
         initial: { scaleX: 0 },
-        animate: { scaleX: 1 },
+        animate: ready ? { scaleX: 1 } : { scaleX: 0 },
         transition: { duration: 0.7, delay: 0.65, ease: EASE_OUT },
       };
 
@@ -213,7 +450,7 @@ function Hero() {
             aria-hidden
             className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_0_2px_hsl(var(--primary)/0.18)]"
           />
-          Built in Brisbane · free 14-day trial
+          Built in Brisbane · made for AU freelancers
         </motion.div>
 
         <h1 className="text-balance text-6xl font-semibold tracking-tight text-foreground sm:text-7xl lg:text-8xl">
@@ -641,6 +878,18 @@ function Features() {
   );
 }
 
+// The free trial is its own restricted tier (capped projects, suspends at
+// day 14) — distinct in shape from the four paid plans, so it gets a separate
+// callout above the pricing grid rather than a 5th card in line with them.
+const trialFeatures = [
+  "Up to 2 active projects",
+  "Proposals and client approvals",
+  "Project tracking and milestones",
+  "Deposit and final invoices",
+  "PDF export",
+  "Client portal",
+];
+
 type Plan = {
   name: string;
   monthlyPrice: number;
@@ -772,12 +1021,6 @@ function Pricing() {
           >
             Simple, transparent pricing
           </motion.h2>
-          <motion.p
-            variants={item}
-            className="mt-4 text-base text-muted-foreground"
-          >
-            14-day free trial, no credit card required.
-          </motion.p>
 
           <motion.div variants={item} className="mt-8 flex justify-center">
             <div
@@ -810,6 +1053,57 @@ function Pricing() {
             </div>
           </motion.div>
         </div>
+
+        <motion.div
+          variants={item}
+          className="relative mx-auto mt-12 max-w-4xl rounded-lg bg-card p-6 shadow-sm ring-1 ring-primary/30 sm:p-8"
+        >
+          <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-primary-foreground">
+            Start here
+          </span>
+
+          <div className="grid gap-6 text-left sm:grid-cols-[1fr_auto] sm:items-center sm:gap-10">
+            <div>
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <h3 className="text-xl font-semibold tracking-tight text-foreground">
+                  Free trial
+                </h3>
+                <span className="text-sm text-muted-foreground">
+                  AU$0 · 14 days · no credit card
+                </span>
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">
+                After 14 days your account pauses until you pick a plan — we
+                never auto-charge.
+              </p>
+              <ul className="mt-5 grid gap-x-6 gap-y-2 sm:grid-cols-2">
+                {trialFeatures.map((feature) => (
+                  <li
+                    key={feature}
+                    className="flex items-start gap-2 text-sm text-foreground"
+                  >
+                    <Check
+                      aria-hidden
+                      className="mt-0.5 h-4 w-4 shrink-0 text-primary"
+                    />
+                    <span className="leading-snug">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="sm:shrink-0">
+              <Link
+                href="/sign-up"
+                className={cn(
+                  "inline-flex h-10 w-full items-center justify-center rounded-md bg-blue-600 px-6 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 sm:w-auto",
+                  focusRing,
+                )}
+              >
+                Start free trial
+              </Link>
+            </div>
+          </div>
+        </motion.div>
 
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {plans.map((plan) => (

@@ -39,8 +39,9 @@ export default function NotFound() {
             Page not found
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            The page you're looking for doesn't exist or may have moved. If you
-            arrived from a shared link, ask the sender for an updated one.
+            The page you&apos;re looking for doesn&apos;t exist or may have
+            moved. If you arrived from a shared link, ask the sender for an
+            updated one.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">

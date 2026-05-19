@@ -2,7 +2,7 @@ import Link from "next/link";
 import { cn, focusRing } from "@/lib/utils";
 
 export const metadata = {
-  title: "Privacy Policy · whereismyapp",
+  title: "Privacy Policy",
   description: "How we collect, use, and protect your personal information.",
 };
 
@@ -61,7 +61,7 @@ export default function PrivacyPage() {
         <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
           <Link
             href="/"
-            aria-label="whereismyapp home"
+            aria-label="Velo home"
             className={cn("flex items-center gap-2.5 rounded", focusRing)}
           >
             <span
@@ -69,7 +69,7 @@ export default function PrivacyPage() {
               className="h-2 w-2 rounded-full bg-primary shadow-[0_0_0_3px_hsl(var(--primary)/0.18)]"
             />
             <span className="text-sm font-semibold tracking-tight text-foreground">
-              whereismyapp
+              Velo
             </span>
           </Link>
           <Link

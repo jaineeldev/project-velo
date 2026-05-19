@@ -1,14 +1,37 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemedClerkProvider } from "@/components/clerk-provider";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
+const description =
+  "Send proposals, get approvals, track projects, and invoice clients — all in one place. Built for freelance developers and dev agencies.";
+
 export const metadata: Metadata = {
-  title: "whereismyapp",
-  description: "A client workflow PWA for freelance developers and dev agencies.",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+  ),
+  title: {
+    default: "Velo · Client work, handled.",
+    template: "%s · Velo",
+  },
+  description,
+  applicationName: "Velo",
+  openGraph: {
+    title: "Velo · Client work, handled.",
+    description,
+    type: "website",
+    siteName: "Velo",
+    locale: "en_AU",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Velo · Client work, handled.",
+    description,
+  },
 };
 
 export default function RootLayout({
@@ -22,6 +45,7 @@ export default function RootLayout({
         <ThemeProvider>
           <ThemedClerkProvider>{children}</ThemedClerkProvider>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );

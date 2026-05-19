@@ -3,7 +3,7 @@ import { Compass } from "lucide-react";
 import { cn, focusRing } from "@/lib/utils";
 
 export const metadata = {
-  title: "Page not found · whereismyapp",
+  title: "Page not found",
 };
 
 export default function NotFound() {
@@ -13,7 +13,7 @@ export default function NotFound() {
         <div className="mx-auto flex max-w-3xl items-center px-6 py-4">
           <Link
             href="/"
-            aria-label="whereismyapp home"
+            aria-label="Velo home"
             className={cn("flex items-center gap-2.5 rounded", focusRing)}
           >
             <span
@@ -21,7 +21,7 @@ export default function NotFound() {
               className="h-2 w-2 rounded-full bg-primary shadow-[0_0_0_3px_hsl(var(--primary)/0.18)]"
             />
             <span className="text-sm font-semibold tracking-tight text-foreground">
-              whereismyapp
+              Velo
             </span>
           </Link>
         </div>

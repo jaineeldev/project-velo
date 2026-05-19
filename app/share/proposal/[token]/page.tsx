@@ -272,7 +272,7 @@ export default async function ShareProposalPage({
         )}
 
         <div className="mt-16 flex flex-col items-center gap-1 text-xs text-muted-foreground">
-          <p>Powered by whereismyapp</p>
+          <p>Powered by Velo</p>
           <Link
             href="/privacy"
             className="rounded underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"

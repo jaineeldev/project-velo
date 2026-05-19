@@ -4,7 +4,7 @@ import { hasCompletedOnboarding } from "@/lib/user-profile";
 import { WelcomeForm } from "./welcome-form";
 
 export const metadata = {
-  title: "Welcome · whereismyapp",
+  title: "Welcome",
 };
 
 export default async function OnboardingPage() {
@@ -23,7 +23,7 @@ export default async function OnboardingPage() {
               className="h-2 w-2 rounded-full bg-primary shadow-[0_0_0_3px_hsl(var(--primary)/0.18)]"
             />
             <span className="text-sm font-semibold tracking-tight text-foreground">
-              whereismyapp
+              Velo
             </span>
           </div>
         </div>

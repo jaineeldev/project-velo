@@ -15,13 +15,13 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
   ),
   title: {
-    default: "Velo · Client work, handled.",
+    default: "Velo · Ship code, not spreadsheets",
     template: "%s · Velo",
   },
   description,
   applicationName: "Velo",
   openGraph: {
-    title: "Velo · Client work, handled.",
+    title: "Velo · Ship code, not spreadsheets",
     description,
     type: "website",
     siteName: "Velo",
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Velo · Client work, handled.",
+    title: "Velo · Ship code, not spreadsheets",
     description,
   },
 };
@@ -41,7 +41,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
-      <body className="bg-neutral-50 font-sans text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-100">
+      <body className="bg-background font-sans text-foreground antialiased">
         <ThemeProvider>
           <ThemedClerkProvider>{children}</ThemedClerkProvider>
         </ThemeProvider>

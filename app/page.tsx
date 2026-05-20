@@ -67,18 +67,35 @@ const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 // (1.1–1.7s), brief hold, then AnimatePresence fades the overlay out as the
 // hero cascade rises in.
 const PRELOADER_HOLD_MS = 2100;
+// sessionStorage key that records the splash has been seen this session. Per
+// session, not forever — repeat visits in a new tab still see the brand stamp
+// once, but in-session navigations don't replay it.
+const PRELOADER_SEEN_KEY = "velo-preloader-seen";
 
 export default function MarketingHomePage() {
   const prefersReduced = useReducedMotion();
-  const [showPreloader, setShowPreloader] = useState(true);
-  const [appReady, setAppReady] = useState(false);
+  // Start with the splash hidden. We flip it on in the effect once we know
+  // whether the user has seen it this session — avoids a flash of splash for
+  // returning visitors and matches SSR output (no splash on first paint).
+  const [showPreloader, setShowPreloader] = useState(false);
+  const [appReady, setAppReady] = useState(true);
 
   useEffect(() => {
     // Reduced-motion users skip the splash entirely.
-    if (prefersReduced) {
-      setShowPreloader(false);
-      setAppReady(true);
-      return;
+    if (prefersReduced) return;
+    let seen = false;
+    try {
+      seen = window.sessionStorage.getItem(PRELOADER_SEEN_KEY) === "1";
+    } catch {
+      // Private browsing / blocked storage — treat as unseen and show once.
+    }
+    if (seen) return;
+    setShowPreloader(true);
+    setAppReady(false);
+    try {
+      window.sessionStorage.setItem(PRELOADER_SEEN_KEY, "1");
+    } catch {
+      // ignore — splash still plays this paint
     }
     const t = window.setTimeout(() => {
       // Flip both at the same time so the hero cascade rises in as the splash
@@ -94,6 +111,13 @@ export default function MarketingHomePage() {
       style={lightTheme}
       className="min-h-screen bg-background text-foreground"
     >
+      <StructuredData />
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+      >
+        Skip to content
+      </a>
       <AnimatePresence>
         {showPreloader ? <Preloader key="preloader" /> : null}
       </AnimatePresence>
@@ -101,16 +125,59 @@ export default function MarketingHomePage() {
       <ScrollProgressBar />
       <BetaBanner />
       <MarketingNav />
-      <main>
+      <main id="main-content" tabIndex={-1} className="focus:outline-none">
         <Hero ready={appReady} />
         <HowItWorks />
         <Features />
+        <StillRough />
         <Pricing />
         <FAQ />
         <FinalCTA />
       </main>
       <Footer />
     </div>
+  );
+}
+
+// Schema.org JSON-LD for the homepage. Derived from the same `plans` and
+// `faqs` arrays the visible UI uses so the structured data can never drift
+// from what the page actually shows.
+function StructuredData() {
+  const appUrl =
+    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const data = [
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: "Velo",
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Web",
+      description:
+        "Send proposals, get approvals, track projects, and invoice clients — all in one place. Built for freelance developers and dev agencies.",
+      url: appUrl,
+      offers: plans.map((plan) => ({
+        "@type": "Offer",
+        name: plan.name,
+        price: String(plan.monthlyPrice),
+        priceCurrency: "AUD",
+        category: "subscription",
+      })),
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: faqs.map((faq) => ({
+        "@type": "Question",
+        name: faq.q,
+        acceptedAnswer: { "@type": "Answer", text: faq.a },
+      })),
+    },
+  ];
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
   );
 }
 
@@ -369,25 +436,25 @@ function GeoNotice({ ready }: { ready: boolean }) {
                 id="geo-notice-title"
                 className="text-base font-semibold tracking-tight text-foreground"
               >
-                Heads up — Velo is built for Australia
+                Heads up — Velo only follows Australian privacy law
               </h2>
             </div>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              Velo is currently focused on Australian freelancers — GST, AUD
-              pricing, and Australian business profiles. You&apos;re still
-              welcome to sign up, test it out, and send feedback, bug reports,
-              or feature requests any time.
+              Velo&apos;s privacy practices are scoped to Australia. If you
+              sign up from outside Australia, your data may not be handled in
+              line with your local privacy laws (e.g. GDPR, CCPA). Please read
+              our Privacy Policy before continuing.
             </p>
             <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-              <a
-                href="mailto:jaineelk.dev@gmail.com?subject=Velo%20feedback"
+              <Link
+                href="/privacy"
                 className={cn(
                   "inline-flex h-9 items-center justify-center rounded-md border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent",
                   focusRing,
                 )}
               >
-                Send feedback
-              </a>
+                Read Privacy Policy
+              </Link>
               <button
                 type="button"
                 onClick={dismiss}
@@ -396,7 +463,7 @@ function GeoNotice({ ready }: { ready: boolean }) {
                   focusRing,
                 )}
               >
-                Got it
+                I understand
               </button>
             </div>
           </motion.div>
@@ -435,53 +502,40 @@ function Hero({ ready }: { ready: boolean }) {
     : {
         initial: { scaleX: 0 },
         animate: ready ? { scaleX: 1 } : { scaleX: 0 },
-        transition: { duration: 0.7, delay: 0.65, ease: EASE_OUT },
+        transition: { duration: 0.5, delay: 0.4, ease: EASE_OUT },
       };
 
   return (
     <section className="relative overflow-hidden border-b border-border bg-background">
       <HeroBackground />
       <div className="relative mx-auto max-w-3xl px-6 pb-20 pt-32 text-center sm:pb-24 sm:pt-40">
-        <motion.div
-          {...fadeUp(0)}
-          className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground"
-        >
-          <span
-            aria-hidden
-            className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_0_2px_hsl(var(--primary)/0.18)]"
-          />
-          Built in Brisbane · made for AU freelancers
-          <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600">
-            Beta
-          </span>
-        </motion.div>
-
-        <h1 className="text-balance text-6xl font-semibold tracking-tight text-foreground sm:text-7xl lg:text-8xl">
-          <motion.span className="inline-block" {...fadeUp(0)}>
-            Client work,
-          </motion.span>{" "}
-          <span className="relative inline-block">
-            <motion.span className="inline-block" {...fadeUp(0.2)}>
-              handled.
-            </motion.span>
-            <motion.span
-              aria-hidden
-              className="absolute -bottom-[10px] left-0 right-0 h-1 origin-left bg-primary sm:-bottom-[14px] sm:h-[6px]"
-              {...underline}
-            />
-          </span>
+        <h1 className="text-balance text-5xl font-semibold tracking-tight text-foreground sm:text-6xl lg:text-7xl">
+          <motion.span className="block" {...fadeUp(0)}>
+            Ship code,
+          </motion.span>
+          <motion.span className="block" {...fadeUp(0.12)}>
+            not{" "}
+            <span className="relative inline-block">
+              spreadsheets.
+              <motion.span
+                aria-hidden
+                className="absolute -bottom-[8px] left-0 right-0 h-1 origin-left bg-primary sm:-bottom-[12px] sm:h-[6px]"
+                {...underline}
+              />
+            </span>
+          </motion.span>
         </h1>
 
         <motion.p
           className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-muted-foreground"
-          {...fadeUp(0.85)}
+          {...fadeUp(0.4)}
         >
           Send proposals, get approvals, track projects, and invoice clients —
           all in one place. Built for freelance developers and dev agencies.
         </motion.p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <motion.div className="w-full sm:w-auto" {...fadeUp(1.05)}>
+          <motion.div className="w-full sm:w-auto" {...fadeUp(0.55)}>
             <Link
               href="/sign-up"
               className={cn(
@@ -492,7 +546,7 @@ function Hero({ ready }: { ready: boolean }) {
               Start free trial
             </Link>
           </motion.div>
-          <motion.div className="w-full sm:w-auto" {...fadeUp(1.2)}>
+          <motion.div className="w-full sm:w-auto" {...fadeUp(0.65)}>
             <Link
               href="#how-it-works"
               className={cn(
@@ -507,8 +561,8 @@ function Hero({ ready }: { ready: boolean }) {
 
         <motion.div
           aria-hidden
-          className="mt-14 hidden md:block"
-          {...fadeUp(1.45)}
+          className="mt-10 sm:mt-14"
+          {...fadeUp(0.8)}
         >
           <BrowserMockFloat prefersReduced={prefersReduced} />
         </motion.div>
@@ -616,7 +670,7 @@ function BrowserMock() {
       </div>
 
       {/* Proposal */}
-      <div className="p-8 text-left">
+      <div className="p-5 text-left sm:p-8">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <h3 className="truncate text-lg font-semibold tracking-tight text-foreground">
@@ -675,23 +729,23 @@ const steps: Step[] = [
   {
     number: "01",
     icon: Send,
-    title: "Send a proposal",
+    title: "Send",
     description:
-      "Create a professional proposal and send it to your client with one click. They get an email with a review link.",
+      "Build a proposal with line items, deposit %, and GST. Email your client a private review link.",
   },
   {
     number: "02",
     icon: CheckCircle2,
-    title: "Client approves",
+    title: "Approve",
     description:
-      "Your client reviews and approves the proposal online. No login required, no friction.",
+      "They review and approve in the browser. No PDF download, no account, no chasing for sign-off.",
   },
   {
     number: "03",
     icon: Sparkles,
-    title: "Everything is created",
+    title: "Live",
     description:
-      "A project, milestones and deposit invoice are created automatically the moment they approve.",
+      "Project, milestones, and deposit invoice — all created the moment they approve.",
   },
 ];
 
@@ -757,7 +811,7 @@ function HowItWorks() {
           variants={item}
           className="mx-auto max-w-2xl text-balance text-center text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
         >
-          From proposal to paid, automatically
+          Approve once. The setup is done.
         </motion.h2>
 
         <div className="mt-16 grid gap-12 sm:gap-10 md:grid-cols-3">
@@ -851,7 +905,7 @@ function Features() {
           variants={item}
           className="mx-auto max-w-2xl text-balance text-center text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
         >
-          Everything you need to run client work
+          What we&apos;ve built so far
         </motion.h2>
 
         <div className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -873,6 +927,86 @@ function Features() {
                   </CardDescription>
                 </CardHeader>
               </Card>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+    </section>
+  );
+}
+
+// Radical-honesty section. Lists what's missing, slow, or broken in the
+// current beta with a one-line explanation of the plan for each. Pre-beta
+// dev-targeted product — being transparent here builds trust faster than
+// pretending everything works.
+const stillRoughItems: { title: string; detail: string }[] = [
+  {
+    title: "Email sometimes lands in spam",
+    detail:
+      "Sending from Resend's shared sender while we verify a custom domain.",
+  },
+  {
+    title: "Rate limiting resets on restart",
+    detail:
+      "Counters live in memory today. Upstash Redis is on the way before public beta.",
+  },
+  {
+    title: "No multi-user workspaces yet",
+    detail:
+      "Each account is single-user. Studio and Agency seat support is coming.",
+  },
+  {
+    title: "Payments are bank-transfer PDFs",
+    detail:
+      "Invoices include your bank details. Native Stripe payments are on the roadmap.",
+  },
+  {
+    title: "Mobile works but is desktop-first",
+    detail:
+      "Functional on phones; designed for desktop first. Dedicated PWA polish is coming.",
+  },
+];
+
+function StillRough() {
+  const prefersReduced = useReducedMotion();
+  const { container, item } = staggerVariants(prefersReduced, 0.08);
+
+  return (
+    <section className="border-b border-border bg-background">
+      <motion.div
+        variants={container}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.15 }}
+        className="mx-auto max-w-3xl px-6 py-24 sm:py-28"
+      >
+        <motion.h2
+          variants={item}
+          className="text-balance text-center text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
+        >
+          What&apos;s still rough
+        </motion.h2>
+        <motion.p
+          variants={item}
+          className="mx-auto mt-4 max-w-xl text-center text-base leading-relaxed text-muted-foreground"
+        >
+          Velo is in early beta. Here&apos;s what we know is missing, slow, or
+          broken — and what we&apos;re doing about it.
+        </motion.p>
+
+        <div className="mt-12 border-t border-border">
+          {stillRoughItems.map(({ title, detail }) => (
+            <motion.div
+              key={title}
+              variants={item}
+              className="border-b border-border py-5"
+            >
+              <h3 className="text-base font-semibold tracking-tight text-foreground">
+                {title}
+              </h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                {detail}
+              </p>
             </motion.div>
           ))}
         </div>
@@ -905,6 +1039,9 @@ type Plan = {
   features: PlanFeature[];
   highlighted?: boolean;
   tagline?: string;
+  // Plans with custom pricing route to a contact mailto instead of /sign-up,
+  // and use bespoke CTA copy.
+  cta: { label: string; href: string };
 };
 
 const plans: Plan[] = [
@@ -919,6 +1056,7 @@ const plans: Plan[] = [
       { label: "PDF export" },
       { label: "Stripe payments", comingSoon: true },
     ],
+    cta: { label: "Try Starter free", href: "/sign-up" },
   },
   {
     name: "Studio",
@@ -931,6 +1069,7 @@ const plans: Plan[] = [
       { label: "Stripe payments", comingSoon: true },
     ],
     highlighted: true,
+    cta: { label: "Try Studio free", href: "/sign-up" },
   },
   {
     name: "Agency",
@@ -941,6 +1080,7 @@ const plans: Plan[] = [
       { label: "Multi-user workspaces", comingSoon: true },
       { label: "Stripe payments", comingSoon: true },
     ],
+    cta: { label: "Try Agency free", href: "/sign-up" },
   },
   {
     name: "Scale",
@@ -954,10 +1094,44 @@ const plans: Plan[] = [
       { label: "White-label client portal", comingSoon: true },
       { label: "Stripe payments", comingSoon: true },
     ],
+    cta: {
+      label: "Talk to us",
+      href: "mailto:jaineelk.dev@gmail.com?subject=Velo%20Scale%20plan",
+    },
   },
 ];
 
 type BillingPeriod = "monthly" | "annual";
+
+// Plan card CTA. Routes through next/link for in-app paths and a raw anchor
+// for mailto/external — next/link warns when given non-route hrefs.
+function PlanCta({
+  label,
+  href,
+  highlighted,
+}: {
+  label: string;
+  href: string;
+  highlighted?: boolean;
+}) {
+  const className = cn(
+    "inline-flex h-10 w-full items-center justify-center rounded-md text-sm font-medium transition-colors",
+    highlighted
+      ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
+      : "border border-border bg-card text-foreground hover:bg-accent",
+    focusRing,
+  );
+  const isExternal = href.startsWith("mailto:") || href.startsWith("http");
+  return isExternal ? (
+    <a href={href} className={className}>
+      {label}
+    </a>
+  ) : (
+    <Link href={href} className={className}>
+      {label}
+    </Link>
+  );
+}
 
 function BillingToggleButton({
   active,
@@ -1086,7 +1260,7 @@ function Pricing() {
               <Link
                 href="/sign-up"
                 className={cn(
-                  "inline-flex h-10 w-full items-center justify-center rounded-md bg-blue-600 px-6 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 sm:w-auto",
+                  "inline-flex h-10 w-full items-center justify-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 sm:w-auto",
                   focusRing,
                 )}
               >
@@ -1152,7 +1326,7 @@ function Pricing() {
                         <span className="leading-snug">
                           {feature.label}
                           {feature.comingSoon ? (
-                            <span className="ml-1 rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-500">
+                            <span className="ml-1 rounded bg-primary/10 px-1.5 py-0.5 text-xs text-primary">
                               Coming soon
                             </span>
                           ) : null}
@@ -1162,18 +1336,11 @@ function Pricing() {
                   </ul>
 
                   <div className="mt-auto pt-8">
-                    <Link
-                      href="/sign-up"
-                      className={cn(
-                        "inline-flex h-10 w-full items-center justify-center rounded-md text-sm font-medium transition-colors",
-                        plan.highlighted
-                          ? "bg-blue-600 text-white shadow-sm hover:bg-blue-700"
-                          : "border border-gray-300 bg-white text-gray-900 hover:bg-gray-50",
-                        focusRing,
-                      )}
-                    >
-                      Start free trial
-                    </Link>
+                    <PlanCta
+                      label={plan.cta.label}
+                      href={plan.cta.href}
+                      highlighted={plan.highlighted}
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -1306,6 +1473,9 @@ function FinalCTA() {
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base text-muted-foreground">
             14-day free trial. No credit card required.
+          </p>
+          <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
+            Early beta — things will break. Send feedback when they do.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link

@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Velo — Client work, handled.";
+export const alt = "Velo — Ship code, not spreadsheets.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -51,14 +51,16 @@ export default function Image() {
           <div
             style={{
               display: "flex",
-              fontSize: "112px",
+              flexDirection: "column",
+              fontSize: "96px",
               fontWeight: 700,
               letterSpacing: "-0.04em",
-              lineHeight: 1,
+              lineHeight: 1.05,
               color: "#111111",
             }}
           >
-            Client work, handled.
+            <div style={{ display: "flex" }}>Ship code,</div>
+            <div style={{ display: "flex" }}>not spreadsheets.</div>
           </div>
           <div
             style={{

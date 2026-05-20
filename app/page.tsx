@@ -451,6 +451,9 @@ function Hero({ ready }: { ready: boolean }) {
             className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_0_2px_hsl(var(--primary)/0.18)]"
           />
           Built in Brisbane · made for AU freelancers
+          <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600">
+            Beta
+          </span>
         </motion.div>
 
         <h1 className="text-balance text-6xl font-semibold tracking-tight text-foreground sm:text-7xl lg:text-8xl">
@@ -890,11 +893,16 @@ const trialFeatures = [
   "Client portal",
 ];
 
+type PlanFeature = { label: string; comingSoon?: boolean };
+
 type Plan = {
   name: string;
   monthlyPrice: number;
+  // When true, prices render as "From AU$X" — used for tiers where the headline
+  // price is a minimum and the final figure flexes on seat count or custom deals.
+  priceFrom?: boolean;
   seats: string;
-  features: string[];
+  features: PlanFeature[];
   highlighted?: boolean;
   tagline?: string;
 };
@@ -905,10 +913,11 @@ const plans: Plan[] = [
     monthlyPrice: 9,
     seats: "1 user",
     features: [
-      "Unlimited projects and proposals",
-      "Client portal",
-      "GST support",
-      "PDF export",
+      { label: "Unlimited projects and proposals" },
+      { label: "Client portal" },
+      { label: "GST support" },
+      { label: "PDF export" },
+      { label: "Stripe payments", comingSoon: true },
     ],
   },
   {
@@ -916,9 +925,10 @@ const plans: Plan[] = [
     monthlyPrice: 24,
     seats: "Up to 5 users",
     features: [
-      "Everything in Starter",
-      "Client portal branding",
-      "Priority support",
+      { label: "Everything in Starter" },
+      { label: "Priority support" },
+      { label: "Lead pipeline", comingSoon: true },
+      { label: "Stripe payments", comingSoon: true },
     ],
     highlighted: true,
   },
@@ -927,20 +937,22 @@ const plans: Plan[] = [
     monthlyPrice: 49,
     seats: "Up to 15 users",
     features: [
-      "Everything in Studio",
-      "Advanced project tracking",
-      "Team workload views",
+      { label: "Everything in Studio" },
+      { label: "Multi-user workspaces", comingSoon: true },
+      { label: "Stripe payments", comingSoon: true },
     ],
   },
   {
     name: "Scale",
     monthlyPrice: 99,
+    priceFrom: true,
     seats: "Unlimited users",
-    tagline: "Best value for large teams",
+    tagline: "Custom pricing available",
     features: [
-      "Everything in Agency",
-      "White-label client portal",
-      "Dedicated support",
+      { label: "Everything in Agency" },
+      { label: "Dedicated support" },
+      { label: "White-label client portal", comingSoon: true },
+      { label: "Stripe payments", comingSoon: true },
     ],
   },
 ];
@@ -980,27 +992,6 @@ function Pricing() {
   const { container, item } = staggerVariants(prefersReduced, 0.1);
   const hover = prefersReduced ? undefined : { scale: 1.02 };
   const [billing, setBilling] = useState<BillingPeriod>("monthly");
-
-  // Continuous outward glow for the highlighted Studio card. Lives on a
-  // separate absolutely-positioned layer so it doesn't fight the entrance
-  // animation on the card wrapper.
-  const pulse = prefersReduced
-    ? undefined
-    : {
-        boxShadow: [
-          "0 0 0 0 hsl(var(--primary) / 0.35)",
-          "0 0 0 12px hsl(var(--primary) / 0)",
-          "0 0 0 0 hsl(var(--primary) / 0)",
-        ],
-      };
-  const pulseTransition: Transition | undefined = prefersReduced
-    ? undefined
-    : {
-        duration: 2.4,
-        repeat: Infinity,
-        ease: "easeOut",
-        repeatDelay: 0.2,
-      };
 
   return (
     <section
@@ -1121,23 +1112,14 @@ function Pricing() {
                     "border-primary shadow-md ring-1 ring-primary",
                 )}
               >
-                {plan.highlighted ? (
-                  <>
-                    <motion.span
-                      aria-hidden
-                      className="pointer-events-none absolute inset-0 rounded-lg"
-                      animate={pulse}
-                      transition={pulseTransition}
-                    />
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-primary-foreground">
-                      Most popular
-                    </span>
-                  </>
-                ) : null}
-
                 <CardHeader>
                   <CardTitle className="text-base">{plan.name}</CardTitle>
                   <div className="flex items-baseline gap-1 pt-2">
+                    {plan.priceFrom ? (
+                      <span className="text-sm font-medium text-muted-foreground">
+                        From
+                      </span>
+                    ) : null}
                     <span className="text-3xl font-semibold tracking-tight text-foreground">
                       AU$
                       {billing === "annual"
@@ -1160,14 +1142,21 @@ function Pricing() {
                   <ul className="space-y-2.5">
                     {plan.features.map((feature) => (
                       <li
-                        key={feature}
+                        key={feature.label}
                         className="flex items-start gap-2 text-sm text-foreground"
                       >
                         <Check
                           aria-hidden
                           className="mt-0.5 h-4 w-4 shrink-0 text-primary"
                         />
-                        <span className="leading-snug">{feature}</span>
+                        <span className="leading-snug">
+                          {feature.label}
+                          {feature.comingSoon ? (
+                            <span className="ml-1 rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-500">
+                              Coming soon
+                            </span>
+                          ) : null}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -1191,6 +1180,22 @@ function Pricing() {
             </motion.div>
           ))}
         </div>
+
+        <motion.p
+          variants={item}
+          className="mt-10 text-center text-sm text-muted-foreground"
+        >
+          More features rolling out through 2026 — got something you need?{" "}
+          <a
+            href="mailto:jaineelk.dev@gmail.com?subject=Velo%20feature%20request"
+            className={cn(
+              "rounded-sm font-medium text-primary underline-offset-2 hover:underline",
+              focusRing,
+            )}
+          >
+            Tell us.
+          </a>
+        </motion.p>
       </motion.div>
     </section>
   );

@@ -108,8 +108,8 @@ function WelcomeStep({
         Welcome to Velo{firstName ? `, ${firstName}` : ""}
       </h1>
       <p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
-        Velo helps you manage your entire client workflow — from sending
-        proposals to tracking projects and getting paid — all in one place.
+        Velo helps you manage your entire client workflow, from sending
+        proposals to tracking projects and getting paid, all in one place.
       </p>
 
       <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -249,7 +249,7 @@ function ProfileStep() {
                 className={cn("mt-1", inputClass)}
               />
               <p id="abn-help" className={helperClass}>
-                Your Australian Business Number — required for GST invoices.
+                Your Australian Business Number. Required for GST invoices.
               </p>
             </div>
 

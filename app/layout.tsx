@@ -8,7 +8,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 const description =
-  "Send proposals, get approvals, track projects, and invoice clients — all in one place. Built for freelance developers and dev agencies.";
+  "Send proposals, get approvals, track projects, and invoice clients, all in one place. Built for freelance developers and dev agencies.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(

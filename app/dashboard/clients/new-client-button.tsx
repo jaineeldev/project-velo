@@ -109,7 +109,7 @@ export function NewClientButton() {
               className={inputCls}
             />
             <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              Digits, spaces, and <code>+ - ( ) .</code> only — 7 to 15 digits.
+              Digits, spaces, and <code>+ - ( ) .</code> only. 7 to 15 digits.
             </p>
           </div>
 

@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
+import { submitWaitlist } from "./waitlist-action";
 import {
   AnimatePresence,
   motion,
@@ -92,16 +93,19 @@ export default function MarketingHomePage() {
     if (seen) return;
     setShowPreloader(true);
     setAppReady(false);
-    try {
-      window.sessionStorage.setItem(PRELOADER_SEEN_KEY, "1");
-    } catch {
-      // ignore — splash still plays this paint
-    }
+    // Mark "seen" only after the splash actually completes. Writing earlier
+    // breaks React strict mode in dev: the first effect would set the flag,
+    // the cleanup would clear the timer, and the second effect would read
+    // the flag back and bail out, leaving the preloader mounted with no
+    // timer to dismiss it.
     const t = window.setTimeout(() => {
-      // Flip both at the same time so the hero cascade rises in as the splash
-      // fades out — one continuous handoff rather than sequential beats.
       setAppReady(true);
       setShowPreloader(false);
+      try {
+        window.sessionStorage.setItem(PRELOADER_SEEN_KEY, "1");
+      } catch {
+        // ignore, splash still played this paint
+      }
     }, PRELOADER_HOLD_MS);
     return () => window.clearTimeout(t);
   }, [prefersReduced]);
@@ -129,10 +133,13 @@ export default function MarketingHomePage() {
         <Hero ready={appReady} />
         <HowItWorks />
         <Features />
+        <FounderNote />
         <StillRough />
+        <WhatsNext />
         <Pricing />
         <FAQ />
         <FinalCTA />
+        <Waitlist />
       </main>
       <Footer />
     </div>
@@ -153,7 +160,7 @@ function StructuredData() {
       applicationCategory: "BusinessApplication",
       operatingSystem: "Web",
       description:
-        "Send proposals, get approvals, track projects, and invoice clients — all in one place. Built for freelance developers and dev agencies.",
+        "Send proposals, get approvals, track projects, and invoice clients, all in one place. Built for freelance developers and dev agencies.",
       url: appUrl,
       offers: plans.map((plan) => ({
         "@type": "Offer",
@@ -436,7 +443,7 @@ function GeoNotice({ ready }: { ready: boolean }) {
                 id="geo-notice-title"
                 className="text-base font-semibold tracking-tight text-foreground"
               >
-                Heads up — Velo only follows Australian privacy law
+                Heads up: Velo only follows Australian privacy law
               </h2>
             </div>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
@@ -530,7 +537,7 @@ function Hero({ ready }: { ready: boolean }) {
           className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-muted-foreground"
           {...fadeUp(0.4)}
         >
-          Send proposals, get approvals, track projects, and invoice clients —
+          Send proposals, get approvals, track projects, and invoice clients,
           all in one place. Built for freelance developers and dev agencies.
         </motion.p>
 
@@ -584,7 +591,7 @@ function BetaBanner() {
         />
         <span className="text-center">
           <span className="font-semibold">Velo is in early beta</span>
-          <span className="text-muted-foreground"> — expect rough edges. </span>
+          <span className="text-muted-foreground">. Expect rough edges. </span>
           <a
             href="mailto:jaineelk.dev@gmail.com"
             className={cn(
@@ -674,7 +681,7 @@ function BrowserMock() {
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <h3 className="truncate text-lg font-semibold tracking-tight text-foreground">
-              Website Redesign — Acme Studio
+              Website Redesign · Acme Studio
             </h3>
             <p className="mt-1 text-sm text-muted-foreground">
               Sarah Chen · sarah@acmestudio.com
@@ -745,7 +752,7 @@ const steps: Step[] = [
     icon: Sparkles,
     title: "Live",
     description:
-      "Project, milestones, and deposit invoice — all created the moment they approve.",
+      "Project, milestones, and deposit invoice, all created the moment they approve.",
   },
 ];
 
@@ -935,35 +942,202 @@ function Features() {
   );
 }
 
+// Personal note from the maker. Sits between the feature dump and the
+// honesty section so the vulnerability that follows feels earned — the
+// reader knows there's a single person behind the work.
+function FounderNote() {
+  const prefersReduced = useReducedMotion();
+
+  const fadeUp = prefersReduced
+    ? {
+        initial: false as const,
+        whileInView: { opacity: 1, y: 0 },
+        transition: { duration: 0 },
+      }
+    : {
+        initial: { opacity: 0, y: 20 },
+        whileInView: { opacity: 1, y: 0 },
+        transition: { duration: 0.6, ease: EASE_OUT },
+      };
+
+  return (
+    <section className="border-b border-border bg-background">
+      <motion.div
+        {...fadeUp}
+        viewport={{ once: true, amount: 0.3 }}
+        className="mx-auto max-w-2xl px-6 py-24 sm:py-28"
+      >
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground/70">
+          A note from the maker
+        </p>
+        <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+          Built for devs who&apos;d rather be coding.
+        </h2>
+        <div className="mt-6 space-y-5 text-base leading-relaxed text-muted-foreground">
+          <p>
+            Most freelancer tools feel like they were made for someone else:
+            wedding planners, marketing consultants, designers. The interfaces
+            are busy, the language is patronising, and the workflows assume a
+            kind of work that isn&apos;t ours. Meanwhile, devs spend their day
+            inside their editor, terminal, and GitHub. Clean, fast,
+            well-designed tools. The business side of being a dev shouldn&apos;t
+            feel like a step backwards from that.
+          </p>
+          <p>
+            Velo is for the dev who&apos;s tired of running their freelance
+            work out of something that looks and feels like 2015 SaaS. No
+            popups asking for testimonials, no badge-shaped CTAs, no clip art.
+            Just the proposal-to-invoice flow, scoped for how dev work
+            actually happens.
+          </p>
+          <p>
+            It&apos;s just me building this for now, between uni and freelance
+            work. That&apos;s why &ldquo;What&apos;s still rough&rdquo; is
+            honest. There&apos;s no team to hide behind. If you find a bug,
+            tell me directly and a fix usually goes out in the next push. If
+            something feels wrong about how Velo handles your work, I&apos;d
+            rather hear it early than build the wrong thing for another month.
+          </p>
+        </div>
+        <div className="mt-8 flex items-center gap-3">
+          <div
+            aria-hidden
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-foreground/5 text-sm font-semibold text-foreground"
+          >
+            JK
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-foreground">
+              Jaineel Khatri
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Building Velo solo from Brisbane ·{" "}
+              <a
+                href="mailto:jaineelk.dev@gmail.com"
+                className={cn(
+                  "rounded-sm underline-offset-2 hover:underline",
+                  focusRing,
+                )}
+              >
+                jaineelk.dev@gmail.com
+              </a>
+            </p>
+          </div>
+        </div>
+      </motion.div>
+    </section>
+  );
+}
+
 // Radical-honesty section. Lists what's missing, slow, or broken in the
 // current beta with a one-line explanation of the plan for each. Pre-beta
 // dev-targeted product — being transparent here builds trust faster than
 // pretending everything works.
-const stillRoughItems: { title: string; detail: string }[] = [
+type StillRoughGroup = {
+  label: string;
+  items: { title: string; detail: string }[];
+};
+
+const stillRoughGroups: StillRoughGroup[] = [
   {
-    title: "Email sometimes lands in spam",
-    detail:
-      "Sending from Resend's shared sender while we verify a custom domain.",
+    label: "Platform",
+    items: [
+      {
+        title: "Email sometimes lands in spam",
+        detail:
+          "Sending from Resend's shared sender while we verify a custom domain.",
+      },
+      {
+        title: "Rate limiting resets on restart",
+        detail:
+          "Counters live in memory today. Upstash Redis is on the way before public beta.",
+      },
+      {
+        title: "No public API or webhooks",
+        detail:
+          "You can't integrate Velo with your own tooling yet. A public API is on the roadmap.",
+      },
+      {
+        title: "No analytics or reporting yet",
+        detail:
+          "Project and invoice views show current state but not trends. Revenue, profitability, and time-cost reports come later.",
+      },
+      {
+        title: "Mobile works but is desktop-first",
+        detail:
+          "Functional on phones; designed for desktop first. Dedicated PWA polish is coming.",
+      },
+    ],
   },
   {
-    title: "Rate limiting resets on restart",
-    detail:
-      "Counters live in memory today. Upstash Redis is on the way before public beta.",
+    label: "Team & CRM",
+    items: [
+      {
+        title: "Clients are a contact list, not a CRM",
+        detail:
+          "Name, email, and phone today. Notes, tags, lead stages, last-contact tracking, and a communications log are the next thing we build.",
+      },
+      {
+        title: "No team roles or permissions yet",
+        detail:
+          "Studio and Agency plans show seat counts, but owner / admin / member / viewer permissions haven't been built. Multi-user lands together with the access model.",
+      },
+      {
+        title: "No e-signature on proposals",
+        detail:
+          "Client approval is a button click on the share link. Signed PDFs with timestamps come later.",
+      },
+      {
+        title: "No file attachments",
+        detail:
+          "Milestones support deliverable links, but you can't upload contracts, receipts, or asset files to projects or invoices yet.",
+      },
+    ],
   },
   {
-    title: "No multi-user workspaces yet",
-    detail:
-      "Each account is single-user. Studio and Agency seat support is coming.",
+    label: "Money & billing",
+    items: [
+      {
+        title: "AUD and GST only",
+        detail:
+          "Pricing, invoices, and tax handling assume Australian businesses. Multi-currency and non-AU tax regimes are a separate build.",
+      },
+      {
+        title: "No accounting software exports yet",
+        detail:
+          "GST is calculated, but you'll need to copy numbers into Xero, MYOB, or QBO by hand. Native exports are planned.",
+      },
+      {
+        title: "No recurring invoices or retainers",
+        detail:
+          "Every invoice is one-off. Monthly retainers and subscription billing are on the roadmap.",
+      },
+      {
+        title: "Payments are bank-transfer PDFs",
+        detail:
+          "Invoices include your bank details. Native Stripe payments are on the roadmap.",
+      },
+      {
+        title: "No automated payment reminders",
+        detail:
+          "Invoices don't chase themselves. You'll nudge late-paying clients by hand until reminder workflows ship.",
+      },
+      {
+        title: "No expense tracking",
+        detail:
+          "You can invoice clients but can't log business expenses, mileage, or reimbursables against a project.",
+      },
+    ],
   },
   {
-    title: "Payments are bank-transfer PDFs",
-    detail:
-      "Invoices include your bank details. Native Stripe payments are on the roadmap.",
-  },
-  {
-    title: "Mobile works but is desktop-first",
-    detail:
-      "Functional on phones; designed for desktop first. Dedicated PWA polish is coming.",
+    label: "Heads up",
+    items: [
+      {
+        title: "The product name might change",
+        detail:
+          "\"Velo\" is a working name. The final name lands before public beta. Don't get attached.",
+      },
+    ],
   },
 ];
 
@@ -991,22 +1165,158 @@ function StillRough() {
           className="mx-auto mt-4 max-w-xl text-center text-base leading-relaxed text-muted-foreground"
         >
           Velo is in early beta. Here&apos;s what we know is missing, slow, or
-          broken — and what we&apos;re doing about it.
+          broken, and what we&apos;re doing about it.
         </motion.p>
 
-        <div className="mt-12 border-t border-border">
-          {stillRoughItems.map(({ title, detail }) => (
-            <motion.div
-              key={title}
-              variants={item}
-              className="border-b border-border py-5"
-            >
-              <h3 className="text-base font-semibold tracking-tight text-foreground">
-                {title}
-              </h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                {detail}
-              </p>
+        <div className="mt-12 space-y-10">
+          {stillRoughGroups.map(({ label, items }) => (
+            <motion.div key={label} variants={item}>
+              <div className="border-b border-border pb-2 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground/70">
+                {label}
+              </div>
+              <ul className="divide-y divide-border">
+                {items.map(({ title, detail }) => (
+                  <li
+                    key={title}
+                    className="py-3 text-sm leading-relaxed text-muted-foreground"
+                  >
+                    <span className="font-semibold text-foreground">
+                      {title}:
+                    </span>{" "}
+                    {detail}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+    </section>
+  );
+}
+
+// Counterpart to "What's still rough". Shows the order things land in,
+// grouped by proximity rather than dated quarters — a solo builder
+// shouldn't promise a calendar.
+type WhatsNextGroup = {
+  label: string;
+  items: { title: string; detail: string }[];
+};
+
+const whatsNextGroups: WhatsNextGroup[] = [
+  {
+    label: "Up next",
+    items: [
+      {
+        title: "Custom sending domain for email",
+        detail:
+          "Verifying our own domain so proposals stop landing in client spam folders.",
+      },
+      {
+        title: "Stripe payments",
+        detail:
+          "Native card payments on invoices, replacing the bank-transfer-PDF flow.",
+      },
+      {
+        title: "CRM upgrade for clients",
+        detail:
+          "Notes, tags, lead stages, and a communications log. The most-asked-for change in early feedback.",
+      },
+    ],
+  },
+  {
+    label: "Soon after",
+    items: [
+      {
+        title: "Team workspaces and roles",
+        detail:
+          "Multi-user accounts on Studio and Agency plans, with owner / admin / member / viewer permissions.",
+      },
+      {
+        title: "Recurring invoices and retainers",
+        detail:
+          "Monthly billing for ongoing work, not just one-off project invoices.",
+      },
+      {
+        title: "File attachments on projects and invoices",
+        detail:
+          "Upload contracts, receipts, and asset files instead of stuffing everything into deliverable links.",
+      },
+    ],
+  },
+  {
+    label: "On the radar",
+    items: [
+      {
+        title: "Accounting software exports",
+        detail:
+          "Native exports to Xero, MYOB, and QBO so end-of-quarter isn't a copy-paste job.",
+      },
+      {
+        title: "Public API and webhooks",
+        detail:
+          "For wiring Velo into your own tooling once the core flow is stable.",
+      },
+      {
+        title: "Analytics and reporting",
+        detail:
+          "Revenue, profitability, and time-cost views once there's enough data per account to be meaningful.",
+      },
+      {
+        title: "Multi-currency and non-AU tax",
+        detail:
+          "Pricing and tax handling beyond AUD/GST. Comes after the Australian core is solid.",
+      },
+    ],
+  },
+];
+
+function WhatsNext() {
+  const prefersReduced = useReducedMotion();
+  const { container, item } = staggerVariants(prefersReduced, 0.08);
+
+  return (
+    <section className="border-b border-border bg-background">
+      <motion.div
+        variants={container}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.15 }}
+        className="mx-auto max-w-3xl px-6 py-24 sm:py-28"
+      >
+        <motion.h2
+          variants={item}
+          className="text-balance text-center text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
+        >
+          What&apos;s coming next
+        </motion.h2>
+        <motion.p
+          variants={item}
+          className="mx-auto mt-4 max-w-xl text-center text-base leading-relaxed text-muted-foreground"
+        >
+          The other half of being honest about what&apos;s rough: showing the
+          order things land in. No promised dates, just the queue.
+        </motion.p>
+
+        <div className="mt-12 space-y-10">
+          {whatsNextGroups.map(({ label, items }) => (
+            <motion.div key={label} variants={item}>
+              <div className="border-b border-border pb-2 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground/70">
+                {label}
+              </div>
+              <ul className="divide-y divide-border">
+                {items.map(({ title, detail }) => (
+                  <li
+                    key={title}
+                    className="py-3 text-sm leading-relaxed text-muted-foreground"
+                  >
+                    <span className="font-semibold text-foreground">
+                      {title}:
+                    </span>{" "}
+                    {detail}
+                  </li>
+                ))}
+              </ul>
             </motion.div>
           ))}
         </div>
@@ -1238,7 +1548,7 @@ function Pricing() {
                 </span>
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
-                After 14 days your account pauses until you pick a plan — we
+                After 14 days your account pauses until you pick a plan. We
                 never auto-charge.
               </p>
               <ul className="mt-5 grid gap-x-6 gap-y-2 sm:grid-cols-2">
@@ -1352,7 +1662,7 @@ function Pricing() {
           variants={item}
           className="mt-10 text-center text-sm text-muted-foreground"
         >
-          More features rolling out through 2026 — got something you need?{" "}
+          More features rolling out through 2026. Got something you need?{" "}
           <a
             href="mailto:jaineelk.dev@gmail.com?subject=Velo%20feature%20request"
             className={cn(
@@ -1389,7 +1699,7 @@ const faqs: Faq[] = [
   },
   {
     q: "How do I get paid?",
-    a: "Invoices are PDFs with your bank details — clients pay you directly. Native payments aren't part of v1.",
+    a: "Invoices are PDFs with your bank details, and clients pay you directly. Native payments aren't part of v1.",
   },
   {
     q: "Is my data secure?",
@@ -1475,7 +1785,7 @@ function FinalCTA() {
             14-day free trial. No credit card required.
           </p>
           <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
-            Early beta — things will break. Send feedback when they do.
+            Early beta. Things will break. Send feedback when they do.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
@@ -1499,6 +1809,124 @@ function FinalCTA() {
           </div>
         </motion.div>
       </div>
+    </section>
+  );
+}
+
+// Soft fallback for visitors who scrolled past the final CTA without
+// signing up. Captures interest with a single email field so we can ping
+// them when meaningful milestones ship. Notifications go to the support
+// inbox via Resend — no DB table yet, manual list management until volume
+// justifies a proper audience.
+function Waitlist() {
+  const prefersReduced = useReducedMotion();
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [sent, setSent] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
+  const fadeUp = prefersReduced
+    ? {
+        initial: false as const,
+        whileInView: { opacity: 1, y: 0 },
+        transition: { duration: 0 },
+      }
+    : {
+        initial: { opacity: 0, y: 20 },
+        whileInView: { opacity: 1, y: 0 },
+        transition: { duration: 0.6, ease: EASE_OUT },
+      };
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    const trimmed = email.trim();
+    if (!trimmed) {
+      setError("Drop your email and we'll let you know.");
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        await submitWaitlist({ email: trimmed });
+        setSent(true);
+        setEmail("");
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Couldn't save your spot. Try again in a moment.",
+        );
+      }
+    });
+  }
+
+  return (
+    <section className="border-b border-border bg-background">
+      <motion.div
+        {...fadeUp}
+        viewport={{ once: true, amount: 0.3 }}
+        className="mx-auto max-w-2xl px-6 py-20 text-center"
+      >
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground/70">
+          Not ready yet?
+        </p>
+        <h2 className="mt-3 text-balance text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+          Get pinged when the rough bits get smooth.
+        </h2>
+        <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
+          One email when something material ships: Stripe payments, CRM,
+          team accounts. No marketing, no calendar invites.
+        </p>
+
+        {sent ? (
+          <div
+            role="status"
+            className="mx-auto mt-8 inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-3 text-sm font-medium text-foreground shadow-sm"
+          >
+            <CheckCircle2 aria-hidden className="h-4 w-4 text-primary" />
+            You&apos;re on the list. Talk soon.
+          </div>
+        ) : (
+          <form
+            onSubmit={handleSubmit}
+            className="mx-auto mt-8 flex max-w-md flex-col gap-2 sm:flex-row"
+          >
+            <label htmlFor="waitlist-email" className="sr-only">
+              Email address
+            </label>
+            <input
+              id="waitlist-email"
+              type="email"
+              required
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isPending}
+              className={cn(
+                "h-11 flex-1 rounded-md border border-border bg-card px-3 text-sm text-foreground placeholder:text-muted-foreground/60 transition-colors focus:border-foreground/40 focus:outline-none disabled:opacity-50",
+                focusRing,
+              )}
+            />
+            <button
+              type="submit"
+              disabled={isPending}
+              className={cn(
+                "inline-flex h-11 items-center justify-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-60",
+                focusRing,
+              )}
+            >
+              {isPending ? "Saving…" : "Notify me"}
+            </button>
+          </form>
+        )}
+
+        {error ? (
+          <p role="alert" className="mt-3 text-sm text-red-600">
+            {error}
+          </p>
+        ) : null}
+      </motion.div>
     </section>
   );
 }

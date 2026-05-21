@@ -207,7 +207,7 @@ export async function sendProposal(proposalId: string): Promise<string> {
       VALUES (
         ${proposalId},
         'email_skipped',
-        'Email not sent — client has no email address on file'
+        'Email not sent: client has no email address on file'
       )
     `;
   }

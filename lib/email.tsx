@@ -168,6 +168,69 @@ function logSupportOutcome(userId: string, outcome: "sent" | "failed") {
   );
 }
 
+export type SendWaitlistEmailInput = {
+  email: string;
+  ip: string;
+};
+
+export type SendWaitlistEmailResult =
+  | { ok: true; id: string }
+  | { ok: false; reason: string };
+
+// Marketing-page waitlist signups. Fires a notification to the support inbox
+// so we can manually compile a list until a proper Resend audience or DB
+// table lands. `replyTo` is set so we can hit reply and welcome the signup
+// directly without copy-pasting.
+export async function sendWaitlistEmail(
+  input: SendWaitlistEmailInput,
+): Promise<SendWaitlistEmailResult> {
+  const resend = getResend();
+  if (!resend) {
+    return { ok: false, reason: "RESEND_API_KEY is not configured" };
+  }
+
+  const text = [
+    "New waitlist signup on velo.",
+    "",
+    `Email: ${input.email}`,
+    `IP: ${input.ip}`,
+    `When: ${new Date().toISOString()}`,
+  ].join("\n");
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_ADDRESS,
+      to: SUPPORT_INBOX,
+      replyTo: input.email,
+      subject: `[Velo waitlist] ${input.email}`,
+      text,
+    });
+
+    if (error) {
+      logWaitlistOutcome("failed");
+      return { ok: false, reason: error.message };
+    }
+    logWaitlistOutcome("sent");
+    return { ok: true, id: data?.id ?? "" };
+  } catch (err) {
+    logWaitlistOutcome("failed");
+    return {
+      ok: false,
+      reason: err instanceof Error ? err.message : "Unknown email error",
+    };
+  }
+}
+
+function logWaitlistOutcome(outcome: "sent" | "failed") {
+  console.log(
+    JSON.stringify({
+      ts: new Date().toISOString(),
+      event: "waitlist_signup",
+      outcome,
+    }),
+  );
+}
+
 export function getAppBaseUrl(): string {
   const url = process.env.NEXT_PUBLIC_APP_URL ?? process.env.APP_URL;
   if (url) return url;

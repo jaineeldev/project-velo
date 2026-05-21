@@ -237,7 +237,7 @@ export async function generateFinalInvoice(projectId: string): Promise<string> {
   const proposalTotal = Number(project.proposal_total_amount);
   const remaining = proposalTotal - depositPaid;
   if (remaining <= 0)
-    throw new Error("Nothing remaining to invoice — the deposit covered the full project total.");
+    throw new Error("Nothing remaining to invoice. The deposit covered the full project total.");
 
   // Proposal totals are stored inclusive of GST, so the GST portion is 1/11.
   const finalGst = remaining / 11;

@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Velo — Ship code, not spreadsheets.";
+export const alt = "Velo: Ship code, not spreadsheets.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -71,7 +71,7 @@ export default function Image() {
               maxWidth: "920px",
             }}
           >
-            Proposals, projects, and invoices — built for AU freelance devs.
+            Proposals, projects, and invoices, built for AU freelance devs.
           </div>
         </div>
 

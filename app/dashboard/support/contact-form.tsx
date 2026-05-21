@@ -23,7 +23,7 @@ const types: { value: SupportType; label: string; icon: LucideIcon }[] = [
 const placeholderByType: Record<SupportType, string> = {
   bug: "What happened? What did you expect to happen? Any steps to reproduce?",
   feedback:
-    "Tell us what's on your mind — what works, what doesn't, what you wish Velo did.",
+    "Tell us what's on your mind: what works, what doesn't, what you wish Velo did.",
   help: "What do you need help with?",
 };
 
@@ -83,7 +83,7 @@ export function ContactForm({ userEmail }: { userEmail: string }) {
           />
           <div>
             <p className="text-sm font-medium text-emerald-900 dark:text-emerald-100">
-              Message sent — thanks
+              Message sent. Thanks!
             </p>
             <p className="mt-1 text-sm text-emerald-800 dark:text-emerald-200">
               We&apos;ll reply to{" "}

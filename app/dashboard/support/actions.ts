@@ -11,7 +11,7 @@ const supportSchema = z.object({
     .string()
     .trim()
     .min(5, "Please add a few words so we can help.")
-    .max(5000, "Message is too long — try trimming it down."),
+    .max(5000, "Message is too long. Try trimming it down."),
 });
 
 export type SubmitSupportInput = z.infer<typeof supportSchema>;

@@ -991,7 +991,7 @@ function FounderNote() {
             actually happens.
           </p>
           <p>
-            It&apos;s just me building this for now, between my classowrk and my casual job. 
+            It&apos;s just me building this for now, between my coursework and my casual job. 
             That&apos;s why &ldquo;What&apos;s still rough&rdquo; is
             honest. There&apos;s no team to hide behind. If you find a bug,
             tell me directly and a fix usually goes out in the next push. If

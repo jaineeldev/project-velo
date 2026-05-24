@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "@clerk/nextjs";
 
@@ -26,7 +26,21 @@ function pickSafeNext(raw: string | null): string {
   return "/client/dashboard";
 }
 
+// Next.js requires useSearchParams() to live inside a <Suspense> boundary so
+// the page can bail out of static generation cleanly. We split the component
+// into a shell (default export, always renderable) and an inner piece
+// (consumes the query) wrapped in <Suspense>.
 export default function ClientSignUpReloadPage() {
+  return (
+    <Shell>
+      <Suspense fallback={<StatusText>Finishing setup…</StatusText>}>
+        <ClientSignUpReloadInner />
+      </Suspense>
+    </Shell>
+  );
+}
+
+function ClientSignUpReloadInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isLoaded, session } = useSession();
@@ -65,6 +79,14 @@ export default function ClientSignUpReloadPage() {
   }, [isLoaded, session, searchParams, router]);
 
   return (
+    <StatusText>
+      {errored ? "Taking you to your proposal…" : "Finishing setup…"}
+    </StatusText>
+  );
+}
+
+function Shell({ children }: { children: React.ReactNode }) {
+  return (
     <main className="flex min-h-screen flex-col bg-background">
       <header className="px-6 py-6 sm:px-10 sm:py-8">
         <div className="flex items-center gap-3">
@@ -83,10 +105,12 @@ export default function ClientSignUpReloadPage() {
         role="status"
         aria-live="polite"
       >
-        <p className="text-sm text-muted-foreground">
-          {errored ? "Taking you to your proposal…" : "Finishing setup…"}
-        </p>
+        {children}
       </div>
     </main>
   );
+}
+
+function StatusText({ children }: { children: React.ReactNode }) {
+  return <p className="text-sm text-muted-foreground">{children}</p>;
 }

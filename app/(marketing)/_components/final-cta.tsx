@@ -56,18 +56,6 @@ export function FinalCTA({
 
   return (
     <section className="relative isolate overflow-hidden bg-[#0d0d0f]">
-      {/* Signature aurora — same dual-tone as the hero, recurring here so
-          the brand visual reads as bookends across the page. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage: [
-            "radial-gradient(60% 60% at 50% 50%, rgba(37,99,235,0.10), transparent 70%)",
-            "radial-gradient(45% 50% at 30% 60%, rgba(16,185,129,0.06), transparent 70%)",
-          ].join(", "),
-        }}
-      />
       <motion.div
         {...fadeUp}
         viewport={{ once: true, amount: 0.3 }}

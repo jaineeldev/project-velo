@@ -67,52 +67,56 @@ export const allFeatures: Feature[] = [
     icon: FileText,
     title: "Proposals",
     description:
-      "Professional proposals with line items, GST, and deposit calculation.",
+      "Professional proposals with line items, GST, and deposit calculation. No more back-and-forth over email — clients get a clean link, you get a clear decision.",
     mockup: "proposals",
   },
   {
     icon: Share2,
     title: "Client portal",
     description:
-      "Clients track progress through their own secure Velo account. No paid subscription required. Client accounts are always free.",
+      "Clients track progress through their own secure Velo account. No paid subscription required, client accounts are always free. Your clients always know where things stand without having to ask.",
     mockup: "portal",
   },
   {
     icon: FolderKanban,
     title: "Project tracking",
-    description: "Milestone-based tracking with time logging built in.",
+    description:
+      "Milestone-based tracking with time logging built in. Stop guessing where projects stand: every milestone, logged and visible.",
     mockup: "tracking",
   },
   {
     icon: Receipt,
     title: "Invoicing",
-    description: "Deposit and final invoices generated automatically.",
+    description:
+      "Deposit and final invoices generated automatically. Get paid faster when the invoice is already waiting the moment the project wraps.",
     mockup: "invoicing",
   },
   {
     icon: FileDown,
     title: "PDF export",
-    description: "Download professional PDFs for proposals and invoices.",
+    description:
+      "Download professional PDFs for proposals and invoices. Send something that looks professional even before you've built a brand.",
     mockup: "pdf",
   },
   {
     icon: Package,
     title: "Deliverables",
-    description: "Share proof of work links with clients per milestone.",
+    description:
+      "Share proof of work links with clients per milestone. Close projects cleanly with proof of everything that shipped.",
     mockup: "deliverables",
   },
   {
     icon: GitPullRequest,
     title: "Change requests",
     description:
-      "Clients submit scope changes through their portal. You approve, decline, or quote the work without leaving Velo.",
+      "Clients submit scope changes through their portal. You approve, decline, or quote the work without leaving Velo. Scope creep doesn't disappear, Velo just makes it easier to handle.",
     mockup: "changes",
   },
   {
     icon: LayoutDashboard,
     title: "Dashboard",
     description:
-      "One view of every proposal, project, and invoice. Live status, recent activity, and the numbers that matter.",
+      "One view of every proposal, project, and invoice. Live status, recent activity, and the numbers that matter. One tab instead of five, everything you need to run your week.",
     mockup: "dashboard",
   },
 ];
@@ -125,9 +129,9 @@ export const homeHighlights: Feature[] = [
 ];
 
 export const trustItems = [
-  "Built for freelance developers and dev agencies",
+  "Built for Australian freelancers",
   "GST ready",
-  "Australian-made",
+  "AUD invoicing",
   "Encrypted and secure",
 ];
 
@@ -193,7 +197,7 @@ export const plans: Plan[] = [
     ],
     cta: {
       label: "Talk to us",
-      href: "mailto:jaineelk.dev@gmail.com?subject=Velo%20Scale%20plan",
+      href: "mailto:hello@velo.app?subject=Velo%20Scale%20plan",
     },
   },
 ];

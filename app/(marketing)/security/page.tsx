@@ -86,6 +86,10 @@ const sections: Section[] = [
           . For high-value engagements we still recommend a separate signed
           contract.
         </p>
+        <p className="rounded-lg border border-white/10 bg-white/[0.03] p-4 text-sm text-white/55">
+          Velo is designed for use under Australian law. If you are outside
+          Australia, please review the terms carefully before signing up.
+        </p>
       </>
     ),
   },
@@ -209,7 +213,7 @@ export default function SecurityPage() {
               <h2 className="text-3xl font-extrabold leading-[1.05] tracking-[-0.03em] text-white sm:text-4xl md:text-4xl">
                 {section.title}
               </h2>
-              <div className="mt-8 space-y-5 text-base leading-[1.75] text-white/60 sm:text-lg">
+              <div className="mt-8 max-w-prose space-y-5 text-base leading-[1.75] text-white/60 sm:text-lg">
                 {section.body}
               </div>
             </article>
@@ -239,11 +243,11 @@ export default function SecurityPage() {
 function WhatVeloHandles() {
   return (
     <section className="relative border-t border-white/[0.06] bg-[#0d0d0f]">
-      <div className="mx-auto max-w-5xl px-6 py-16 sm:px-10 sm:py-20">
+      <div className="mx-auto max-w-5xl px-6 py-16 text-center sm:px-10 sm:py-20">
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
           What Velo handles
         </p>
-        <div className="mt-8 grid gap-4 sm:grid-cols-3 sm:gap-5">
+        <div className="mt-8 grid gap-4 text-left sm:grid-cols-3 sm:gap-5">
           {dataInScope.map(({ icon: Icon, label, detail }) => (
             <div
               key={label}
@@ -271,7 +275,7 @@ function SecurityRoadmap() {
   return (
     <section className="relative border-t border-white/[0.06] bg-[#0d0d0f]">
       <div className="mx-auto max-w-5xl px-6 py-24 sm:px-10 sm:py-28">
-        <div className="max-w-2xl">
+        <div className="mx-auto max-w-2xl text-center">
           <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
             On the roadmap
           </p>
@@ -279,7 +283,7 @@ function SecurityRoadmap() {
             What we don&apos;t do{" "}
             <span className="text-primary">yet.</span>
           </h2>
-          <p className="mt-6 max-w-xl text-base leading-relaxed text-white/60 sm:text-lg">
+          <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-white/60 sm:text-lg">
             Standards-level security work that is on the build queue. We are
             shipping these in order before public launch.
           </p>
@@ -293,15 +297,15 @@ function SecurityRoadmap() {
 function SecurityHero() {
   return (
     <section className="relative isolate overflow-hidden bg-[#0d0d0f]">
-      <div className="relative mx-auto max-w-7xl px-6 pb-24 pt-24 sm:px-10 sm:pb-36 sm:pt-32">
+      <div className="relative mx-auto max-w-7xl px-6 pb-24 pt-24 text-center sm:px-10 sm:pb-36 sm:pt-32">
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
           Security
         </p>
-        <h1 className="mt-8 max-w-5xl text-balance text-6xl font-extrabold leading-[0.95] tracking-[-0.04em] text-white sm:text-7xl md:text-8xl">
-          Built with security in{" "}
-          <span className="text-primary">mind.</span>
+        <h1 className="mx-auto mt-8 max-w-5xl text-balance text-6xl font-extrabold leading-[0.95] tracking-[-0.04em] text-white sm:text-7xl md:text-8xl">
+          How we store, protect, and delete your{" "}
+          <span className="text-primary">data.</span>
         </h1>
-        <p className="mt-10 max-w-2xl text-base leading-relaxed text-white/60 sm:text-lg">
+        <p className="mx-auto mt-10 max-w-2xl text-base leading-relaxed text-white/60 sm:text-lg">
           Velo handles contracts, invoices, and client records. Here is exactly
           how that data is stored, transmitted, accessed, and deleted, plain
           English.

@@ -261,7 +261,7 @@ export function PricingSection({
         >
           More features rolling out through 2026. Got something you need?{" "}
           <a
-            href="mailto:jaineelk.dev@gmail.com?subject=Velo%20feature%20request"
+            href="mailto:hello@velo.app?subject=Velo%20feature%20request"
             className={cn(
               "rounded-sm font-semibold text-primary underline-offset-2 hover:underline",
               focusRing,

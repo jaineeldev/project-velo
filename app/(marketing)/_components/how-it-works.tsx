@@ -19,11 +19,11 @@ export function HowItWorks() {
         className="absolute bottom-0 left-6 top-0 w-px bg-white/10 sm:left-10"
       />
 
-      <div className="relative mx-auto max-w-7xl px-16 pb-16 pt-32 sm:px-20 sm:pb-24 sm:pt-44">
+      <div className="relative mx-auto max-w-7xl px-16 pb-16 pt-32 text-center sm:px-20 sm:pb-24 sm:pt-44">
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
           How it works
         </p>
-        <h2 className="mt-6 max-w-3xl text-balance text-5xl font-extrabold leading-[1] tracking-[-0.03em] text-white sm:text-6xl md:text-7xl">
+        <h2 className="mx-auto mt-6 max-w-3xl text-balance text-5xl font-extrabold leading-[1] tracking-[-0.03em] text-white sm:text-6xl md:text-7xl">
           Approve once. The setup is{" "}
           <span className="text-primary">done.</span>
         </h2>
@@ -71,14 +71,6 @@ function StepSection({
         isAlt ? "bg-[#111113]" : "bg-[#0d0d0f]",
       )}
     >
-      {/* Barely-visible sans step number, sized to fill the right edge. */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute -right-8 top-1/2 select-none -translate-y-1/2 font-extrabold leading-none tracking-[-0.05em] text-white/[0.03] text-[16rem] sm:text-[20rem]"
-      >
-        {step.number}
-      </span>
-
       {/* Anchor node on the vertical line. No glow. */}
       <span
         aria-hidden

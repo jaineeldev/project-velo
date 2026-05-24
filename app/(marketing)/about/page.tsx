@@ -19,8 +19,9 @@ export default function AboutPage() {
       <AboutHero />
       <Manifesto />
       <TeamSection />
-      <EarlyBetaNote />
+      <ShutdownReassurance />
       <WaitlistBlock />
+      <EarlyBetaNote />
       <CtaToSecurity />
     </>
   );
@@ -29,14 +30,14 @@ export default function AboutPage() {
 function AboutHero() {
   return (
     <section className="relative isolate overflow-hidden bg-[#0d0d0f]">
-      <div className="relative mx-auto max-w-7xl px-6 pb-24 pt-24 sm:px-10 sm:pb-32 sm:pt-32">
+      <div className="relative mx-auto max-w-7xl px-6 pb-24 pt-24 text-center sm:px-10 sm:pb-32 sm:pt-32">
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
           About
         </p>
-        <h1 className="mt-8 max-w-5xl text-balance text-6xl font-extrabold leading-[0.95] tracking-[-0.04em] text-white sm:text-7xl md:text-8xl">
+        <h1 className="mx-auto mt-8 max-w-5xl text-balance text-6xl font-extrabold leading-[0.95] tracking-[-0.04em] text-white sm:text-7xl md:text-8xl">
           Built in <span className="text-primary">Brisbane.</span>
         </h1>
-        <p className="mt-10 max-w-2xl text-base leading-relaxed text-white/60 sm:text-lg">
+        <p className="mx-auto mt-10 max-w-2xl text-base leading-relaxed text-white/60 sm:text-lg">
           Velo is a side-of-the-desk project that grew out of a frustration:
           freelancer tools are written for everyone except devs. So we&apos;re
           building the one we&apos;d actually want to use.
@@ -50,13 +51,15 @@ function Manifesto() {
   return (
     <section className="relative bg-[#0d0d0f]">
       <div className="mx-auto max-w-3xl px-6 py-32 sm:px-10 sm:py-40">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
-          Why we&apos;re building this
-        </p>
-        <h2 className="mt-6 text-balance text-4xl font-extrabold leading-[1.05] tracking-[-0.03em] text-white sm:text-5xl md:text-6xl">
-          Built for devs who&apos;d rather be{" "}
-          <span className="text-primary">coding.</span>
-        </h2>
+        <div className="text-center">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
+            Why we&apos;re building this
+          </p>
+          <h2 className="mt-6 text-balance text-4xl font-extrabold leading-[1.05] tracking-[-0.03em] text-white sm:text-5xl md:text-6xl">
+            Built for devs who&apos;d rather be{" "}
+            <span className="text-primary">coding.</span>
+          </h2>
+        </div>
         <div className="mt-10 space-y-6 text-base leading-[1.75] text-white/60 sm:text-lg">
           <p>
             Most freelancer tools feel like they were made for someone else:
@@ -84,18 +87,19 @@ function TeamSection() {
   return (
     <section className="relative border-y border-white/[0.06] bg-[#0d0d0f]">
       <div className="mx-auto max-w-5xl px-6 py-32 sm:px-10 sm:py-40">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
-          The team
-        </p>
-        <h2 className="mt-6 max-w-2xl text-balance text-5xl font-extrabold leading-[1.05] tracking-[-0.03em] text-white sm:text-6xl">
-          A few devs in{" "}
-          <span className="text-primary">Brisbane.</span>
-        </h2>
-        <p className="mt-7 max-w-xl text-base leading-relaxed text-white/60 sm:text-lg">
-          Velo is built mostly by one person, with help from contributors who
-          send PRs and feedback. No investors, no growth team, no quarterly
-          OKRs.
-        </p>
+        <div className="text-center">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
+            The team
+          </p>
+          <h2 className="mx-auto mt-6 max-w-2xl text-balance text-5xl font-extrabold leading-[1.05] tracking-[-0.03em] text-white sm:text-6xl">
+            The <span className="text-primary">team.</span>
+          </h2>
+          <p className="mx-auto mt-7 max-w-xl text-base leading-relaxed text-white/60 sm:text-lg">
+            Velo is built mostly by one person, with help from contributors who
+            send PRs and feedback. No investors, no growth team, no quarterly
+            OKRs.
+          </p>
+        </div>
 
         <ul className="mt-14 divide-y divide-white/[0.08] border-y border-white/[0.08]">
           {team.map((member) => (
@@ -139,18 +143,20 @@ function EarlyBetaNote() {
   return (
     <section className="relative bg-[#0d0d0f]">
       <div className="mx-auto max-w-5xl px-6 py-32 sm:px-10 sm:py-40">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
-          Where we are
-        </p>
-        <h2 className="mt-6 max-w-2xl text-balance text-5xl font-extrabold leading-[1.05] tracking-[-0.03em] text-white sm:text-6xl">
-          Known limits and{" "}
-          <span className="text-primary">what&apos;s next.</span>
-        </h2>
-        <p className="mt-7 max-w-xl text-base leading-relaxed text-white/60 sm:text-lg">
-          We&apos;d rather show the seams than pretend they aren&apos;t there.
-          Below: what doesn&apos;t exist yet, and the dated plan for everything
-          we&apos;re building.
-        </p>
+        <div className="text-center">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
+            Where we are
+          </p>
+          <h2 className="mx-auto mt-6 max-w-2xl text-balance text-5xl font-extrabold leading-[1.05] tracking-[-0.03em] text-white sm:text-6xl">
+            Known limits and{" "}
+            <span className="text-primary">what&apos;s next.</span>
+          </h2>
+          <p className="mx-auto mt-7 max-w-xl text-base leading-relaxed text-white/60 sm:text-lg">
+            We&apos;d rather show the seams than pretend they aren&apos;t
+            there. Below: what doesn&apos;t exist yet, and the dated plan for
+            everything we&apos;re building.
+          </p>
+        </div>
 
         <div className="mt-16 grid gap-16 md:grid-cols-2 md:gap-12 lg:gap-20">
           <RoughColumn
@@ -210,6 +216,21 @@ function RoughColumn({
         ))}
       </div>
     </div>
+  );
+}
+
+// Small reassurance that follows the team section. Directly answers the
+// "what if you go away" objection raised by listing the team of two above.
+function ShutdownReassurance() {
+  return (
+    <section className="relative bg-[#0d0d0f]">
+      <div className="mx-auto max-w-3xl px-6 pb-0 pt-16 sm:px-10 sm:pt-20">
+        <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4 text-center text-sm text-white/60">
+          If Velo ever shuts down, you&apos;ll get 60 days notice and a
+          complete export of all your data.
+        </div>
+      </div>
+    </section>
   );
 }
 

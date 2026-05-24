@@ -58,38 +58,21 @@ export function Hero() {
 
   return (
     <section className="relative isolate flex min-h-screen flex-col overflow-hidden bg-[#0d0d0f]">
-      {/* Signature dual-tone aurora. Blue (sent) bleeds into emerald
-          (approved), echoing the product story. Same backdrop recurs on the
-          pricing teaser and FinalCTA so the eye learns it as the brand. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage: [
-            "radial-gradient(75% 45% at 50% 28%, rgba(37,99,235,0.10), transparent 65%)",
-            "radial-gradient(55% 40% at 72% 64%, rgba(16,185,129,0.06), transparent 70%)",
-          ].join(", "),
-        }}
-      />
       <div className="relative mx-auto flex w-full max-w-7xl flex-1 flex-col px-6 pb-16 pt-24 sm:px-10 sm:pb-20 sm:pt-28">
-        <div className="flex flex-col">
-          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
-            <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-            Proposal to invoice, for freelance devs
-          </span>
-          <h1 className="mt-8 max-w-5xl text-balance text-7xl font-extrabold leading-[0.95] tracking-[-0.04em] text-white md:text-8xl lg:text-[6.5rem]">
+        <div className="flex flex-col items-center text-center">
+          <h1 className="max-w-5xl text-balance text-6xl font-extrabold leading-[0.95] tracking-[-0.04em] text-white sm:text-7xl md:text-8xl lg:text-[6.5rem]">
             <span className="block">Ship code,</span>
             <span className="mt-1 block">
               not <span className="text-blue-500">spreadsheets.</span>
             </span>
           </h1>
 
-          <p className="mt-10 max-w-xl text-lg text-white/70">
-            Send proposals, get approved online, and auto-generate the project
-            and deposit invoice the moment a client signs. One tool, not five.
+          <p className="mt-10 max-w-2xl text-lg text-white/70">
+            One tool to send proposals, manage projects, and invoice clients.
+            Built for Australian freelance devs and dev agencies.
           </p>
 
-          <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+          <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row">
             <Link
               href="/sign-up"
               className={cn(

@@ -27,11 +27,11 @@ export default function HomePage() {
 
       {/* 3 featured highlights — full list lives on /features */}
       <section className="relative bg-white text-black">
-        <div className="mx-auto max-w-7xl px-6 pb-10 pt-32 sm:px-10 sm:pb-16 sm:pt-44">
+        <div className="mx-auto max-w-7xl px-6 pb-10 pt-32 text-center sm:px-10 sm:pb-16 sm:pt-44">
           <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-neutral-500">
             A taste of what&apos;s inside
           </p>
-          <h2 className="mt-6 max-w-4xl text-balance text-5xl font-extrabold leading-[1] tracking-[-0.03em] text-black sm:text-6xl md:text-7xl">
+          <h2 className="mx-auto mt-6 max-w-4xl text-balance text-5xl font-extrabold leading-[1] tracking-[-0.03em] text-black sm:text-6xl md:text-7xl">
             Every part of the freelance flow,{" "}
             <span className="text-primary">designed like one product.</span>
           </h2>
@@ -109,14 +109,6 @@ export default function HomePage() {
 function SecurityTrustStrip() {
   return (
     <section className="relative isolate overflow-hidden border-y border-white/[0.06] bg-[#0d0d0f]">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage:
-            "radial-gradient(50% 60% at 50% 50%, rgba(16,185,129,0.05), transparent 70%)",
-        }}
-      />
       <div className="relative mx-auto max-w-5xl px-6 py-24 text-center sm:px-10 sm:py-32">
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
           Security
@@ -150,16 +142,6 @@ function SecurityTrustStrip() {
 function PricingTeaser() {
   return (
     <section className="relative isolate overflow-hidden bg-[#0d0d0f]">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage: [
-            "radial-gradient(50% 60% at 75% 50%, rgba(37,99,235,0.09), transparent 70%)",
-            "radial-gradient(40% 45% at 20% 30%, rgba(16,185,129,0.05), transparent 70%)",
-          ].join(", "),
-        }}
-      />
       <div className="relative mx-auto max-w-7xl px-6 py-32 sm:px-10 sm:py-40">
         <div className="text-center">
           <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">

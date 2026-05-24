@@ -460,6 +460,7 @@ export const team: TeamMember[] = [
 
 export const navLinks = [
   { label: "Home", href: "/" },
+  { label: "About", href: "/about" },
   { label: "Features", href: "/features" },
   { label: "Pricing", href: "/pricing" },
   { label: "Security", href: "/security" },

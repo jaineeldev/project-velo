@@ -5,7 +5,14 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ThemedClerkProvider } from "@/components/clerk-provider";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+// Single sans-serif typeface across the marketing surface and the app. Inter
+// carries every weight from 100 to 900 so we can drive hierarchy through
+// weight + size + tracking, not through a second font family.
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 const description =
   "Send proposals, get approvals, track projects, and invoice clients, all in one place. Built for freelance developers and dev agencies.";
@@ -40,7 +47,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={inter.variable}
+      suppressHydrationWarning
+    >
       <body className="bg-background font-sans text-foreground antialiased">
         <ThemeProvider>
           <ThemedClerkProvider>{children}</ThemedClerkProvider>

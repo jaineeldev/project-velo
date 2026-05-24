@@ -53,13 +53,24 @@ export async function POST(req: Request) {
   }
 
   try {
-    if (event.type === "user.created") {
-      const { id, email_addresses, first_name, last_name } = event.data;
+    if (event.type === "user.created" || event.type === "user.updated") {
+      const { id, email_addresses, first_name, last_name, public_metadata } =
+        event.data;
       const email = email_addresses?.[0]?.email_address;
       const name =
         [first_name, last_name].filter(Boolean).join(" ") || null;
+      // Role lives in publicMetadata so an authenticated server action is
+      // the only writer; the client SDK cannot tamper with it the way it
+      // can with unsafeMetadata. Missing or unknown → 'agency' via .catch.
+      const role = (public_metadata as { role?: unknown } | null | undefined)
+        ?.role;
 
-      const result = webhookUserSchema.safeParse({ clerk_id: id, email, name });
+      const result = webhookUserSchema.safeParse({
+        clerk_id: id,
+        email,
+        name,
+        role,
+      });
       if (!result.success) {
         logSecurityEvent({
           event: "webhook_user_data_invalid",
@@ -70,13 +81,55 @@ export async function POST(req: Request) {
         return new Response("Invalid user data in webhook payload", { status: 400 });
       }
 
-      const { clerk_id, email: validEmail, name: validName } = result.data;
+      const {
+        clerk_id,
+        email: validEmail,
+        name: validName,
+        role: validRole,
+      } = result.data;
 
-      await sql`
-        INSERT INTO users (clerk_id, email, name)
-        VALUES (${clerk_id}, ${validEmail}, ${validName})
-        ON CONFLICT (clerk_id) DO NOTHING
-      `;
+      // Insert the canonical user row first so the user_profiles FK
+      // resolves. ON CONFLICT updates email/name for user.updated; on
+      // user.created the conflict is harmless because the row didn't
+      // exist (or was just created by /api/sign-up/client/finalize via
+      // getOrCreateUser, in which case the values match).
+      //
+      // The user_profiles upsert is split by event type to avoid a race
+      // with the client sign-up finalize endpoint:
+      //
+      //   user.created — publicMetadata is the snapshot at user-creation
+      //   time, which for a client signup is still empty (finalize hasn't
+      //   run yet). So we INSERT ... DO NOTHING: if finalize beat us to
+      //   it and stamped role='client', leave it alone.
+      //
+      //   user.updated — fires after finalize writes publicMetadata, so
+      //   the role here is authoritative. UPSERT to keep DB and Clerk in
+      //   sync (also covers an admin manually changing role in Clerk).
+      const profileUpsert =
+        event.type === "user.created"
+          ? sql`
+              INSERT INTO user_profiles (user_id, role)
+              SELECT id, ${validRole} FROM users WHERE clerk_id = ${clerk_id}
+              ON CONFLICT (user_id) DO NOTHING
+            `
+          : sql`
+              INSERT INTO user_profiles (user_id, role)
+              SELECT id, ${validRole} FROM users WHERE clerk_id = ${clerk_id}
+              ON CONFLICT (user_id) DO UPDATE
+                SET role = EXCLUDED.role,
+                    updated_at = now()
+            `;
+
+      await sql.transaction([
+        sql`
+          INSERT INTO users (clerk_id, email, name)
+          VALUES (${clerk_id}, ${validEmail}, ${validName})
+          ON CONFLICT (clerk_id) DO UPDATE
+            SET email = EXCLUDED.email,
+                name = EXCLUDED.name
+        `,
+        profileUpsert,
+      ]);
     }
 
     return new Response("ok", { status: 200 });

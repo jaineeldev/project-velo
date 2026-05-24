@@ -14,7 +14,15 @@ import { cn, focusRing } from "@/lib/utils";
 // gesture that should be re-affirmed in a fresh session.
 const STORAGE_KEY = "signup-consent";
 
-export function ConsentGate() {
+type Props = {
+  // When set, Clerk redirects here after a successful sign-up instead of
+  // the env default (NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL = /dashboard).
+  // Used by the client sign-up flow to land on the finalize endpoint that
+  // assigns the 'client' role.
+  signUpForceRedirectUrl?: string;
+};
+
+export function ConsentGate({ signUpForceRedirectUrl }: Props) {
   // null = still reading from sessionStorage on first paint. We hold render
   // until that read completes so we never flash the gate at a returning
   // user mid-flow.
@@ -39,6 +47,7 @@ export function ConsentGate() {
     return (
       <>
         <SignUp
+          forceRedirectUrl={signUpForceRedirectUrl}
           appearance={{
             elements: {
               card: "!border-neutral-300 dark:!border-neutral-700 [box-shadow:none!important]",

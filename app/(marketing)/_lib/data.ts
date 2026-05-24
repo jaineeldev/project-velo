@@ -1,0 +1,462 @@
+import {
+  CheckCircle2,
+  FileDown,
+  FileText,
+  FolderKanban,
+  GitPullRequest,
+  LayoutDashboard,
+  Package,
+  Receipt,
+  Send,
+  Share2,
+  Sparkles,
+  type LucideIcon,
+} from "lucide-react";
+
+export type Step = {
+  number: string;
+  icon: LucideIcon;
+  title: string;
+  description: string;
+};
+
+export const steps: Step[] = [
+  {
+    number: "01",
+    icon: Send,
+    title: "Send",
+    description:
+      "Build a proposal with line items, deposit %, and GST. Email your client a private review link.",
+  },
+  {
+    number: "02",
+    icon: CheckCircle2,
+    title: "Approve",
+    description:
+      "Clients sign in to a free Velo account (always free for clients) and approve in the browser. No PDF download, no chasing for sign-off.",
+  },
+  {
+    number: "03",
+    icon: Sparkles,
+    title: "Live",
+    description:
+      "Project, milestones, and deposit invoice, all created the moment they approve.",
+  },
+];
+
+export type FeatureMockupKind =
+  | "proposals"
+  | "portal"
+  | "tracking"
+  | "invoicing"
+  | "pdf"
+  | "deliverables"
+  | "changes"
+  | "dashboard";
+
+export type Feature = {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  mockup: FeatureMockupKind;
+};
+
+// Full feature list — surfaced on /features.
+export const allFeatures: Feature[] = [
+  {
+    icon: FileText,
+    title: "Proposals",
+    description:
+      "Professional proposals with line items, GST, and deposit calculation.",
+    mockup: "proposals",
+  },
+  {
+    icon: Share2,
+    title: "Client portal",
+    description:
+      "Clients track progress through their own secure Velo account. No paid subscription required. Client accounts are always free.",
+    mockup: "portal",
+  },
+  {
+    icon: FolderKanban,
+    title: "Project tracking",
+    description: "Milestone-based tracking with time logging built in.",
+    mockup: "tracking",
+  },
+  {
+    icon: Receipt,
+    title: "Invoicing",
+    description: "Deposit and final invoices generated automatically.",
+    mockup: "invoicing",
+  },
+  {
+    icon: FileDown,
+    title: "PDF export",
+    description: "Download professional PDFs for proposals and invoices.",
+    mockup: "pdf",
+  },
+  {
+    icon: Package,
+    title: "Deliverables",
+    description: "Share proof of work links with clients per milestone.",
+    mockup: "deliverables",
+  },
+  {
+    icon: GitPullRequest,
+    title: "Change requests",
+    description:
+      "Clients submit scope changes through their portal. You approve, decline, or quote the work without leaving Velo.",
+    mockup: "changes",
+  },
+  {
+    icon: LayoutDashboard,
+    title: "Dashboard",
+    description:
+      "One view of every proposal, project, and invoice. Live status, recent activity, and the numbers that matter.",
+    mockup: "dashboard",
+  },
+];
+
+// Subset shown on the homepage. Three only — the rest live on /features.
+export const homeHighlights: Feature[] = [
+  allFeatures[0],
+  allFeatures[1],
+  allFeatures[3],
+];
+
+export const trustItems = [
+  "Built for freelance developers and dev agencies",
+  "GST ready",
+  "Australian-made",
+  "Encrypted and secure",
+];
+
+export type PlanFeature = { label: string; comingSoon?: boolean };
+
+export type Plan = {
+  name: string;
+  monthlyPrice: number;
+  priceFrom?: boolean;
+  seats: string;
+  features: PlanFeature[];
+  highlighted?: boolean;
+  tagline?: string;
+  cta: { label: string; href: string };
+};
+
+export const plans: Plan[] = [
+  {
+    name: "Starter",
+    monthlyPrice: 9,
+    seats: "1 user",
+    features: [
+      { label: "Unlimited projects and proposals" },
+      { label: "Client portal" },
+      { label: "GST support" },
+      { label: "PDF export" },
+      { label: "Stripe payments", comingSoon: true },
+    ],
+    cta: { label: "Try Starter free", href: "/sign-up" },
+  },
+  {
+    name: "Studio",
+    monthlyPrice: 24,
+    seats: "Up to 5 users",
+    features: [
+      { label: "Everything in Starter" },
+      { label: "Priority support" },
+      { label: "Lead pipeline", comingSoon: true },
+    ],
+    highlighted: true,
+    cta: { label: "Try Studio free", href: "/sign-up" },
+  },
+  {
+    name: "Agency",
+    monthlyPrice: 49,
+    seats: "Up to 15 users",
+    features: [
+      { label: "Everything in Studio" },
+      { label: "Multi-user workspaces", comingSoon: true },
+    ],
+    cta: { label: "Try Agency free", href: "/sign-up" },
+  },
+  {
+    name: "Scale",
+    monthlyPrice: 99,
+    priceFrom: true,
+    seats: "Unlimited users",
+    tagline: "Custom pricing available",
+    features: [
+      { label: "Everything in Agency" },
+      { label: "Dedicated support" },
+      { label: "White-label client portal", comingSoon: true },
+    ],
+    cta: {
+      label: "Talk to us",
+      href: "mailto:jaineelk.dev@gmail.com?subject=Velo%20Scale%20plan",
+    },
+  },
+];
+
+export const trialFeatures = [
+  "Up to 2 active projects",
+  "Proposals and client approvals",
+  "Project tracking and milestones",
+  "Deposit and final invoices",
+  "PDF export",
+  "Client portal",
+];
+
+export type Faq = { q: string; a: string };
+
+export const faqs: Faq[] = [
+  {
+    q: "What happens after the 14-day trial?",
+    a: "Pick a plan to keep going. We won't auto-charge you, and your data stays put if you decide to come back later.",
+  },
+  {
+    q: "Do I need a credit card to start?",
+    a: "No. Sign up with your email, build your first proposal, and send it. Card details only come up when you choose a plan.",
+  },
+  {
+    q: "Does Velo handle GST?",
+    a: "Yes. Proposals and invoices calculate GST and deposit splits based on your AU business profile.",
+  },
+  {
+    q: "How do I get paid?",
+    a: "Invoices are PDFs with your bank details, and clients pay you directly. Native payments aren't part of v1.",
+  },
+  {
+    q: "Is my data secure?",
+    a: "Your data lives in your own workspace behind authentication. Public share links use unguessable tokens and are rate-limited.",
+  },
+  {
+    q: "Do my clients need an account?",
+    a: "Yes, and it's always free. Clients create a free Velo account to view and approve proposals, which gives you a verified identity trail on every approval. Client accounts never require a paid plan.",
+  },
+  {
+    q: "Is Velo secure? It handles contracts and invoices.",
+    a: "Velo never stores card or bank details. Payments are processed through Stripe. All data is encrypted in transit and at rest. Client approvals are recorded with a timestamp and verified email address, consistent with Australia's Electronic Transactions Act 1999. For high-value engagements we recommend following up with a formal signed contract.",
+  },
+  {
+    q: "Who owns my client data?",
+    a: "You do. All proposals, invoices, and project data you enter into Velo belongs to you. We don't use it for any purpose other than running the platform. If you delete your account, all your data is permanently removed within 30 days.",
+  },
+];
+
+export type RoughGroup = {
+  label: string;
+  items: { title: string; detail: string; quarter?: string }[];
+};
+
+export const stillRoughGroups: RoughGroup[] = [
+  {
+    label: "Platform",
+    items: [
+      {
+        title: "Email sometimes lands in spam",
+        detail:
+          "Sending from Resend's shared sender while we verify a custom domain.",
+      },
+      {
+        title: "Rate limiting resets on restart",
+        detail:
+          "Counters live in memory today. Upstash Redis is on the way before public beta.",
+      },
+      {
+        title: "No public API or webhooks",
+        detail:
+          "You can't integrate Velo with your own tooling yet. A public API is on the roadmap.",
+      },
+      {
+        title: "No analytics or reporting yet",
+        detail:
+          "Project and invoice views show current state but not trends. Revenue, profitability, and time-cost reports come later.",
+      },
+      {
+        title: "Mobile works but is desktop-first",
+        detail:
+          "Functional on phones; designed for desktop first. Dedicated PWA polish is coming.",
+      },
+    ],
+  },
+  {
+    label: "Team & CRM",
+    items: [
+      {
+        title: "Clients are a contact list, not a CRM",
+        detail:
+          "Name, email, and phone today. Notes, tags, lead stages, last-contact tracking, and a communications log are the next thing we build.",
+      },
+      {
+        title: "No team roles or permissions yet",
+        detail:
+          "Studio and Agency plans show seat counts, but owner / admin / member / viewer permissions haven't been built. Multi-user lands together with the access model.",
+      },
+      {
+        title: "No e-signature on proposals",
+        detail:
+          "Client approval is a button click on the share link. Signed PDFs with timestamps come later.",
+      },
+      {
+        title: "No file attachments",
+        detail:
+          "Milestones support deliverable links, but you can't upload contracts, receipts, or asset files to projects or invoices yet.",
+      },
+    ],
+  },
+  {
+    label: "Money & billing",
+    items: [
+      {
+        title: "AUD and GST only",
+        detail:
+          "Pricing, invoices, and tax handling assume Australian businesses. Multi-currency and non-AU tax regimes are a separate build.",
+      },
+      {
+        title: "No accounting software exports yet",
+        detail:
+          "GST is calculated, but you'll need to copy numbers into Xero, MYOB, or QBO by hand. Native exports are planned.",
+      },
+      {
+        title: "No recurring invoices or retainers",
+        detail:
+          "Every invoice is one-off. Monthly retainers and subscription billing are on the roadmap.",
+      },
+      {
+        title: "Payments are bank-transfer PDFs",
+        detail:
+          "Invoices include your bank details. Native Stripe payments are on the roadmap.",
+      },
+      {
+        title: "No automated payment reminders",
+        detail:
+          "Invoices don't chase themselves. You'll nudge late-paying clients by hand until reminder workflows ship.",
+      },
+      {
+        title: "No expense tracking",
+        detail:
+          "You can invoice clients but can't log business expenses, mileage, or reimbursables against a project.",
+      },
+    ],
+  },
+  {
+    label: "Heads up",
+    items: [
+      {
+        title: "The product name might change",
+        detail:
+          "\"Velo\" is a working name. The final name lands before public beta. Don't get attached.",
+      },
+    ],
+  },
+];
+
+export const whatsNextGroups: RoughGroup[] = [
+  {
+    label: "Q3 2026",
+    items: [
+      {
+        title: "Custom sending domain for email",
+        detail:
+          "Verifying our own domain so proposals stop landing in client spam folders.",
+        quarter: "Q3 2026",
+      },
+      {
+        title: "Stripe payments",
+        detail:
+          "Native card payments on invoices, replacing the bank-transfer-PDF flow.",
+        quarter: "Q3 2026",
+      },
+      {
+        title: "CRM upgrade for clients",
+        detail:
+          "Notes, tags, lead stages, and a communications log. The most-asked-for change in early feedback.",
+        quarter: "Q3 2026",
+      },
+    ],
+  },
+  {
+    label: "Q4 2026",
+    items: [
+      {
+        title: "Team workspaces and roles",
+        detail:
+          "Multi-user accounts on Studio and Agency plans, with owner / admin / member / viewer permissions.",
+        quarter: "Q4 2026",
+      },
+      {
+        title: "Recurring invoices and retainers",
+        detail:
+          "Monthly billing for ongoing work, not just one-off project invoices.",
+        quarter: "Q4 2026",
+      },
+      {
+        title: "File attachments on projects and invoices",
+        detail:
+          "Upload contracts, receipts, and asset files instead of stuffing everything into deliverable links.",
+        quarter: "Q4 2026",
+      },
+    ],
+  },
+  {
+    label: "2027",
+    items: [
+      {
+        title: "Accounting software exports",
+        detail:
+          "Native exports to Xero, MYOB, and QBO so end-of-quarter isn't a copy-paste job.",
+        quarter: "2027",
+      },
+      {
+        title: "Public API and webhooks",
+        detail:
+          "For wiring Velo into your own tooling once the core flow is stable.",
+        quarter: "2027",
+      },
+      {
+        title: "Analytics and reporting",
+        detail:
+          "Revenue, profitability, and time-cost views once there's enough data per account to be meaningful.",
+        quarter: "2027",
+      },
+      {
+        title: "Multi-currency and non-AU tax",
+        detail:
+          "Pricing and tax handling beyond AUD/GST. Comes after the Australian core is solid.",
+        quarter: "2027",
+      },
+    ],
+  },
+];
+
+export type TeamMember = {
+  handle: string;
+  role: string;
+  url: string;
+};
+
+export const team: TeamMember[] = [
+  {
+    handle: "jaineeldev",
+    role: "Lead. Building Velo solo from Brisbane.",
+    url: "https://github.com/jaineeldev",
+  },
+  {
+    handle: "JuiceM00n",
+    role: "Contributor.",
+    url: "https://github.com/JuiceM00n",
+  },
+  {
+    handle: "Rockmancheese",
+    role: "Contributor.",
+    url: "https://github.com/Rockmancheese",
+  },
+];
+
+export const navLinks = [
+  { label: "Home", href: "/" },
+  { label: "Features", href: "/features" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "Security", href: "/security" },
+];

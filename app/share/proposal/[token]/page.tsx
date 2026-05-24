@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
-import { CheckCircle2, MessageSquare } from "lucide-react";
+import { auth } from "@clerk/nextjs/server";
+import { CheckCircle2, Lock, MessageSquare } from "lucide-react";
 import { sql } from "@/lib/db";
 import { getClientIp } from "@/lib/rate-limit";
 import { logSecurityEvent } from "@/lib/security-log";
 import { currencyFmt, dateTimeFmt, splitGst } from "@/lib/format";
+import { cn, focusRing } from "@/lib/utils";
 import { ProposalActions } from "./proposal-actions";
 
 // Public portal — always fetch fresh and never let a CDN cache token-keyed
@@ -88,8 +90,52 @@ export default async function ShareProposalPage({
 }: {
   params: { token: string };
 }) {
+  const { userId } = await auth();
+
+  // Account-required gate. Unauthenticated visitors never see proposal
+  // content — we don't even hit the DB for them, which avoids leaking
+  // "this token resolves to a real proposal" to anyone who hasn't signed
+  // up yet. Token format is still validated so a malformed link 404s
+  // exactly the same way it would for an authed visitor (matches the
+  // existing identical-error-for-all-failures security posture).
+  if (!userId) {
+    if (!TOKEN_RE.test(params.token)) {
+      logSecurityEvent({
+        event: "invalid_share_token",
+        route: "share/proposal",
+        ip: getClientIp(headers()),
+        outcome: "denied",
+        reason: "token_format",
+      });
+      notFound();
+    }
+    return <SignUpGate token={params.token} />;
+  }
+
   const proposal = await getPublicProposal(params.token);
   if (!proposal) notFound();
+
+  // Clients are redirected only on terminal statuses (approved /
+  // delivered) — for those there is no further action and the
+  // dashboard is the better surface. We keep the share page open for
+  // 'sent' (the client may still approve or request changes) AND
+  // 'changes_requested' (the client may want to re-read their own
+  // request or the proposal it's against). Anonymous visitors and
+  // agency users keep the existing render path. Role is read from the
+  // DB, not the JWT, so this works even when the session-token claim
+  // hasn't refreshed.
+  if (
+    userId &&
+    (proposal.status === "approved" || proposal.status === "delivered")
+  ) {
+    const roleRows = await sql`
+      SELECT up.role
+      FROM user_profiles up
+      JOIN users u ON u.id = up.user_id
+      WHERE u.clerk_id = ${userId}
+    `;
+    if (roleRows[0]?.role === "client") redirect("/client/dashboard");
+  }
 
   const { total, subtotal, gst } = splitGst(Number(proposal.total_amount));
   const depositPct = Number(proposal.deposit_percentage);
@@ -276,6 +322,68 @@ export default async function ShareProposalPage({
           <Link
             href="/privacy"
             className="rounded underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            Privacy Policy
+          </Link>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+// Account-required gate shown to anonymous visitors. Carries the share
+// token through to sign-up via the ?proposal= query param so the new
+// account lands back on this page after onboarding. The sign-in fallback
+// uses Clerk's redirect_url so returning clients also end up here.
+function SignUpGate({ token }: { token: string }) {
+  const signUpHref = `/sign-up/client?proposal=${token}`;
+  const signInHref = `/sign-in?redirect_url=${encodeURIComponent(
+    `/share/proposal/${token}`,
+  )}`;
+
+  return (
+    <main className="min-h-screen bg-background">
+      <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6 py-16 text-center">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <Lock aria-hidden className="h-5 w-5" />
+        </div>
+        <h1 className="mt-6 text-2xl font-semibold tracking-tight text-foreground">
+          Create your free Velo account to view and approve this proposal
+        </h1>
+        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+          Client accounts are always free. Signing up gives you a verified
+          identity trail on every approval and a single place to track every
+          proposal and project shared with you.
+        </p>
+        <Link
+          href={signUpHref}
+          className={cn(
+            "mt-8 inline-flex h-11 w-full items-center justify-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90",
+            focusRing,
+          )}
+        >
+          Create free account
+        </Link>
+        <p className="mt-4 text-xs text-muted-foreground">
+          Already have an account?{" "}
+          <Link
+            href={signInHref}
+            className={cn(
+              "rounded font-medium text-foreground underline-offset-2 hover:underline",
+              focusRing,
+            )}
+          >
+            Sign in
+          </Link>
+        </p>
+        <div className="mt-16 flex flex-col items-center gap-1 text-xs text-muted-foreground">
+          <p>Powered by Velo</p>
+          <Link
+            href="/privacy"
+            className={cn(
+              "rounded underline-offset-2 hover:underline",
+              focusRing,
+            )}
           >
             Privacy Policy
           </Link>

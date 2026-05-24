@@ -12,7 +12,8 @@ export type SecurityEventType =
   | "rate_limit_blocked"
   | "account_deleted"
   | "clerk_delete_failed"
-  | "auth_failed";
+  | "auth_failed"
+  | "client_role_finalize_invalid";
 
 export type SecurityOutcome = "success" | "failure" | "denied";
 

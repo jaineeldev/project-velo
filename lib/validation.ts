@@ -109,6 +109,17 @@ export const clientSchema = z.object({
 
 export type ClientInput = z.infer<typeof clientSchema>;
 
+export const USER_ROLES = ["agency", "client"] as const;
+export type UserRole = (typeof USER_ROLES)[number];
+
+// Lenient on parse: anything not in USER_ROLES (including undefined or a
+// stray string an admin put in publicMetadata) collapses to 'agency'. The
+// CHECK constraint on user_profiles.role is the hard guard; this just
+// keeps the webhook from rejecting otherwise-valid payloads.
+export const userRoleSchema = z
+  .enum(USER_ROLES, "Invalid user role")
+  .catch("agency");
+
 // Validates user data extracted from a trusted Clerk webhook payload (after
 // signature verification). Provides defence-in-depth before the DB insert.
 export const webhookUserSchema = z.object({
@@ -118,6 +129,7 @@ export const webhookUserSchema = z.object({
     .trim()
     .max(254),
   name: z.string().trim().max(100).nullable(),
+  role: userRoleSchema,
 });
 
 export type WebhookUser = z.infer<typeof webhookUserSchema>;

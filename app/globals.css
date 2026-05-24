@@ -82,3 +82,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+/*
+ * .dark-surface used to paint a subtle noise grain over the marketing
+ * wrapper. Removed because clean flat color reads sharper on the new
+ * design pass. The class is kept (no-op) so existing markup that still
+ * applies it doesn't need to change.
+ */
+.dark-surface {
+  position: relative;
+}

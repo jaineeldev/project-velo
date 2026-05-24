@@ -1,5 +1,5 @@
 import { AuthLayout } from "@/components/auth-layout";
-import { ConsentGate } from "./consent-gate";
+import { ConsentGate } from "@/components/auth/consent-gate";
 
 export default function SignUpPage() {
   return (

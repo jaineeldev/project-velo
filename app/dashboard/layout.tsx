@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/sidebar";
 import { MobileNav } from "@/components/mobile-nav";
+import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
 import { hasCompletedOnboarding } from "@/lib/user-profile";
 
@@ -9,9 +10,21 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const user = await getOrCreateUser();
+
+  // Route clients to their own dashboard. The middleware also does this
+  // when Clerk's session-token role claim is configured, but this DB
+  // read is the authoritative guard — Clerk lands users here via
+  // NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard regardless of role,
+  // and this catches the client before the agency layout/onboarding
+  // renders even for a frame.
+  const roleRows = await sql`
+    SELECT role FROM user_profiles WHERE user_id = ${user.id}
+  `;
+  if (roleRows[0]?.role === "client") redirect("/client/dashboard");
+
   // First-time users get bounced to the welcome flow. Once they submit or
   // skip there, onboarded_at is set and they never see it again.
-  const user = await getOrCreateUser();
   if (!(await hasCompletedOnboarding(user.id))) redirect("/onboarding");
 
   return (

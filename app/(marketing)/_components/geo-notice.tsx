@@ -98,7 +98,7 @@ export function GeoNotice({ ready }: { ready: boolean }) {
               Velo&apos;s privacy practices are scoped to Australia. If you
               sign up from outside Australia, your data may not be handled in
               line with your local privacy laws (e.g. GDPR, CCPA). Please read
-              our Privacy Policy before continuing.
+              the Privacy Policy before continuing.
             </p>
             <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <Link

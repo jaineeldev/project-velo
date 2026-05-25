@@ -9,7 +9,7 @@ import { Waitlist } from "../_components/waitlist";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Velo is being built in Brisbane by a small team of devs for other devs. Here's who's behind it, why it exists, and what's still rough about it.",
+    "Velo is being built in Brisbane by one dev for other devs. Here's who's behind it, why it exists, and what's still rough about it.",
 };
 
 export default function AboutPage() {
@@ -22,6 +22,7 @@ export default function AboutPage() {
       <ShutdownReassurance />
       <WaitlistBlock />
       <EarlyBetaNote />
+      <ContactLine />
       <CtaToSecurity />
     </>
   );
@@ -39,8 +40,8 @@ function AboutHero() {
         </h1>
         <p className="mx-auto mt-10 max-w-2xl text-base leading-relaxed text-white/60 sm:text-lg">
           Velo is a side-of-the-desk project that grew out of a frustration:
-          freelancer tools are written for everyone except devs. So we&apos;re
-          building the one we&apos;d actually want to use.
+          freelancer tools are written for everyone except devs. So I&apos;m
+          building the one I&apos;d actually want to use.
         </p>
       </div>
     </section>
@@ -53,7 +54,7 @@ function Manifesto() {
       <div className="mx-auto max-w-3xl px-6 py-32 sm:px-10 sm:py-40">
         <div className="text-center">
           <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
-            Why we&apos;re building this
+            Why I&apos;m building this
           </p>
           <h2 className="mt-6 text-balance text-4xl font-extrabold leading-[1.05] tracking-[-0.03em] text-white sm:text-5xl md:text-6xl">
             Built for devs who&apos;d rather be{" "}
@@ -65,7 +66,7 @@ function Manifesto() {
             Most freelancer tools feel like they were made for someone else:
             wedding planners, marketing consultants, designers. The interfaces
             are busy, the language is patronising, and the workflows assume a
-            kind of work that isn&apos;t ours. Meanwhile, devs spend their day
+            kind of work that isn&apos;t mine. Meanwhile, devs spend their day
             inside their editor, terminal, and GitHub. Clean, fast,
             well-designed tools. The business side of being a dev shouldn&apos;t
             feel like a step backwards from that.
@@ -145,16 +146,16 @@ function EarlyBetaNote() {
       <div className="mx-auto max-w-5xl px-6 py-32 sm:px-10 sm:py-40">
         <div className="text-center">
           <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
-            Where we are
+            Where I am
           </p>
           <h2 className="mx-auto mt-6 max-w-2xl text-balance text-5xl font-extrabold leading-[1.05] tracking-[-0.03em] text-white sm:text-6xl">
             Known limits and{" "}
             <span className="text-primary">what&apos;s next.</span>
           </h2>
           <p className="mx-auto mt-7 max-w-xl text-base leading-relaxed text-white/60 sm:text-lg">
-            We&apos;d rather show the seams than pretend they aren&apos;t
+            I&apos;d rather show the seams than pretend they aren&apos;t
             there. Below: what doesn&apos;t exist yet, and the dated plan for
-            everything we&apos;re building.
+            everything I&apos;m building.
           </p>
         </div>
 
@@ -219,15 +220,34 @@ function RoughColumn({
   );
 }
 
-// Small reassurance that follows the team section. Directly answers the
-// "what if you go away" objection raised by listing the team of two above.
+// Sits right after the team section to answer the "what if this disappears"
+// objection that surfaces once the small-team reality is on the page.
 function ShutdownReassurance() {
   return (
-    <section className="relative bg-[#0d0d0f]">
-      <div className="mx-auto max-w-3xl px-6 pb-0 pt-16 sm:px-10 sm:pt-20">
-        <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4 text-center text-sm text-white/60">
-          If Velo ever shuts down, you&apos;ll get 60 days notice and a
-          complete export of all your data.
+    <section className="relative border-t border-white/[0.06] bg-[#0d0d0f]">
+      <div className="mx-auto max-w-2xl px-6 py-20 sm:px-10 sm:py-24">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
+          My commitment
+        </p>
+        <h2 className="mt-6 text-balance text-2xl font-bold leading-[1.15] tracking-[-0.02em] text-white sm:text-3xl">
+          If I ever shut Velo down, your data comes with you.
+        </h2>
+        <div className="mt-8 max-w-prose space-y-5 text-base leading-relaxed text-white/60">
+          <p>
+            I&apos;ll give you at least 60 days notice before Velo shuts down.
+            No sudden surprises. You&apos;ll get an email with instructions
+            and a download link for everything I hold for you.
+          </p>
+          <p>
+            Your export includes every proposal, invoice, client record,
+            project, milestone, and time entry, in a standard format you can
+            open without Velo. Nothing is locked in.
+          </p>
+          <p>
+            It&apos;s just me building this, and I&apos;m honest about that.
+            I&apos;d rather tell you this upfront than have you find out at the
+            worst possible moment.
+          </p>
         </div>
       </div>
     </section>
@@ -244,6 +264,16 @@ function WaitlistBlock() {
   );
 }
 
+function ContactLine() {
+  return (
+    <section className="relative bg-[#0d0d0f]">
+      <p className="py-4 text-center text-sm text-white/40">
+        Questions? Email me at jaineelk.dev@gmail.com. I read everything.
+      </p>
+    </section>
+  );
+}
+
 function CtaToSecurity() {
   return (
     <section className="relative border-t border-white/[0.06] bg-[#0d0d0f]">
@@ -253,7 +283,7 @@ function CtaToSecurity() {
             Trust
           </p>
           <h2 className="mt-6 text-balance text-4xl font-extrabold leading-[1.05] tracking-[-0.03em] text-white sm:text-5xl">
-            How we handle your{" "}
+            How I handle your{" "}
             <span className="text-primary">data.</span>
           </h2>
           <p className="mt-6 text-base leading-relaxed text-white/60 sm:text-lg">

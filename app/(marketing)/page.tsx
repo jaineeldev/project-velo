@@ -114,7 +114,7 @@ function SecurityTrustStrip() {
           Security
         </p>
         <ul className="mx-auto mt-10 space-y-3 text-base leading-relaxed text-white/70 sm:space-y-4 sm:text-lg">
-          <li>We never store card or bank details.</li>
+          <li>I never store card or bank details.</li>
           <li>
             All data encrypted in transit and at rest, hosted in Australia.
           </li>
@@ -130,7 +130,7 @@ function SecurityTrustStrip() {
             focusRing,
           )}
         >
-          Read our security policy →
+          Read the security policy →
         </Link>
       </div>
     </section>
@@ -185,7 +185,7 @@ function PricingTeaser() {
         </ul>
 
         <p className="mx-auto mt-10 max-w-xl text-center text-base text-white/60 sm:text-lg">
-          14-day free trial on every plan. No credit card. We never auto-charge.
+          14-day free trial on every plan. No credit card. I never auto-charge.
         </p>
 
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -223,7 +223,7 @@ function PricingTeaser() {
 const HOMEPAGE_FAQS = [
   {
     q: "What happens after the 14-day trial?",
-    a: "Pick a plan to keep going. We don't auto-charge, and your data stays put if you want to come back later.",
+    a: "Pick a plan to keep going. I don't auto-charge, and your data stays put if you want to come back later.",
   },
   {
     q: "Do my clients need an account?",

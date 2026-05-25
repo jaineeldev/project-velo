@@ -22,7 +22,7 @@ export function BetaBanner() {
               focusRing,
             )}
           >
-            Tell us what breaks
+            Tell me what breaks
           </a>
         </span>
       </div>

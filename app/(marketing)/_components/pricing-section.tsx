@@ -222,7 +222,7 @@ export function PricingSection({
                 </span>
               </div>
               <p className="mt-2 text-sm text-white/60">
-                After 14 days your account pauses until you pick a plan. We
+                After 14 days your account pauses until you pick a plan. I
                 never auto-charge.
               </p>
               <ul className="mt-5 grid gap-x-6 gap-y-1.5 sm:grid-cols-2">
@@ -267,7 +267,7 @@ export function PricingSection({
               focusRing,
             )}
           >
-            Tell us.
+            Tell me.
           </a>
         </motion.p>
       </motion.div>

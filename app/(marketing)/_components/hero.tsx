@@ -68,8 +68,10 @@ export function Hero() {
           </h1>
 
           <p className="mt-10 max-w-2xl text-lg text-white/70">
-            One tool to send proposals, manage projects, and invoice clients.
-            Built for Australian freelance devs and dev agencies.
+            Velo replaces the proposal doc, the project spreadsheet, and the
+            invoice tool. Send a proposal, get it approved online, track the
+            project, and invoice your client. All without leaving one tab.
+            Built for Australian freelance developers and agencies.
           </p>
 
           <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row">

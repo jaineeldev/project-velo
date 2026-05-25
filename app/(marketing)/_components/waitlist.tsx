@@ -33,7 +33,7 @@ export function Waitlist() {
     setError(null);
     const trimmed = email.trim();
     if (!trimmed) {
-      setError("Drop your email and we'll let you know.");
+      setError("Drop your email and I'll let you know.");
       return;
     }
 
@@ -56,16 +56,15 @@ export function Waitlist() {
     <motion.div
       {...fadeUp}
       viewport={{ once: true, amount: 0.3 }}
-      className="text-left"
+      className="text-center"
     >
       <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
         Get notified
       </p>
       <h3 className="mt-6 text-balance text-4xl font-extrabold leading-[1] tracking-[-0.03em] text-white sm:text-5xl">
-        Get pinged when the rough bits get{" "}
-        <span className="text-primary">smooth.</span>
+        Stay in the <span className="text-primary">loop.</span>
       </h3>
-      <p className="mt-5 max-w-md text-base leading-relaxed text-white/60">
+      <p className="mx-auto mt-5 max-w-md text-base leading-relaxed text-white/60">
         One email when something material ships: Stripe payments, CRM,
         team accounts. No marketing, no calendar invites.
       </p>
@@ -73,7 +72,7 @@ export function Waitlist() {
       {sent ? (
         <div
           role="status"
-          className="mt-8 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white"
+          className="mx-auto mt-8 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white"
         >
           <CheckCircle2 aria-hidden className="h-4 w-4 text-primary" />
           You&apos;re on the list. Talk soon.
@@ -81,7 +80,7 @@ export function Waitlist() {
       ) : (
         <form
           onSubmit={handleSubmit}
-          className="mt-8 flex max-w-md flex-col gap-2 sm:flex-row"
+          className="mx-auto mt-8 flex max-w-md flex-col gap-2 sm:flex-row"
         >
           <label htmlFor="waitlist-email" className="sr-only">
             Email address

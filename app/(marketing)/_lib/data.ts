@@ -196,7 +196,7 @@ export const plans: Plan[] = [
       { label: "White-label client portal", comingSoon: true },
     ],
     cta: {
-      label: "Talk to us",
+      label: "Talk to me",
       href: "mailto:hello@velo.app?subject=Velo%20Scale%20plan",
     },
   },
@@ -216,7 +216,7 @@ export type Faq = { q: string; a: string };
 export const faqs: Faq[] = [
   {
     q: "What happens after the 14-day trial?",
-    a: "Pick a plan to keep going. We won't auto-charge you, and your data stays put if you decide to come back later.",
+    a: "Pick a plan to keep going. I won't auto-charge you, and your data stays put if you decide to come back later.",
   },
   {
     q: "Do I need a credit card to start?",
@@ -240,11 +240,11 @@ export const faqs: Faq[] = [
   },
   {
     q: "Is Velo secure? It handles contracts and invoices.",
-    a: "Velo never stores card or bank details. Payments are processed through Stripe. All data is encrypted in transit and at rest. Client approvals are recorded with a timestamp and verified email address, consistent with Australia's Electronic Transactions Act 1999. For high-value engagements we recommend following up with a formal signed contract.",
+    a: "Velo never stores card or bank details. Payments are processed through Stripe. All data is encrypted in transit and at rest. Client approvals are recorded with a timestamp and verified email address, consistent with Australia's Electronic Transactions Act 1999. For high-value engagements I recommend following up with a formal signed contract.",
   },
   {
     q: "Who owns my client data?",
-    a: "You do. All proposals, invoices, and project data you enter into Velo belongs to you. We don't use it for any purpose other than running the platform. If you delete your account, all your data is permanently removed within 30 days.",
+    a: "You do. All proposals, invoices, and project data you enter into Velo belongs to you. I don't use it for any purpose other than running the platform. If you delete your account, all your data is permanently removed within 30 days.",
   },
 ];
 
@@ -260,7 +260,7 @@ export const stillRoughGroups: RoughGroup[] = [
       {
         title: "Email sometimes lands in spam",
         detail:
-          "Sending from Resend's shared sender while we verify a custom domain.",
+          "Sending from Resend's shared sender while I verify a custom domain.",
       },
       {
         title: "Rate limiting resets on restart",
@@ -290,7 +290,7 @@ export const stillRoughGroups: RoughGroup[] = [
       {
         title: "Clients are a contact list, not a CRM",
         detail:
-          "Name, email, and phone today. Notes, tags, lead stages, last-contact tracking, and a communications log are the next thing we build.",
+          "Name, email, and phone today. Notes, tags, lead stages, last-contact tracking, and a communications log are the next thing I build.",
       },
       {
         title: "No team roles or permissions yet",
@@ -363,7 +363,7 @@ export const whatsNextGroups: RoughGroup[] = [
       {
         title: "Custom sending domain for email",
         detail:
-          "Verifying our own domain so proposals stop landing in client spam folders.",
+          "Verifying my own domain so proposals stop landing in client spam folders.",
         quarter: "Q3 2026",
       },
       {

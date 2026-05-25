@@ -25,8 +25,8 @@ export default function PricingPage() {
           </>
         }
         body="14 days, every feature, no credit card. Cancel by closing the tab."
-        subtle="If a plan doesn't fit, email us. We're a small team and we read every message."
-        secondaryCta={{ label: "Email us", href: "mailto:hello@velo.app" }}
+        subtle="If a plan doesn't fit, email me. It's just me building this, and I read every message."
+        secondaryCta={{ label: "Email me", href: "mailto:hello@velo.app" }}
       />
     </>
   );
@@ -45,7 +45,7 @@ function PricingHero() {
         </h1>
         <p className="mx-auto mt-10 max-w-2xl text-base leading-relaxed text-white/60 sm:text-lg">
           14-day free trial · 2 projects · No credit card required. Pick a plan
-          when you&apos;re ready. We never auto-charge.
+          when you&apos;re ready. I never auto-charge.
         </p>
         <p className="mt-2 text-sm text-white/40">
           All prices in AUD. GST included where applicable.

@@ -53,15 +53,15 @@ const sections: Section[] = [
       <>
         <p>
           You own everything you put into Velo: proposals, invoices, project
-          history, client records, time entries. We don&apos;t use your data
+          history, client records, time entries. I don&apos;t use your data
           for any purpose other than running the platform you signed up for.
           No training, no third-party analytics on the contents of your work,
           no sale to advertisers.
         </p>
         <p>
-          If you delete your account, every record we hold for you is
+          If you delete your account, every record I hold for you is
           permanently removed within 30 days. That includes backups and the
-          identifier we use to link your records together.
+          identifier I use to link your records together.
         </p>
       </>
     ),
@@ -83,7 +83,7 @@ const sections: Section[] = [
           <span className="font-semibold text-white">
             Australia&apos;s Electronic Transactions Act 1999
           </span>
-          . For high-value engagements we still recommend a separate signed
+          . For high-value engagements I still recommend a separate signed
           contract.
         </p>
         <p className="rounded-lg border border-white/10 bg-white/[0.03] p-4 text-sm text-white/55">
@@ -95,12 +95,12 @@ const sections: Section[] = [
   },
   {
     number: "03",
-    title: "How we protect your data",
+    title: "How I protect your data",
     body: (
       <>
         <p>
           Connections to Velo run over TLS, so every byte of data in transit
-          between your browser and our servers is encrypted. At rest, your
+          between your browser and the servers is encrypted. At rest, your
           records live in{" "}
           <span className="font-semibold text-white">Neon serverless Postgres</span>{" "}
           in the Sydney region with disk-level encryption.
@@ -151,9 +151,9 @@ const sections: Section[] = [
         <p>
           You can delete your account from{" "}
           <span className="font-semibold text-white">Settings</span> at any
-          time. Deletion purges your records from our database and your auth
+          time. Deletion purges your records from the database and your auth
           provider, and all associated data is permanently removed within 30
-          days. We don&apos;t hold a shadow copy.
+          days. I don&apos;t hold a shadow copy.
         </p>
         <p>
           If you&apos;d rather pause than delete, every plan has a free trial
@@ -180,7 +180,7 @@ const sections: Section[] = [
             jaineelk.dev@gmail.com
           </a>{" "}
           with the details and a way to reach you. Don&apos;t share specifics
-          on public channels until we&apos;ve had a chance to fix the issue
+          on public channels until I&apos;ve had a chance to fix the issue
           and tell the affected users.
         </p>
       </>
@@ -268,7 +268,7 @@ function WhatVeloHandles() {
   );
 }
 
-// 'What we don't do yet' roadmap. Honest list of unbuilt security features,
+// 'What I don't do yet' roadmap. Honest list of unbuilt security features,
 // framed as a plan with target windows so buyers see it as in-progress
 // rather than a confession of weakness.
 function SecurityRoadmap() {
@@ -280,11 +280,11 @@ function SecurityRoadmap() {
             On the roadmap
           </p>
           <h2 className="mt-6 text-balance text-4xl font-extrabold leading-[1.05] tracking-[-0.03em] text-white sm:text-5xl md:text-6xl">
-            What we don&apos;t do{" "}
+            What I don&apos;t do{" "}
             <span className="text-primary">yet.</span>
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-white/60 sm:text-lg">
-            Standards-level security work that is on the build queue. We are
+            Standards-level security work that is on the build queue. I&apos;m
             shipping these in order before public launch.
           </p>
         </div>
@@ -302,7 +302,7 @@ function SecurityHero() {
           Security
         </p>
         <h1 className="mx-auto mt-8 max-w-5xl text-balance text-6xl font-extrabold leading-[0.95] tracking-[-0.04em] text-white sm:text-7xl md:text-8xl">
-          How we store, protect, and delete your{" "}
+          How I store, protect, and delete your{" "}
           <span className="text-primary">data.</span>
         </h1>
         <p className="mx-auto mt-10 max-w-2xl text-base leading-relaxed text-white/60 sm:text-lg">

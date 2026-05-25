@@ -24,13 +24,10 @@ const dataInScope = [
 ];
 
 const securityRoadmap = [
-  { label: "SOC 2 Type II certification", quarter: "Planned" },
-  {
-    label: "Two-factor authentication for agency accounts",
-    quarter: "Q4 2026",
-  },
-  { label: "Single sign-on (SSO)", quarter: "2027" },
-  { label: "Independent third-party security audit", quarter: "Pre-launch" },
+  { label: "Independent third-party security audit" },
+  { label: "Two-factor authentication for agency accounts" },
+  { label: "SOC 2 Type II certification" },
+  { label: "Single sign-on (SSO)" },
 ];
 
 export const metadata: Metadata = {
@@ -268,9 +265,6 @@ function WhatVeloHandles() {
   );
 }
 
-// 'What I don't do yet' roadmap. Honest list of unbuilt security features,
-// framed as a plan with target windows so buyers see it as in-progress
-// rather than a confession of weakness.
 function SecurityRoadmap() {
   return (
     <section className="relative border-t border-white/[0.06] bg-[#0d0d0f]">

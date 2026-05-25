@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { cn, focusRing } from "@/lib/utils";
-import { stillRoughGroups, team, whatsNextGroups } from "../_lib/data";
+import { stillRoughGroups, team, whatsNextItems } from "../_lib/data";
 import { StructuredData } from "../_components/structured-data";
 import { Waitlist } from "../_components/waitlist";
 
@@ -154,69 +154,73 @@ function EarlyBetaNote() {
           </h2>
           <p className="mx-auto mt-7 max-w-xl text-base leading-relaxed text-white/60 sm:text-lg">
             I&apos;d rather show the seams than pretend they aren&apos;t
-            there. Below: what doesn&apos;t exist yet, and the dated plan for
-            everything I&apos;m building.
+            there. Below: what doesn&apos;t exist yet, and the order I plan
+            to build everything in.
           </p>
         </div>
 
-        <div className="mt-16 grid gap-16 md:grid-cols-2 md:gap-12 lg:gap-20">
-          <RoughColumn
-            heading="Known limitations"
-            groups={stillRoughGroups}
-          />
-          <RoughColumn
-            heading="Roadmap"
-            groups={whatsNextGroups}
-          />
+        <div className="mt-20 sm:mt-24">
+          <h3 className="text-center text-3xl font-bold leading-tight tracking-[-0.02em] text-white sm:text-4xl">
+            Known limits.
+          </h3>
+          <div className="mt-12 grid gap-12 sm:grid-cols-2 sm:gap-x-12 sm:gap-y-14">
+            {stillRoughGroups.map(({ label, items }) => (
+              <div key={label}>
+                <div className="border-b border-white/10 pb-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
+                  {label}
+                </div>
+                <ul className="divide-y divide-white/[0.06]">
+                  {items.map(({ title, detail }) => (
+                    <li
+                      key={title}
+                      className="py-5 text-sm leading-relaxed text-white/60"
+                    >
+                      <span className="font-semibold text-white">{title}</span>
+                      <p className="mt-1">{detail}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-20 border-t border-white/[0.06] pt-20 sm:mt-24">
+          <h3 className="text-center text-3xl font-bold leading-tight tracking-[-0.02em] text-white sm:text-4xl">
+            What&apos;s next.
+          </h3>
+          <ol className="mx-auto mt-14 max-w-2xl">
+            {whatsNextItems.map(({ title, detail }, i) => {
+              const isLast = i === whatsNextItems.length - 1;
+              return (
+                <li
+                  key={title}
+                  className="relative flex items-start gap-5 pb-10 last:pb-0"
+                >
+                  {!isLast && (
+                    <span
+                      aria-hidden
+                      className="absolute left-[15px] top-8 h-[calc(100%-1rem)] w-px bg-gradient-to-b from-white/[0.12] to-white/[0.04]"
+                    />
+                  )}
+                  <span className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/[0.1] bg-[#0d0d0f] font-mono text-[11px] font-semibold tabular-nums text-primary">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div className="flex-1 pt-[5px]">
+                    <p className="text-base font-semibold text-white sm:text-lg">
+                      {title}
+                    </p>
+                    <p className="mt-1.5 text-sm leading-relaxed text-white/60">
+                      {detail}
+                    </p>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
         </div>
       </div>
     </section>
-  );
-}
-
-function RoughColumn({
-  heading,
-  groups,
-}: {
-  heading: string;
-  groups: {
-    label: string;
-    items: { title: string; detail: string; quarter?: string }[];
-  }[];
-}) {
-  return (
-    <div>
-      <p className="text-2xl font-bold leading-tight tracking-[-0.02em] text-white sm:text-3xl">
-        {heading}
-      </p>
-      <div className="mt-10 space-y-12">
-        {groups.map(({ label, items }) => (
-          <div key={label}>
-            <div className="border-b border-white/10 pb-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
-              {label}
-            </div>
-            <ul className="divide-y divide-white/[0.06]">
-              {items.map(({ title, detail, quarter }) => (
-                <li
-                  key={title}
-                  className="py-5 text-sm leading-relaxed text-white/60"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <span className="font-semibold text-white">{title}</span>
-                    {quarter ? (
-                      <span className="shrink-0 rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
-                        {quarter}
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="mt-1">{detail}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-    </div>
   );
 }
 

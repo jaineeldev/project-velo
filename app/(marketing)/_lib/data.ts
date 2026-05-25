@@ -250,7 +250,7 @@ export const faqs: Faq[] = [
 
 export type RoughGroup = {
   label: string;
-  items: { title: string; detail: string; quarter?: string }[];
+  items: { title: string; detail: string }[];
 };
 
 export const stillRoughGroups: RoughGroup[] = [
@@ -356,81 +356,56 @@ export const stillRoughGroups: RoughGroup[] = [
   },
 ];
 
-export const whatsNextGroups: RoughGroup[] = [
+export const whatsNextItems: { title: string; detail: string }[] = [
   {
-    label: "Q3 2026",
-    items: [
-      {
-        title: "Custom sending domain for email",
-        detail:
-          "Verifying my own domain so proposals stop landing in client spam folders.",
-        quarter: "Q3 2026",
-      },
-      {
-        title: "Stripe payments",
-        detail:
-          "Native card payments on invoices, replacing the bank-transfer-PDF flow.",
-        quarter: "Q3 2026",
-      },
-      {
-        title: "CRM upgrade for clients",
-        detail:
-          "Notes, tags, lead stages, and a communications log. The most-asked-for change in early feedback.",
-        quarter: "Q3 2026",
-      },
-    ],
+    title: "Custom sending domain for email",
+    detail:
+      "Verifying my own domain so proposals stop landing in client spam folders.",
   },
   {
-    label: "Q4 2026",
-    items: [
-      {
-        title: "Team workspaces and roles",
-        detail:
-          "Multi-user accounts on Studio and Agency plans, with owner / admin / member / viewer permissions.",
-        quarter: "Q4 2026",
-      },
-      {
-        title: "Recurring invoices and retainers",
-        detail:
-          "Monthly billing for ongoing work, not just one-off project invoices.",
-        quarter: "Q4 2026",
-      },
-      {
-        title: "File attachments on projects and invoices",
-        detail:
-          "Upload contracts, receipts, and asset files instead of stuffing everything into deliverable links.",
-        quarter: "Q4 2026",
-      },
-    ],
+    title: "Stripe payments",
+    detail:
+      "Native card payments on invoices, replacing the bank-transfer-PDF flow.",
   },
   {
-    label: "2027",
-    items: [
-      {
-        title: "Accounting software exports",
-        detail:
-          "Native exports to Xero, MYOB, and QBO so end-of-quarter isn't a copy-paste job.",
-        quarter: "2027",
-      },
-      {
-        title: "Public API and webhooks",
-        detail:
-          "For wiring Velo into your own tooling once the core flow is stable.",
-        quarter: "2027",
-      },
-      {
-        title: "Analytics and reporting",
-        detail:
-          "Revenue, profitability, and time-cost views once there's enough data per account to be meaningful.",
-        quarter: "2027",
-      },
-      {
-        title: "Multi-currency and non-AU tax",
-        detail:
-          "Pricing and tax handling beyond AUD/GST. Comes after the Australian core is solid.",
-        quarter: "2027",
-      },
-    ],
+    title: "CRM upgrade for clients",
+    detail:
+      "Notes, tags, lead stages, and a communications log. The most-asked-for change in early feedback.",
+  },
+  {
+    title: "Team workspaces and roles",
+    detail:
+      "Multi-user accounts on Studio and Agency plans, with owner / admin / member / viewer permissions.",
+  },
+  {
+    title: "Recurring invoices and retainers",
+    detail:
+      "Monthly billing for ongoing work, not just one-off project invoices.",
+  },
+  {
+    title: "File attachments on projects and invoices",
+    detail:
+      "Upload contracts, receipts, and asset files instead of stuffing everything into deliverable links.",
+  },
+  {
+    title: "Accounting software exports",
+    detail:
+      "Native exports to Xero, MYOB, and QBO so end-of-quarter isn't a copy-paste job.",
+  },
+  {
+    title: "Public API and webhooks",
+    detail:
+      "For wiring Velo into your own tooling once the core flow is stable.",
+  },
+  {
+    title: "Analytics and reporting",
+    detail:
+      "Revenue, profitability, and time-cost views once there's enough data per account to be meaningful.",
+  },
+  {
+    title: "Multi-currency and non-AU tax",
+    detail:
+      "Pricing and tax handling beyond AUD/GST. Comes after the Australian core is solid.",
   },
 ];
 

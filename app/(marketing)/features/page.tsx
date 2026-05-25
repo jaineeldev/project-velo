@@ -14,13 +14,13 @@ const bucketLabels: Record<string, string> = {
 };
 
 const featureRoadmap = [
-  { label: "Stripe payments", quarter: "Q3 2026" },
-  { label: "Multi-user workspaces and team roles", quarter: "Q3 2026" },
-  { label: "Mobile app (PWA)", quarter: "Q4 2026" },
-  { label: "Client e-signatures on proposals", quarter: "Q4 2026" },
-  { label: "Automated payment reminders", quarter: "Q4 2026" },
-  { label: "GitHub and Linear integrations", quarter: "2027" },
-  { label: "White-label client portal", quarter: "2027" },
+  { label: "Stripe payments" },
+  { label: "Multi-user workspaces and team roles" },
+  { label: "Mobile app (PWA)" },
+  { label: "Client e-signatures on proposals" },
+  { label: "Automated payment reminders" },
+  { label: "GitHub and Linear integrations" },
+  { label: "White-label client portal" },
 ];
 
 export const metadata: Metadata = {
@@ -101,10 +101,6 @@ function FeaturesHero() {
   );
 }
 
-// Roadmap section sits between the feature rows and FinalCTA, on a dark
-// surface so it visually bookends with the hero and CTA. Styled as a
-// changelog-style list of rows rather than cards: clean, scannable, signals
-// "release schedule" instead of "more features for sale".
 function FeatureRoadmap() {
   return (
     <section className="relative border-t border-white/[0.06] bg-[#0d0d0f]">
@@ -118,25 +114,36 @@ function FeatureRoadmap() {
             <span className="text-primary">next.</span>
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-white/60 sm:text-lg">
-            The shortlist of what is on the build queue, with target quarters.
-            Honest dates, not vapor.
+            The shortlist of what is on the build queue, in rough order of
+            priority.
           </p>
         </div>
-        <ul className="mt-12 border-t border-white/[0.06]">
-          {featureRoadmap.map(({ label, quarter }) => (
-            <li
-              key={label}
-              className="flex items-center justify-between gap-4 border-b border-white/[0.06] py-5"
-            >
-              <span className="font-medium text-white">{label}</span>
-              <span className="shrink-0 font-mono text-sm text-white/40 tabular-nums">
-                {quarter}
-              </span>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-8 text-sm text-white/30">
-          Dates are targets, not promises. Follow along at{" "}
+        <ol className="mx-auto mt-16 max-w-2xl">
+          {featureRoadmap.map(({ label }, i) => {
+            const isLast = i === featureRoadmap.length - 1;
+            return (
+              <li
+                key={label}
+                className="relative flex items-start gap-5 pb-8 last:pb-0"
+              >
+                {!isLast && (
+                  <span
+                    aria-hidden
+                    className="absolute left-[15px] top-8 h-[calc(100%-1rem)] w-px bg-gradient-to-b from-white/[0.12] to-white/[0.04]"
+                  />
+                )}
+                <span className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/[0.1] bg-[#0d0d0f] font-mono text-[11px] font-semibold tabular-nums text-primary">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="pt-[5px] text-base font-medium text-white sm:text-lg">
+                  {label}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+        <p className="mx-auto mt-12 max-w-2xl text-sm text-white/30">
+          Order can shift as I learn what people need most. Follow along at{" "}
           <a
             href="https://github.com/jaineeldev/project-velo"
             target="_blank"

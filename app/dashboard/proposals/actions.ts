@@ -5,7 +5,11 @@ import { revalidatePath } from "next/cache";
 import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
 import { proposalSchema, uuidSchema } from "@/lib/validation";
-import { sendProposalEmail, getAppBaseUrl } from "@/lib/email";
+import {
+  sendProposalEmail,
+  sendProposalCommentEmail,
+  getAppBaseUrl,
+} from "@/lib/email";
 
 const GST_RATE = 0.1;
 
@@ -312,4 +316,94 @@ export async function getProposal(proposalId: string): Promise<ProposalDetail | 
     events: events as ProposalEvent[],
     latestChangeRequest: (changeRequests[0] as ChangeRequest) ?? null,
   };
+}
+
+// ── Comments ─────────────────────────────────────────────────────────────────
+
+export type ProposalCommentRow = {
+  id: string;
+  author_role: "client" | "agency";
+  body: string;
+  created_at: string;
+};
+
+export async function getProposalComments(
+  proposalId: string,
+): Promise<ProposalCommentRow[]> {
+  if (!uuidSchema.safeParse(proposalId).success) return [];
+  // proposal_comments lands in migration 0016. Until it's applied, fall
+  // back to an empty thread so the proposal detail page still renders.
+  try {
+    const rows = await sql`
+      SELECT id, author_role, body, created_at
+      FROM proposal_comments
+      WHERE proposal_id = ${proposalId}
+      ORDER BY created_at ASC
+    `;
+    return rows as ProposalCommentRow[];
+  } catch {
+    return [];
+  }
+}
+
+const COMMENT_MAX = 2000;
+
+export async function postAgencyComment(
+  proposalId: string,
+  body: string,
+): Promise<void> {
+  if (!uuidSchema.safeParse(proposalId).success) {
+    throw new Error("Proposal not found.");
+  }
+  const trimmed = String(body ?? "").trim();
+  if (!trimmed) throw new Error("Comment is empty.");
+  if (trimmed.length > COMMENT_MAX) {
+    throw new Error(`Keep it under ${COMMENT_MAX} characters.`);
+  }
+
+  const user = await getOrCreateUser();
+
+  const rows = await sql`
+    SELECT p.id, p.user_id, p.title, p.share_token,
+           c.email AS client_email,
+           c.name AS client_name,
+           u.name AS agency_name
+    FROM proposals p
+    JOIN clients c ON c.id = p.client_id
+    JOIN users u ON u.id = p.user_id
+    WHERE p.id = ${proposalId} AND p.user_id = ${user.id}
+  `;
+  if (rows.length === 0) throw new Error("Proposal not found.");
+  const p = rows[0] as {
+    id: string;
+    title: string;
+    share_token: string;
+    client_email: string;
+    client_name: string | null;
+    agency_name: string | null;
+  };
+
+  await sql`
+    INSERT INTO proposal_comments (proposal_id, author_user_id, author_role, body)
+    VALUES (${proposalId}, ${user.id}, 'agency', ${trimmed})
+  `;
+
+  // Notify the client.
+  if (p.client_email) {
+    try {
+      await sendProposalCommentEmail({
+        to: p.client_email,
+        recipientName: p.client_name ?? "",
+        authorRole: "agency",
+        authorName: p.agency_name ?? user.name ?? user.email,
+        proposalTitle: p.title,
+        body: trimmed,
+        proposalUrl: `${getAppBaseUrl()}/share/proposal/${p.share_token}`,
+      });
+    } catch {
+      // Best effort.
+    }
+  }
+
+  revalidatePath(`/dashboard/proposals/${proposalId}`);
 }

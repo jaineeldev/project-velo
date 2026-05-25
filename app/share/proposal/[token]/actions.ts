@@ -2,9 +2,16 @@
 
 import { randomBytes, randomUUID } from "crypto";
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { sql } from "@/lib/db";
 import { getClientIp } from "@/lib/rate-limit";
 import { logSecurityEvent } from "@/lib/security-log";
+import {
+  getAppBaseUrl,
+  sendInvoiceIssuedEmail,
+  sendProposalCommentEmail,
+} from "@/lib/email";
+import { getOrCreateUser } from "@/lib/auth";
 
 // 64 hex chars = 32 random bytes = 256 bits of entropy.
 const TOKEN_RE = /^[0-9a-f]{64}$/;
@@ -101,6 +108,36 @@ export async function approveProposal(token: string): Promise<void> {
       VALUES (${proposalId}, 'approved', 'Proposal approved by client')
     `,
   ]);
+
+  // Fire the deposit-issued notification. Voided ($0) deposits don't need
+  // an email — there's nothing for the client to pay.
+  if (depositTotal > 0) {
+    try {
+      const details = await sql`
+        SELECT
+          c.email AS client_email,
+          c.name AS client_name,
+          u.name AS agency_name
+        FROM clients c
+        JOIN users u ON u.id = ${p.user_id}
+        WHERE c.id = ${p.client_id}
+      `;
+      const row = details[0];
+      if (row?.client_email) {
+        await sendInvoiceIssuedEmail({
+          to: row.client_email as string,
+          clientName: (row.client_name as string) ?? "",
+          agencyName: (row.agency_name as string) ?? "",
+          invoiceType: "deposit",
+          totalAmount: depositTotal,
+          projectTitle: (p.title as string) ?? "",
+          projectUrl: `${getAppBaseUrl()}/share/project/${projectShareToken}`,
+        });
+      }
+    } catch {
+      // Best effort.
+    }
+  }
 }
 
 export async function submitChangeRequest(
@@ -159,4 +196,83 @@ export async function submitChangeRequest(
       ${`Client requested changes: ${trimmed}`}
     )
   `;
+}
+
+// ── Comments ─────────────────────────────────────────────────────────────────
+
+const COMMENT_MAX = 2000;
+
+export async function postClientComment(
+  token: string,
+  body: string,
+): Promise<void> {
+  assertToken(token, "share/proposal/comment");
+
+  const trimmed = String(body ?? "").trim();
+  if (!trimmed) throw new Error("Comment is empty.");
+  if (trimmed.length > COMMENT_MAX) {
+    throw new Error(`Keep it under ${COMMENT_MAX} characters.`);
+  }
+
+  const user = await getOrCreateUser();
+
+  // Look up the proposal + matching client. The signed-in user must be
+  // the client (case-insensitive email match) before they can post.
+  // Draft proposals can't be commented on — the client shouldn't even
+  // see them.
+  const rows = await sql`
+    SELECT p.id, p.user_id, p.title, p.share_token,
+           c.email AS client_email,
+           c.name AS client_name,
+           u.name AS agency_name,
+           u.email AS agency_email
+    FROM proposals p
+    JOIN clients c ON c.id = p.client_id
+    JOIN users u ON u.id = p.user_id
+    WHERE p.share_token = ${token} AND p.status <> 'draft'
+  `;
+  if (rows.length === 0) throw new Error("This link is no longer valid.");
+  const p = rows[0] as {
+    id: string;
+    user_id: string;
+    title: string;
+    share_token: string;
+    client_email: string;
+    client_name: string | null;
+    agency_name: string | null;
+    agency_email: string;
+  };
+
+  if (String(p.client_email).toLowerCase() !== user.email.toLowerCase()) {
+    logSecurityEvent({
+      event: "comment_authorization_failed",
+      route: "share/proposal/comment",
+      ip: getClientIp(headers()),
+      outcome: "denied",
+      reason: "email_mismatch",
+    });
+    throw new Error("Only the client this proposal was sent to can comment.");
+  }
+
+  await sql`
+    INSERT INTO proposal_comments (proposal_id, author_user_id, author_role, body)
+    VALUES (${p.id}, ${user.id}, 'client', ${trimmed})
+  `;
+
+  // Notify the agency.
+  try {
+    await sendProposalCommentEmail({
+      to: p.agency_email,
+      recipientName: p.agency_name ?? "",
+      authorRole: "client",
+      authorName: user.name ?? user.email,
+      proposalTitle: p.title,
+      body: trimmed,
+      proposalUrl: `${getAppBaseUrl()}/dashboard/proposals/${p.id}`,
+    });
+  } catch {
+    // Best effort.
+  }
+
+  revalidatePath(`/share/proposal/${token}`);
 }

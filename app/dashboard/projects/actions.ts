@@ -9,6 +9,11 @@ import {
   timeEntrySchema,
   uuidSchema,
 } from "@/lib/validation";
+import {
+  getAppBaseUrl,
+  sendInvoiceIssuedEmail,
+  sendMilestoneCompletedEmail,
+} from "@/lib/email";
 
 export type ProjectListItem = {
   id: string;
@@ -248,6 +253,13 @@ export async function generateFinalInvoice(projectId: string): Promise<string> {
     RETURNING id
   `;
 
+  await notifyInvoiceIssued({
+    projectId,
+    agencyUserId: user.id,
+    totalAmount: remaining,
+    invoiceType: "final",
+  });
+
   revalidatePath(`/dashboard/projects/${projectId}`);
   revalidatePath("/dashboard/invoices");
 
@@ -268,6 +280,20 @@ export async function updateMilestoneStatus(
 
   const user = await getOrCreateUser();
 
+  // Read the pre-update status so we can detect a TRANSITION to 'completed'
+  // (rather than re-saving an already-completed milestone, which shouldn't
+  // re-send the email).
+  const before = await sql`
+    SELECT m.status, m.title
+    FROM milestones m
+    JOIN projects p ON p.proposal_id = m.proposal_id
+    WHERE m.id = ${milestoneId}
+      AND p.id = ${projectId}
+      AND p.user_id = ${user.id}
+  `;
+  const previousStatus = before[0]?.status as string | undefined;
+  const milestoneTitle = (before[0]?.title as string | undefined) ?? "";
+
   // Authorization: ensure the milestone belongs to a project owned by this
   // user (milestones link to proposal_id, projects link to user_id).
   const result = await sql`
@@ -281,6 +307,14 @@ export async function updateMilestoneStatus(
     RETURNING m.id, m.proposal_id
   `;
   if (result.length === 0) throw new Error("Milestone not found.");
+
+  if (parsed.data === "completed" && previousStatus !== "completed") {
+    await notifyMilestoneCompleted({
+      projectId,
+      agencyUserId: user.id,
+      milestoneTitle,
+    });
+  }
 
   // Keep project status in sync with milestone state, but never override
   // 'delivered' (set after a final invoice is paid).
@@ -460,4 +494,77 @@ export async function removeDeliverable(deliverableId: string): Promise<void> {
   if (deleted.length === 0) throw new Error("Deliverable not found.");
 
   revalidatePath(`/dashboard/projects/${deleted[0].project_id}`);
+}
+
+// ── Client-facing notification helpers ───────────────────────────────────────
+// All three swallow their own errors and never block the caller. A failed
+// email shouldn't take down a DB-write action — the action is the source of
+// truth; the email is best-effort.
+
+async function notifyMilestoneCompleted(args: {
+  projectId: string;
+  agencyUserId: string;
+  milestoneTitle: string;
+}): Promise<void> {
+  try {
+    const rows = await sql`
+      SELECT
+        pr.title AS project_title,
+        pr.share_token,
+        c.email AS client_email,
+        c.name AS client_name,
+        u.name AS agency_name
+      FROM projects pr
+      JOIN clients c ON c.id = pr.client_id
+      JOIN users u ON u.id = pr.user_id
+      WHERE pr.id = ${args.projectId} AND pr.user_id = ${args.agencyUserId}
+    `;
+    const row = rows[0];
+    if (!row?.client_email) return;
+    await sendMilestoneCompletedEmail({
+      to: row.client_email as string,
+      clientName: (row.client_name as string) ?? "",
+      agencyName: (row.agency_name as string) ?? "",
+      milestoneTitle: args.milestoneTitle,
+      projectTitle: (row.project_title as string) ?? "",
+      projectUrl: `${getAppBaseUrl()}/share/project/${row.share_token}`,
+    });
+  } catch {
+    // Best effort. Failure is logged inside the email sender.
+  }
+}
+
+async function notifyInvoiceIssued(args: {
+  projectId: string;
+  agencyUserId: string;
+  totalAmount: number;
+  invoiceType: "deposit" | "final";
+}): Promise<void> {
+  try {
+    const rows = await sql`
+      SELECT
+        pr.title AS project_title,
+        pr.share_token,
+        c.email AS client_email,
+        c.name AS client_name,
+        u.name AS agency_name
+      FROM projects pr
+      JOIN clients c ON c.id = pr.client_id
+      JOIN users u ON u.id = pr.user_id
+      WHERE pr.id = ${args.projectId} AND pr.user_id = ${args.agencyUserId}
+    `;
+    const row = rows[0];
+    if (!row?.client_email) return;
+    await sendInvoiceIssuedEmail({
+      to: row.client_email as string,
+      clientName: (row.client_name as string) ?? "",
+      agencyName: (row.agency_name as string) ?? "",
+      invoiceType: args.invoiceType,
+      totalAmount: args.totalAmount,
+      projectTitle: (row.project_title as string) ?? "",
+      projectUrl: `${getAppBaseUrl()}/share/project/${row.share_token}`,
+    });
+  } catch {
+    // Best effort.
+  }
 }

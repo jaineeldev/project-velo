@@ -231,6 +231,201 @@ function logWaitlistOutcome(outcome: "sent" | "failed") {
   );
 }
 
+// ── Client-facing notification emails ────────────────────────────────────────
+
+type ClientNotifyResult =
+  | { ok: true; id: string }
+  | { ok: false; reason: string };
+
+export type SendMilestoneCompletedEmailInput = {
+  to: string;
+  clientName: string;
+  agencyName: string;
+  milestoneTitle: string;
+  projectTitle: string;
+  projectUrl: string;
+};
+
+export async function sendMilestoneCompletedEmail(
+  input: SendMilestoneCompletedEmailInput,
+): Promise<ClientNotifyResult> {
+  const resend = getResend();
+  if (!resend) {
+    return { ok: false, reason: "RESEND_API_KEY is not configured" };
+  }
+
+  const subject = `Milestone completed: ${input.milestoneTitle}`;
+  const text = [
+    `Hi ${input.clientName || "there"},`,
+    "",
+    `${input.agencyName || "Your team"} just marked a milestone complete on "${input.projectTitle}":`,
+    "",
+    `  ${input.milestoneTitle}`,
+    "",
+    `View the project: ${input.projectUrl}`,
+    "",
+    "— Velo",
+  ].join("\n");
+
+  return sendNotifyEmail({ to: input.to, subject, text, event: "milestone_completed" });
+}
+
+export type SendInvoiceIssuedEmailInput = {
+  to: string;
+  clientName: string;
+  agencyName: string;
+  invoiceType: "deposit" | "final";
+  totalAmount: number;
+  projectTitle: string;
+  projectUrl: string;
+};
+
+export async function sendInvoiceIssuedEmail(
+  input: SendInvoiceIssuedEmailInput,
+): Promise<ClientNotifyResult> {
+  const resend = getResend();
+  if (!resend) {
+    return { ok: false, reason: "RESEND_API_KEY is not configured" };
+  }
+
+  const typeLabel = input.invoiceType === "deposit" ? "Deposit" : "Final";
+  const subject = `${typeLabel} invoice from ${input.agencyName || "your team"}`;
+  const text = [
+    `Hi ${input.clientName || "there"},`,
+    "",
+    `${input.agencyName || "Your team"} issued a ${typeLabel.toLowerCase()} invoice on "${input.projectTitle}".`,
+    "",
+    `Amount: ${currencyFmt.format(input.totalAmount)}`,
+    "",
+    `View the invoice: ${input.projectUrl}`,
+    "",
+    "Card payments are still being wired up. For now, the bank transfer details are on the issued invoice.",
+    "",
+    "— Velo",
+  ].join("\n");
+
+  return sendNotifyEmail({ to: input.to, subject, text, event: "invoice_issued" });
+}
+
+export type SendProposalCommentEmailInput = {
+  to: string;
+  recipientName: string;
+  authorRole: "client" | "agency";
+  authorName: string;
+  proposalTitle: string;
+  body: string;
+  proposalUrl: string;
+};
+
+export async function sendProposalCommentEmail(
+  input: SendProposalCommentEmailInput,
+): Promise<ClientNotifyResult> {
+  const resend = getResend();
+  if (!resend) {
+    return { ok: false, reason: "RESEND_API_KEY is not configured" };
+  }
+
+  const authorLabel =
+    input.authorRole === "client" ? "Your client" : "Your team";
+  const subject = `New comment on "${input.proposalTitle}"`;
+  const trimmedBody = input.body.length > 600
+    ? input.body.slice(0, 600) + "..."
+    : input.body;
+
+  const text = [
+    `Hi ${input.recipientName || "there"},`,
+    "",
+    `${authorLabel} (${input.authorName || "unknown"}) just commented on "${input.proposalTitle}":`,
+    "",
+    trimmedBody,
+    "",
+    `Reply: ${input.proposalUrl}`,
+    "",
+    "— Velo",
+  ].join("\n");
+
+  return sendNotifyEmail({ to: input.to, subject, text, event: "proposal_comment" });
+}
+
+export type SendInvoicePaidEmailInput = {
+  to: string;
+  clientName: string;
+  agencyName: string;
+  invoiceType: "deposit" | "final";
+  totalAmount: number;
+  projectTitle: string;
+  projectUrl: string;
+};
+
+export async function sendInvoicePaidEmail(
+  input: SendInvoicePaidEmailInput,
+): Promise<ClientNotifyResult> {
+  const resend = getResend();
+  if (!resend) {
+    return { ok: false, reason: "RESEND_API_KEY is not configured" };
+  }
+
+  const typeLabel = input.invoiceType === "deposit" ? "deposit" : "final";
+  const subject = `Payment received: ${input.projectTitle}`;
+  const text = [
+    `Hi ${input.clientName || "there"},`,
+    "",
+    `${input.agencyName || "Your team"} confirmed receipt of your ${typeLabel} payment on "${input.projectTitle}".`,
+    "",
+    `Amount: ${currencyFmt.format(input.totalAmount)}`,
+    "",
+    `View the project: ${input.projectUrl}`,
+    "",
+    "Thanks. This email is your receipt.",
+    "",
+    "— Velo",
+  ].join("\n");
+
+  return sendNotifyEmail({ to: input.to, subject, text, event: "invoice_paid" });
+}
+
+async function sendNotifyEmail(args: {
+  to: string;
+  subject: string;
+  text: string;
+  event: string;
+}): Promise<ClientNotifyResult> {
+  const resend = getResend();
+  if (!resend) {
+    return { ok: false, reason: "RESEND_API_KEY is not configured" };
+  }
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_ADDRESS,
+      to: args.to,
+      subject: args.subject,
+      text: args.text,
+    });
+    if (error) {
+      logNotifyOutcome(args.event, "failed");
+      return { ok: false, reason: error.message };
+    }
+    logNotifyOutcome(args.event, "sent");
+    return { ok: true, id: data?.id ?? "" };
+  } catch (err) {
+    logNotifyOutcome(args.event, "failed");
+    return {
+      ok: false,
+      reason: err instanceof Error ? err.message : "Unknown email error",
+    };
+  }
+}
+
+function logNotifyOutcome(event: string, outcome: "sent" | "failed") {
+  console.log(
+    JSON.stringify({
+      ts: new Date().toISOString(),
+      event,
+      outcome,
+    }),
+  );
+}
+
 export function getAppBaseUrl(): string {
   const url = process.env.NEXT_PUBLIC_APP_URL ?? process.env.APP_URL;
   if (url) return url;

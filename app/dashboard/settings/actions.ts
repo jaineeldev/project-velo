@@ -68,6 +68,62 @@ export async function updateProfile(input: UpdateProfileInput): Promise<void> {
 
 // ── deleteAccount ────────────────────────────────────────────────────────────
 
+// Mirrors the client-side blocker model: an agency mid-engagement deleting
+// would strand their clients (cascade wipes proposals/projects/invoices) and
+// blow away the audit trail of money still owed. We block deletion until
+// active work is wrapped up.
+const ACTIVE_PROPOSAL_STATUSES = ["sent", "changes_requested"] as const;
+const ACTIVE_PROJECT_STATUSES = ["active"] as const;
+
+export type DeletionBlocker = {
+  kind: "proposal" | "project" | "invoice";
+  count: number;
+};
+
+export type DeletionEligibility = {
+  canDelete: boolean;
+  blockers: DeletionBlocker[];
+};
+
+export async function checkDeletionEligibility(): Promise<DeletionEligibility> {
+  const user = await getOrCreateUser();
+
+  const [activeProposals, activeProjects, unpaidInvoices] = (await Promise.all([
+    sql`
+      SELECT COUNT(*)::int AS count
+      FROM proposals
+      WHERE user_id = ${user.id}
+        AND status = ANY(${ACTIVE_PROPOSAL_STATUSES as readonly string[]})
+    `,
+    sql`
+      SELECT COUNT(*)::int AS count
+      FROM projects
+      WHERE user_id = ${user.id}
+        AND status = ANY(${ACTIVE_PROJECT_STATUSES as readonly string[]})
+    `,
+    sql`
+      SELECT COUNT(*)::int AS count
+      FROM invoices
+      WHERE user_id = ${user.id}
+        AND status = 'unpaid'
+        AND total_amount > 0
+    `,
+  ])) as [{ count: number }[], { count: number }[], { count: number }[]];
+
+  const blockers: DeletionBlocker[] = [];
+  if (activeProposals[0].count > 0) {
+    blockers.push({ kind: "proposal", count: activeProposals[0].count });
+  }
+  if (activeProjects[0].count > 0) {
+    blockers.push({ kind: "project", count: activeProjects[0].count });
+  }
+  if (unpaidInvoices[0].count > 0) {
+    blockers.push({ kind: "invoice", count: unpaidInvoices[0].count });
+  }
+
+  return { canDelete: blockers.length === 0, blockers };
+}
+
 // Permanent. Removes every row owned by the user from the DB, then deletes
 // the Clerk user. Caller must collect a typed-email confirmation before
 // invoking — UI enforces, server double-checks.
@@ -78,6 +134,15 @@ export async function deleteAccount(emailConfirmation: string): Promise<void> {
   if (!typed || typed !== user.email.toLowerCase()) {
     throw new Error(
       "Email does not match. Type your account email exactly to confirm.",
+    );
+  }
+
+  // Re-check server-side. The danger zone disables the button when blockers
+  // exist, but a stale tab could submit after a new proposal arrived.
+  const eligibility = await checkDeletionEligibility();
+  if (!eligibility.canDelete) {
+    throw new Error(
+      "Account cannot be deleted while you have active client work or unpaid invoices.",
     );
   }
 

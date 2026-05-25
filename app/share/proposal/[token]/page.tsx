@@ -9,6 +9,13 @@ import { logSecurityEvent } from "@/lib/security-log";
 import { currencyFmt, dateTimeFmt, splitGst } from "@/lib/format";
 import { cn, focusRing } from "@/lib/utils";
 import { ProposalActions } from "./proposal-actions";
+import { ShareBackLink } from "@/components/share-back-link";
+import { SharePaymentButton } from "@/components/share-payment-button";
+import {
+  ProposalComments,
+  type ProposalCommentRow,
+} from "@/components/proposal-comments";
+import { postClientComment } from "./actions";
 
 // Public portal — always fetch fresh and never let a CDN cache token-keyed
 // content. The Cache-Control header is also enforced from middleware.
@@ -78,10 +85,28 @@ async function getPublicProposal(token: string) {
     `,
   ]);
 
+  // proposal_comments was added in migration 0016. Tolerate the table not
+  // existing yet so older deployments don't 500 the entire share page
+  // when this feature lands. Once the migration is applied everywhere,
+  // this fallback is harmless (no error path to hit).
+  let comments: ProposalCommentRow[] = [];
+  try {
+    const commentRows = await sql`
+      SELECT id, author_role, body, created_at
+      FROM proposal_comments
+      WHERE proposal_id = ${proposalId}
+      ORDER BY created_at ASC
+    `;
+    comments = commentRows as ProposalCommentRow[];
+  } catch {
+    // Table not yet migrated. Render an empty thread.
+  }
+
   return {
     ...(rows[0] as PublicProposal),
     lineItems: items as LineItemRow[],
     events: events as EventRow[],
+    comments,
   };
 }
 
@@ -115,27 +140,35 @@ export default async function ShareProposalPage({
   const proposal = await getPublicProposal(params.token);
   if (!proposal) notFound();
 
-  // Clients are redirected only on terminal statuses (approved /
-  // delivered) — for those there is no further action and the
-  // dashboard is the better surface. We keep the share page open for
-  // 'sent' (the client may still approve or request changes) AND
-  // 'changes_requested' (the client may want to re-read their own
-  // request or the proposal it's against). Anonymous visitors and
-  // agency users keep the existing render path. Role is read from the
-  // DB, not the JWT, so this works even when the session-token claim
-  // hasn't refreshed.
-  if (
-    userId &&
-    (proposal.status === "approved" || proposal.status === "delivered")
-  ) {
+  // Role lookup serves two purposes: deciding the back-to-dashboard link
+  // destination, and the terminal-status redirect below. We read it once
+  // from the DB (not the JWT) so this works even when the session-token
+  // claim hasn't refreshed after sign-up.
+  let viewerRole: "client" | "agency" | null = null;
+  if (userId) {
     const roleRows = await sql`
       SELECT up.role
       FROM user_profiles up
       JOIN users u ON u.id = up.user_id
       WHERE u.clerk_id = ${userId}
     `;
-    if (roleRows[0]?.role === "client") redirect("/client/dashboard");
+    const r = roleRows[0]?.role;
+    if (r === "client" || r === "agency") viewerRole = r;
   }
+
+  // Clients land on the dashboard for "delivered" — there's nothing left
+  // to do on the share page for that terminal state. "approved" stays
+  // open so the client can see the pay-deposit CTA below.
+  if (viewerRole === "client" && proposal.status === "delivered") {
+    redirect("/client/dashboard");
+  }
+
+  const backHref =
+    viewerRole === "client"
+      ? "/client/dashboard"
+      : viewerRole === "agency"
+        ? "/dashboard"
+        : null;
 
   const { total, subtotal, gst } = splitGst(Number(proposal.total_amount));
   const depositPct = Number(proposal.deposit_percentage);
@@ -146,7 +179,12 @@ export default async function ShareProposalPage({
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto max-w-2xl px-6 py-16">
-        {/* Header */}
+        {backHref && (
+          <div className="mb-8">
+            <ShareBackLink href={backHref} />
+          </div>
+        )}
+
         <div className="mb-10 border-b border-border pb-8">
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Proposal for {proposal.client_name}
@@ -256,22 +294,50 @@ export default async function ShareProposalPage({
         {!isActionable && (
           <section className="mt-12">
             {proposal.status === "approved" && (
-              <div className="flex items-start gap-3 rounded-lg border border-border bg-card p-6 shadow-sm">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10">
-                  <CheckCircle2
-                    aria-hidden
-                    className="h-5 w-5 text-primary"
-                  />
+              <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10">
+                    <CheckCircle2
+                      aria-hidden
+                      className="h-5 w-5 text-primary"
+                    />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground">
+                      Proposal approved
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      This proposal has been approved. The team is getting
+                      started.
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-semibold text-foreground">
-                    Proposal approved
-                  </p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    This proposal has been approved. The team is getting
-                    started.
-                  </p>
-                </div>
+                {depositPct > 0 && (
+                  <div className="mt-6 border-t border-border pt-5">
+                    {deposit > 0 ? (
+                      <>
+                        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                          Deposit owed
+                        </p>
+                        <div className="mt-3">
+                          <SharePaymentButton
+                            label="Pay deposit"
+                            amount={currencyFmt.format(deposit)}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex items-center justify-between gap-4">
+                        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                          Deposit
+                        </p>
+                        <span className="inline-flex items-center rounded-full border border-border bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                          Voided · {currencyFmt.format(0)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
             {proposal.status === "changes_requested" && (
@@ -316,6 +382,27 @@ export default async function ShareProposalPage({
             </ol>
           </section>
         )}
+
+        <section className="mt-12 border-t border-border pt-8">
+          <h2 className="mb-5 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Comments
+          </h2>
+          <ProposalComments
+            comments={proposal.comments}
+            canPost={viewerRole === "client"}
+            disabledReason={
+              viewerRole === "agency"
+                ? "You're viewing this as the agency. Comment from your dashboard instead."
+                : viewerRole === null
+                  ? "Sign in to comment on this proposal."
+                  : undefined
+            }
+            postAction={async (body) => {
+              "use server";
+              await postClientComment(params.token, body);
+            }}
+          />
+        </section>
 
         <div className="mt-16 flex flex-col items-center gap-1 text-xs text-muted-foreground">
           <p>Powered by Velo</p>

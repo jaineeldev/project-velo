@@ -1,6 +1,4 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
-import { SignOutButton } from "@clerk/nextjs";
 import { Wallet } from "lucide-react";
 import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
@@ -56,16 +54,7 @@ type DashboardItem =
 export default async function ClientDashboardPage() {
   const user = await getOrCreateUser();
 
-  // Defence-in-depth: the middleware should have already bounced agency
-  // users on the way in, but the middleware redirect depends on Clerk's
-  // session-token customization being wired up. This check reads the DB
-  // directly and is correct regardless of JWT claim state.
-  const roleRows = await sql`
-    SELECT role FROM user_profiles WHERE user_id = ${user.id}
-  `;
-  if (roleRows[0]?.role !== "client") redirect("/dashboard");
-
-  const [proposals, projects] = (await Promise.all([
+  const [proposals, projects, balanceRow] = (await Promise.all([
     // sent_at comes from proposal_events rather than a column on
     // proposals — there's no sent_at column on proposals; the row's
     // sent timestamp is recorded as an event_type='sent' row in the
@@ -107,7 +96,9 @@ export default async function ClientDashboardPage() {
           AS milestones_completed,
         EXISTS (
           SELECT 1 FROM invoices i
-          WHERE i.project_id = pr.id AND i.status = 'unpaid'
+          WHERE i.project_id = pr.id
+            AND i.status = 'unpaid'
+            AND i.total_amount > 0
         ) AS has_unpaid_invoice
       FROM projects pr
       JOIN proposals p ON p.id = pr.proposal_id
@@ -118,7 +109,27 @@ export default async function ClientDashboardPage() {
       GROUP BY pr.id, pr.title, pr.status, pr.share_token, u.name, pr.created_at
       ORDER BY pr.created_at DESC
     `,
-  ])) as [ProposalRow[], ProjectRow[]];
+    // Outstanding balance across every agency. Voided ($0) invoices are
+    // excluded so they don't inflate the count to "1 unpaid invoice · $0".
+    sql`
+      SELECT
+        COALESCE(SUM(i.total_amount), 0)::numeric AS owed,
+        COUNT(*)::int AS count
+      FROM invoices i
+      JOIN clients c ON c.id = i.client_id
+      WHERE LOWER(c.email) = LOWER(${user.email})
+        AND i.status = 'unpaid'
+        AND i.total_amount > 0
+    `,
+  ])) as [
+    ProposalRow[],
+    ProjectRow[],
+    { owed: string; count: number }[],
+  ];
+
+  const balance = balanceRow[0];
+  const owed = Number(balance?.owed ?? 0);
+  const owedCount = balance?.count ?? 0;
 
   // Merge into one timeline and split into the two views in JS. The
   // queries already return non-overlapping sets (a row is either a
@@ -147,59 +158,44 @@ export default async function ClientDashboardPage() {
   const firstName = user.name?.split(" ")[0] ?? null;
 
   return (
-    <main className="flex min-h-screen flex-col bg-background">
-      <header className="border-b border-border">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
-          <Link
-            href="/client/dashboard"
-            aria-label="Velo — go to dashboard"
-            className={cn(
-              "flex items-center gap-2.5 rounded",
-              focusRing,
-            )}
-          >
-            <span
-              aria-hidden
-              className="h-2 w-2 rounded-full bg-primary shadow-[0_0_0_3px_hsl(var(--primary)/0.18)]"
-            />
-            <span className="text-sm font-semibold tracking-tight text-foreground">
-              Velo
+    <div className="mx-auto w-full max-w-3xl px-6 py-10 sm:py-16">
+      <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+        Welcome back{firstName ? `, ${firstName}` : ""}
+      </h1>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Here&apos;s everything shared with you.
+      </p>
+
+      {owedCount > 0 && (
+        <div className="mt-8 flex items-center justify-between gap-4 rounded-lg border border-amber-200 bg-amber-50 px-5 py-4 dark:border-amber-900/60 dark:bg-amber-950/30">
+          <div className="flex items-center gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+              <Wallet aria-hidden className="h-4 w-4" />
             </span>
-          </Link>
-          <SignOutButton>
-            <button
-              type="button"
-              className={cn(
-                "rounded text-xs text-muted-foreground hover:text-foreground",
-                focusRing,
-              )}
-            >
-              Sign out
-            </button>
-          </SignOutButton>
-        </div>
-      </header>
-
-      <div className="mx-auto w-full max-w-3xl flex-1 px-6 py-10 sm:py-16">
-        <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-          Welcome back{firstName ? `, ${firstName}` : ""}
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Here&apos;s everything shared with you.
-        </p>
-
-        {isEmpty ? (
-          <CombinedEmptyState />
-        ) : (
-          <div className="mt-12 space-y-16">
-            {needsAttention.length > 0 && (
-              <Section title="Needs attention" items={needsAttention} />
-            )}
-            <Section title="All work" items={allWork} />
+            <div>
+              <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">
+                {currencyFmt.format(owed)} outstanding
+              </p>
+              <p className="text-xs text-amber-800/80 dark:text-amber-200/80">
+                Across {owedCount} unpaid{" "}
+                {owedCount === 1 ? "invoice" : "invoices"}.
+              </p>
+            </div>
           </div>
-        )}
-      </div>
-    </main>
+        </div>
+      )}
+
+      {isEmpty ? (
+        <CombinedEmptyState />
+      ) : (
+        <div className="mt-12 space-y-16">
+          {needsAttention.length > 0 && (
+            <Section title="Needs attention" items={needsAttention} />
+          )}
+          <Section title="All work" items={allWork} />
+        </div>
+      )}
+    </div>
   );
 }
 

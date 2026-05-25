@@ -120,7 +120,30 @@ export async function POST(req: Request) {
                     updated_at = now()
             `;
 
-      await sql.transaction([
+      // For user.updated on a client user, also sync the email + name into
+      // every agency-side clients row that matches their PREVIOUS email.
+      // The dashboard joins clients to users by email, so without this sync
+      // a client who changes their email would lose access to their work
+      // until each agency manually updates the contact. Look up the
+      // pre-update state before the users-table upsert so the OLD email is
+      // still readable.
+      let clientSyncStatement: ReturnType<typeof sql> | null = null;
+      if (event.type === "user.updated" && validRole === "client") {
+        const existing = await sql`
+          SELECT email FROM users WHERE clerk_id = ${clerk_id}
+        `;
+        const oldEmail = existing[0]?.email as string | undefined;
+        if (oldEmail) {
+          clientSyncStatement = sql`
+            UPDATE clients
+            SET email = ${validEmail},
+                name = ${validName ?? "Client"}
+            WHERE LOWER(email) = LOWER(${oldEmail})
+          `;
+        }
+      }
+
+      const statements = [
         sql`
           INSERT INTO users (clerk_id, email, name)
           VALUES (${clerk_id}, ${validEmail}, ${validName})
@@ -129,7 +152,10 @@ export async function POST(req: Request) {
                 name = EXCLUDED.name
         `,
         profileUpsert,
-      ]);
+      ];
+      if (clientSyncStatement) statements.push(clientSyncStatement);
+
+      await sql.transaction(statements);
     }
 
     return new Response("ok", { status: 200 });

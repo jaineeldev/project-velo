@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
+import { auth } from "@clerk/nextjs/server";
 import { ExternalLink } from "lucide-react";
 import { sql } from "@/lib/db";
 import { getClientIp } from "@/lib/rate-limit";
 import { logSecurityEvent } from "@/lib/security-log";
 import { currencyFmt, dateShortFmt } from "@/lib/format";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { ShareBackLink } from "@/components/share-back-link";
+import { SharePaymentButton } from "@/components/share-payment-button";
 
 // Public portal must always reflect the current milestone/invoice state —
 // otherwise a status change in the dashboard is invisible to the client until
@@ -110,6 +113,27 @@ export default async function ShareProjectPage({
   const { project, milestones, deliverables, timeEntries, invoices } = data;
   const totalHours = timeEntries.reduce((sum, e) => sum + Number(e.hours), 0);
 
+  // Back-link destination depends on the viewer's role. Anonymous viewers
+  // get no link (the project page is public via share token, so visitors
+  // without an account have nowhere to "go back" to).
+  const { userId } = await auth();
+  let backHref: string | null = null;
+  if (userId) {
+    const roleRows = await sql`
+      SELECT up.role
+      FROM user_profiles up
+      JOIN users u ON u.id = up.user_id
+      WHERE u.clerk_id = ${userId}
+    `;
+    const role = roleRows[0]?.role;
+    backHref =
+      role === "client"
+        ? "/client/dashboard"
+        : role === "agency"
+          ? "/dashboard"
+          : null;
+  }
+
   // Group deliverables by milestone for rendering. The milestone_id is used
   // only as a map key in this server-rendered tree — it never appears in the
   // HTML, so the public portal stays free of internal IDs.
@@ -123,7 +147,12 @@ export default async function ShareProjectPage({
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto max-w-2xl px-6 py-16">
-        {/* Header */}
+        {backHref && (
+          <div className="mb-8">
+            <ShareBackLink href={backHref} />
+          </div>
+        )}
+
         <div className="mb-10 border-b border-border pb-8">
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Project for {project.client_name}
@@ -214,25 +243,58 @@ export default async function ShareProjectPage({
             <p className="text-sm text-muted-foreground">No invoices yet.</p>
           ) : (
             <ul className="overflow-hidden rounded-lg border border-border">
-              {invoices.map((inv, i) => (
-                <li
-                  key={inv.id}
-                  className={`flex items-center justify-between gap-4 px-4 py-3 ${i > 0 ? "border-t border-border" : ""}`}
-                >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <StatusBadge status={inv.type} />
-                      <span className="text-sm font-medium text-foreground">
-                        {currencyFmt.format(Number(inv.total_amount))}
-                      </span>
+              {invoices.map((inv, i) => {
+                const amount = Number(inv.total_amount);
+                // Zero-amount invoices are nothing to pay. Skip the
+                // StatusBadge for status and show a Voided pill so the
+                // line reads cleanly without "Unpaid · $0.00".
+                const isVoided = amount <= 0;
+                const isPayable = inv.status === "unpaid" && !isVoided;
+                const payLabel =
+                  inv.type === "deposit" ? "Pay deposit" : "Pay invoice";
+                return (
+                  <li
+                    key={inv.id}
+                    className={i > 0 ? "border-t border-border" : ""}
+                  >
+                    <div className="flex items-center justify-between gap-4 px-4 py-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <StatusBadge status={inv.type} />
+                          <span
+                            className={
+                              isVoided
+                                ? "text-sm font-medium text-muted-foreground line-through"
+                                : "text-sm font-medium text-foreground"
+                            }
+                          >
+                            {currencyFmt.format(amount)}
+                          </span>
+                        </div>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          Issued {dateShortFmt.format(new Date(inv.created_at))}
+                        </p>
+                      </div>
+                      {isVoided ? (
+                        <span className="inline-flex items-center rounded-full border border-border bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                          Voided
+                        </span>
+                      ) : (
+                        <StatusBadge status={inv.status} />
+                      )}
                     </div>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      Issued {dateShortFmt.format(new Date(inv.created_at))}
-                    </p>
-                  </div>
-                  <StatusBadge status={inv.status} />
-                </li>
-              ))}
+                    {isPayable && (
+                      <div className="border-t border-border bg-muted/40 px-4 py-3">
+                        <SharePaymentButton
+                          label={payLabel}
+                          amount={currencyFmt.format(amount)}
+                          size="sm"
+                        />
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </section>

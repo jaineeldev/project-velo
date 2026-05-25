@@ -5,7 +5,7 @@ export default function SignUpPage() {
   return (
     <AuthLayout>
       <div className="flex w-full flex-col items-center">
-        <ConsentGate />
+        <ConsentGate signUpForceRedirectUrl="/signing-up" />
       </div>
     </AuthLayout>
   );

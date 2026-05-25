@@ -8,6 +8,7 @@ export default function SignInPage() {
     <AuthLayout>
       <div className="flex w-full flex-col items-center">
         <SignIn
+          forceRedirectUrl="/signing-in"
           appearance={{
             elements: {
               card: "!border-neutral-300 dark:!border-neutral-700 [box-shadow:none!important]",

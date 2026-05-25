@@ -3,12 +3,16 @@ import { ArrowRight, CreditCard } from "lucide-react";
 import { AppearanceToggle } from "@/components/appearance-toggle";
 import { getOrCreateUser } from "@/lib/auth";
 import { cn, focusRing } from "@/lib/utils";
-import { getProfile } from "./actions";
+import { checkDeletionEligibility, getProfile } from "./actions";
 import { ProfileForm } from "./profile-form";
 import { DangerZone } from "./danger-zone";
 
 export default async function SettingsPage() {
-  const [profile, user] = await Promise.all([getProfile(), getOrCreateUser()]);
+  const [profile, user, eligibility] = await Promise.all([
+    getProfile(),
+    getOrCreateUser(),
+    checkDeletionEligibility(),
+  ]);
 
   return (
     <div className="max-w-3xl px-10 py-12">
@@ -87,7 +91,10 @@ export default async function SettingsPage() {
         <h2 className="text-base font-medium text-destructive">
           Danger zone
         </h2>
-        <DangerZone accountEmail={user.email} />
+        <DangerZone
+          accountEmail={user.email}
+          initialBlockers={eligibility.blockers}
+        />
       </section>
     </div>
   );

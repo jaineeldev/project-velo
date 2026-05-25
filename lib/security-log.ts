@@ -13,7 +13,8 @@ export type SecurityEventType =
   | "account_deleted"
   | "clerk_delete_failed"
   | "auth_failed"
-  | "client_role_finalize_invalid";
+  | "client_role_finalize_invalid"
+  | "comment_authorization_failed";
 
 export type SecurityOutcome = "success" | "failure" | "denied";
 

@@ -4,18 +4,21 @@ import { useState, useTransition } from "react";
 import { useClerk } from "@clerk/nextjs";
 import { AlertTriangle } from "lucide-react";
 import { cn, focusRing } from "@/lib/utils";
-import { deleteAccount, type DeletionBlocker } from "./actions";
-
-const BLOCKER_LABEL: Record<DeletionBlocker["kind"], (n: number) => string> = {
-  proposal: (n) =>
-    `${n} ${n === 1 ? "proposal" : "proposals"} out with clients`,
-  project: (n) => `${n} active ${n === 1 ? "project" : "projects"}`,
-  invoice: (n) => `${n} unpaid ${n === 1 ? "invoice" : "invoices"}`,
-};
+import {
+  deleteClientAccount,
+  type DeletionBlocker,
+} from "./actions";
 
 type Props = {
   accountEmail: string;
   initialBlockers: DeletionBlocker[];
+};
+
+const BLOCKER_LABEL: Record<DeletionBlocker["kind"], (n: number) => string> = {
+  proposal: (n) =>
+    `${n} ${n === 1 ? "proposal" : "proposals"} awaiting your decision`,
+  project: (n) => `${n} active ${n === 1 ? "project" : "projects"}`,
+  invoice: (n) => `${n} unpaid ${n === 1 ? "invoice" : "invoices"}`,
 };
 
 export function DangerZone({ accountEmail, initialBlockers }: Props) {
@@ -37,13 +40,13 @@ export function DangerZone({ accountEmail, initialBlockers }: Props) {
     setError(null);
     startTransition(async () => {
       try {
-        await deleteAccount(typed);
+        await deleteClientAccount(typed);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Could not delete account.");
+        setError(
+          err instanceof Error ? err.message : "Could not delete account.",
+        );
         return;
       }
-      // Clear the session cookie locally and land on /sign-in. The Clerk
-      // user is already gone server-side; signOut is just local cleanup.
       await signOut({ redirectUrl: "/sign-in" });
     });
   }
@@ -54,8 +57,9 @@ export function DangerZone({ accountEmail, initialBlockers }: Props) {
         Delete account
       </p>
       <p className="mt-1 text-sm text-red-800/80 dark:text-red-300/80">
-        Permanently remove your account and every client, proposal, project,
-        and invoice attached to it. This cannot be undone.
+        Permanently removes your client account. The agencies you work with
+        keep their own contact records, but you lose access to everything
+        shared with you.
       </p>
 
       {blocked && (
@@ -70,7 +74,7 @@ export function DangerZone({ accountEmail, initialBlockers }: Props) {
                 You can&apos;t delete your account yet.
               </p>
               <p className="mt-1 text-amber-800/90 dark:text-amber-300/90">
-                Wrap these up first so your clients aren&apos;t stranded:
+                Resolve these first:
               </p>
               <ul className="mt-2 list-inside list-disc space-y-1 text-amber-800/90 dark:text-amber-300/90">
                 {initialBlockers.map((b) => (
@@ -98,8 +102,8 @@ export function DangerZone({ accountEmail, initialBlockers }: Props) {
         <div className="mt-4 space-y-3">
           <label className="block">
             <span className="text-sm text-red-900 dark:text-red-200">
-              Type{" "}
-              <span className="font-mono">{accountEmail}</span> to confirm.
+              Type <span className="font-mono">{accountEmail}</span> to
+              confirm.
             </span>
             <input
               type="email"
@@ -129,14 +133,17 @@ export function DangerZone({ accountEmail, initialBlockers }: Props) {
             <button
               type="button"
               onClick={onConfirm}
-              disabled={isPending || typed.trim().toLowerCase() !== accountEmail.toLowerCase()}
+              disabled={
+                isPending ||
+                typed.trim().toLowerCase() !== accountEmail.toLowerCase()
+              }
               aria-busy={isPending}
               className={cn(
                 "rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50",
                 focusRing,
               )}
             >
-              {isPending ? "Deleting…" : "Permanently delete"}
+              {isPending ? "Deleting..." : "Permanently delete"}
             </button>
             <button
               type="button"

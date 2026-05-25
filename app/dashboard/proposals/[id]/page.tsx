@@ -1,9 +1,14 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getProposal } from "../actions";
+import {
+  getProposal,
+  getProposalComments,
+  postAgencyComment,
+} from "../actions";
 import { SendProposalButton } from "./send-proposal-button";
 import { ShareLinkDisplay } from "./share-link-display";
 import { DeleteProposalButton } from "./delete-proposal-button";
+import { ProposalComments } from "@/components/proposal-comments";
 import { getOrCreateUser } from "@/lib/auth";
 import {
   getUserProfile,
@@ -28,9 +33,10 @@ export default async function ProposalDetailPage({
   // the agency profile in parallel — the "From" block doesn't depend on
   // proposal data, so there's no reason for it to wait.
   const user = await getOrCreateUser();
-  const [proposal, profile] = await Promise.all([
+  const [proposal, profile, comments] = await Promise.all([
     getProposal(params.id),
     getUserProfile(user.id),
+    getProposalComments(params.id),
   ]);
   if (!proposal) notFound();
 
@@ -239,6 +245,25 @@ export default async function ProposalDetailPage({
           </ol>
         </div>
       )}
+
+      <div className="mt-10 border-t border-border pt-8">
+        <h2 className="mb-5 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          Comments
+        </h2>
+        <ProposalComments
+          comments={comments}
+          canPost={proposal.status !== "draft"}
+          disabledReason={
+            proposal.status === "draft"
+              ? "Comments open once you've sent this proposal to the client."
+              : undefined
+          }
+          postAction={async (body) => {
+            "use server";
+            await postAgencyComment(params.id, body);
+          }}
+        />
+      </div>
 
       <p className="mt-10 text-xs text-muted-foreground">
         Created {dateLongFmt.format(new Date(proposal.created_at))}

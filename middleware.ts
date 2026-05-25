@@ -19,7 +19,7 @@ const isAgencyRoute = createRouteMatcher([
 
 // Client-side surfaces. An agency operator who hits these (stale link,
 // hand-edited URL) gets sent back to their own dashboard.
-const isClientRoute = createRouteMatcher(["/client/dashboard(.*)"]);
+const isClientRoute = createRouteMatcher(["/client/(.*)"]);
 
 const isShareProposal = createRouteMatcher(["/share/proposal/(.*)"]);
 const isShareProject = createRouteMatcher(["/share/project/(.*)"]);

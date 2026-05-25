@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
 import { uuidSchema } from "@/lib/validation";
+import { getAppBaseUrl, sendInvoicePaidEmail } from "@/lib/email";
 
 export type InvoiceListItem = {
   id: string;
@@ -137,11 +138,16 @@ export async function markInvoiceAsPaid(invoiceId: string): Promise<void> {
     UPDATE invoices
     SET status = 'paid'
     WHERE id = ${invoiceId} AND user_id = ${user.id} AND status = 'unpaid'
-    RETURNING id, type, project_id
+    RETURNING id, type, project_id, total_amount
   `;
   if (result.length === 0) throw new Error("Invoice not found or already paid.");
 
-  const invoice = result[0] as { id: string; type: string; project_id: string };
+  const invoice = result[0] as {
+    id: string;
+    type: string;
+    project_id: string;
+    total_amount: string;
+  };
 
   // Paying the final invoice marks the project as delivered.
   if (invoice.type === "final") {
@@ -151,6 +157,39 @@ export async function markInvoiceAsPaid(invoiceId: string): Promise<void> {
     `;
     revalidatePath(`/dashboard/projects/${invoice.project_id}`);
     revalidatePath("/dashboard/projects");
+  }
+
+  // Send the receipt email. Voided ($0) invoices don't need a receipt.
+  const amount = Number(invoice.total_amount);
+  if (amount > 0) {
+    try {
+      const details = await sql`
+        SELECT
+          pr.title AS project_title,
+          pr.share_token,
+          c.email AS client_email,
+          c.name AS client_name,
+          u.name AS agency_name
+        FROM projects pr
+        JOIN clients c ON c.id = pr.client_id
+        JOIN users u ON u.id = pr.user_id
+        WHERE pr.id = ${invoice.project_id} AND pr.user_id = ${user.id}
+      `;
+      const row = details[0];
+      if (row?.client_email) {
+        await sendInvoicePaidEmail({
+          to: row.client_email as string,
+          clientName: (row.client_name as string) ?? "",
+          agencyName: (row.agency_name as string) ?? "",
+          invoiceType: invoice.type === "deposit" ? "deposit" : "final",
+          totalAmount: amount,
+          projectTitle: (row.project_title as string) ?? "",
+          projectUrl: `${getAppBaseUrl()}/share/project/${row.share_token}`,
+        });
+      }
+    } catch {
+      // Best effort.
+    }
   }
 
   revalidatePath(`/dashboard/invoices/${invoiceId}`);

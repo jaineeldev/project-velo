@@ -18,11 +18,13 @@ export function FeatureRow({
   flipped,
   index,
   tone = "light",
+  footer,
 }: {
   mockup: FeatureMockupKind;
   flipped: boolean;
   index: number;
   tone?: "light" | "dark";
+  footer?: React.ReactNode;
 }) {
   const prefersReduced = useReducedMotion();
   const feature = allFeatures.find((f) => f.mockup === mockup);
@@ -95,6 +97,7 @@ export function FeatureRow({
           >
             {feature.description}
           </p>
+          {footer ? <div className="mt-5 max-w-md">{footer}</div> : null}
         </div>
         <div className={cn(flipped ? "md:order-1" : "md:order-2")}>
           <FeatureMockup kind={mockup} tone={tone} />

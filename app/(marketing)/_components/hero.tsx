@@ -158,7 +158,7 @@ function Demo({ prefersReduced }: { prefersReduced: boolean }) {
         <div className="flex items-start justify-between gap-4 border-b border-white/[0.06] px-6 py-5 sm:px-8 sm:py-6">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/40">
-              Proposal · Acme Studio
+              Proposal · Ironbark Digital
             </p>
             <h3 className="mt-3 text-xl font-bold leading-tight tracking-[-0.02em] text-white sm:text-2xl">
               Website Redesign
@@ -368,7 +368,7 @@ function ApprovalText({ prefersReduced }: { prefersReduced: boolean }) {
           <Check aria-hidden className="h-3.5 w-3.5" strokeWidth={3} />
         </span>
         <span className="font-medium text-white/80">
-          Approved by Sarah Chen
+          Approved by Tom Barrett
         </span>
       </div>
     );
@@ -394,7 +394,7 @@ function ApprovalText({ prefersReduced }: { prefersReduced: boolean }) {
         <Check aria-hidden className="h-3.5 w-3.5" strokeWidth={3} />
       </motion.span>
       <span className="font-medium text-white/80">
-        Approved by Sarah Chen
+        Approved by Tom Barrett
       </span>
     </motion.div>
   );
@@ -422,7 +422,7 @@ function EmailNotification({
       <p className="text-sm text-white/70">
         Proposal sent to{" "}
         <span className="font-semibold text-white">
-          sarah@acmestudio.com
+          tom@ironbarkdigital.com.au
         </span>
       </p>
     </motion.div>

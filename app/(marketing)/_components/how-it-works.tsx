@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { Check, Lock, Send } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, focusRing } from "@/lib/utils";
 import { EASE_OUT } from "../_lib/shared";
 import { steps, type Step } from "../_lib/data";
 
@@ -92,6 +93,17 @@ function StepSection({
           <p className="mt-7 max-w-md text-base leading-relaxed text-white/60 sm:text-lg">
             {step.description}
           </p>
+          {step.number === "02" ? (
+            <Link
+              href="/clients"
+              className={cn(
+                "mt-5 inline-flex items-center gap-1.5 self-start rounded-sm text-sm font-semibold text-primary underline-offset-4 hover:underline",
+                focusRing,
+              )}
+            >
+              See what your client sees →
+            </Link>
+          ) : null}
         </div>
         <div className="relative flex items-center justify-center">
           <StepIllustration kind={step.number} />
@@ -121,7 +133,7 @@ function ProposalBuilderMock() {
       <div className="flex items-start justify-between gap-4 border-b border-white/[0.06] pb-4">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/40">
-            New proposal · Acme Studio
+            New proposal · Ironbark Digital
           </p>
           <h4 className="mt-2 text-base font-bold tracking-[-0.02em] text-white sm:text-lg">
             Website Redesign
@@ -195,13 +207,13 @@ function ClientApprovalMock() {
         </div>
         <div className="flex flex-1 items-center justify-center gap-1.5 rounded-md border border-white/[0.05] bg-black/40 px-3 py-1 text-[11px] text-white/45">
           <Lock aria-hidden className="h-3 w-3" strokeWidth={2.25} />
-          velo.app/p/acme-redesign
+          velo.app/p/ironbark-redesign
         </div>
       </div>
 
       <div className="p-6 sm:p-7">
         <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/40">
-          For Sarah Chen · sarah@acmestudio.com
+          For Tom Barrett · tom@ironbarkdigital.com.au
         </p>
         <h4 className="mt-2 text-lg font-bold leading-tight tracking-[-0.02em] text-white sm:text-xl">
           Website Redesign proposal
@@ -272,7 +284,7 @@ function LiveProjectMock() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/40">
-                Project · Acme Studio
+                Project · Ironbark Digital
               </p>
               <h4 className="mt-1 text-sm font-bold tracking-[-0.01em] text-white">
                 Website Redesign

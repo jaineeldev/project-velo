@@ -78,7 +78,7 @@ export function FeatureMockup({
         <div className={cn("flex items-start justify-between border-b pb-4", c.divider)}>
           <div>
             <p className={cn("text-[10px] font-semibold uppercase tracking-[0.22em]", c.textFaint)}>
-              Proposal · Acme Studio
+              Proposal · Ironbark Digital
             </p>
             <h4 className={cn("mt-2 text-lg font-bold tracking-[-0.02em]", c.text)}>
               Website Redesign
@@ -123,7 +123,7 @@ export function FeatureMockup({
               Client portal
             </p>
             <h4 className={cn("mt-1.5 text-sm font-bold tracking-[-0.01em]", c.text)}>
-              Sarah Chen · 3 projects
+              Tom Barrett · 3 projects
             </h4>
           </div>
           <span className={cn("inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em]", c.positive)}>
@@ -179,7 +179,7 @@ export function FeatureMockup({
         <div className={cn("flex items-center justify-between border-b pb-4", c.divider)}>
           <div>
             <p className={cn("text-[10px] font-semibold uppercase tracking-[0.22em]", c.textFaint)}>
-              Project · Acme Studio
+              Project · Ironbark Digital
             </p>
             <h4 className={cn("mt-1.5 text-sm font-bold tracking-[-0.01em]", c.text)}>
               Website Redesign · 2/4 done
@@ -237,14 +237,14 @@ export function FeatureMockup({
               Invoice · INV-2026-018
             </p>
             <h4 className={cn("mt-2 text-lg font-bold tracking-[-0.02em]", c.text)}>
-              Deposit · Acme Studio
+              Deposit · Ironbark Digital
             </h4>
           </div>
           <StatusPill tone={tone} variant="positive">Paid</StatusPill>
         </div>
 
         <div className="mt-4 space-y-1.5 text-xs">
-          <SummaryRow tone={tone} label="Bill to" value="sarah@acmestudio.com" />
+          <SummaryRow tone={tone} label="Bill to" value="tom@ironbarkdigital.com.au" />
           <SummaryRow tone={tone} label="Issued" value="18 Mar 2026" />
           <SummaryRow tone={tone} label="Paid by" value="Stripe · Visa •• 4242" />
         </div>
@@ -285,9 +285,9 @@ export function FeatureMockup({
 
   if (kind === "deliverables") {
     const links = [
-      { label: "github.com/acme/redesign", note: "Commit 4a1b · merged" },
-      { label: "figma.com/file/acme-final", note: "v12 · Sarah approved" },
-      { label: "acme-staging.vercel.app", note: "Latest preview" },
+      { label: "github.com/ironbark/redesign", note: "Commit 4a1b · merged" },
+      { label: "figma.com/file/ironbark-final", note: "v12 · Tom approved" },
+      { label: "ironbark-staging.vercel.app", note: "Latest preview" },
     ];
     return (
       <div className={cn(shell, "p-6 sm:p-7")}>
@@ -403,7 +403,7 @@ export function FeatureMockup({
     { label: "MTD", value: "A$8.4k", trend: "+18%" },
   ];
   const activity = [
-    { who: "Sarah Chen", action: "approved", what: "Website Redesign · v2" },
+    { who: "Tom Barrett", action: "approved", what: "Website Redesign · v2" },
     { who: "INV-2026-018", action: "paid", what: "A$5,040 · Stripe" },
     { who: "Loop Studio", action: "viewed", what: "Mobile app proposal" },
   ];

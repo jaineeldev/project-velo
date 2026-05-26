@@ -4,6 +4,7 @@ import { Wordmark } from "./wordmark";
 
 const productLinks = [
   { label: "Features", href: "/features" },
+  { label: "For clients", href: "/clients" },
   { label: "Pricing", href: "/pricing" },
   { label: "Security", href: "/security" },
   { label: "About", href: "/about" },

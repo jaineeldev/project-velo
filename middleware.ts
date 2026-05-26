@@ -11,7 +11,6 @@ import { logSecurityEvent } from "@/lib/security-log";
 const isAgencyRoute = createRouteMatcher([
   "/dashboard(.*)",
   "/onboarding(.*)",
-  "/clients(.*)",
   "/projects(.*)",
   "/proposals(.*)",
   "/settings(.*)",

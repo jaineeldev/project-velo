@@ -1,5 +1,7 @@
 import { Fragment } from "react";
 import type { Metadata } from "next";
+import Link from "next/link";
+import { cn, focusRing } from "@/lib/utils";
 import { allFeatures } from "../_lib/data";
 import { StructuredData } from "../_components/structured-data";
 import { FeatureRow } from "../_components/feature-row";
@@ -55,6 +57,19 @@ export default function FeaturesPage() {
                   flipped={i % 2 === 1}
                   index={i + 1}
                   tone="light"
+                  footer={
+                    feature.mockup === "portal" ? (
+                      <Link
+                        href="/clients"
+                        className={cn(
+                          "inline-flex items-center gap-1.5 rounded-sm text-sm font-semibold text-primary underline-offset-4 hover:underline",
+                          focusRing,
+                        )}
+                      >
+                        See the client experience →
+                      </Link>
+                    ) : undefined
+                  }
                 />
               </Fragment>
             );

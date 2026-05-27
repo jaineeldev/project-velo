@@ -1,10 +1,7 @@
-import Link from "next/link";
 import { FolderKanban } from "lucide-react";
 import { getProjects } from "./actions";
-import { dateShortFmt } from "@/lib/format";
-import { cn, focusRing } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
-import { StatusBadge } from "@/components/ui/status-badge";
+import { ProjectsList } from "./projects-list";
 
 export default async function ProjectsPage() {
   const projects = await getProjects();
@@ -30,36 +27,7 @@ export default async function ProjectsPage() {
           </CardContent>
         </Card>
       ) : (
-        <Card className="mt-10 overflow-hidden">
-          <ul className="divide-y divide-border">
-            {projects.map((p) => (
-              <li key={p.id}>
-                <Link
-                  href={`/dashboard/projects/${p.id}`}
-                  className={cn(
-                    "flex items-center gap-4 px-5 py-4 transition-colors hover:bg-accent",
-                    focusRing,
-                  )}
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-foreground">
-                      {p.title}
-                    </p>
-                    <p className="mt-0.5 truncate text-sm text-muted-foreground">
-                      {p.client_name}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-4">
-                    <StatusBadge status={p.status} />
-                    <p className="w-28 text-right text-xs text-muted-foreground">
-                      {dateShortFmt.format(new Date(p.created_at))}
-                    </p>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </Card>
+        <ProjectsList projects={projects} />
       )}
     </div>
   );

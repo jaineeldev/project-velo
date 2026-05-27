@@ -2,19 +2,9 @@ import Link from "next/link";
 import { FileText } from "lucide-react";
 import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
-import { currencyFmt, dateShortFmt } from "@/lib/format";
 import { cn, focusRing } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
-import { StatusBadge } from "@/components/ui/status-badge";
-
-type ProposalRow = {
-  id: string;
-  title: string;
-  status: string;
-  total_amount: string;
-  created_at: string | Date;
-  client_name: string;
-};
+import { ProposalsList, type ProposalListRow } from "./proposals-list";
 
 export default async function ProposalsPage() {
   const user = await getOrCreateUser();
@@ -25,7 +15,7 @@ export default async function ProposalsPage() {
     JOIN clients c ON c.id = p.client_id
     WHERE p.user_id = ${user.id}
     ORDER BY p.created_at DESC
-  `) as ProposalRow[];
+  `) as ProposalListRow[];
 
   return (
     <div className="px-10 py-12">
@@ -56,39 +46,7 @@ export default async function ProposalsPage() {
           </CardContent>
         </Card>
       ) : (
-        <Card className="mt-10 overflow-hidden">
-          <ul className="divide-y divide-border">
-            {proposals.map((p) => (
-              <li key={p.id}>
-                <Link
-                  href={`/dashboard/proposals/${p.id}`}
-                  className={cn(
-                    "flex items-center gap-4 px-5 py-4 transition-colors hover:bg-accent",
-                    focusRing,
-                  )}
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-foreground">
-                      {p.title}
-                    </p>
-                    <p className="mt-0.5 truncate text-sm text-muted-foreground">
-                      {p.client_name}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-4">
-                    <StatusBadge status={p.status} />
-                    <p className="w-24 text-right text-sm font-medium text-foreground">
-                      {currencyFmt.format(Number(p.total_amount))}
-                    </p>
-                    <p className="w-28 text-right text-xs text-muted-foreground">
-                      {dateShortFmt.format(new Date(p.created_at))}
-                    </p>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </Card>
+        <ProposalsList proposals={proposals} />
       )}
     </div>
   );

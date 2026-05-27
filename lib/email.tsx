@@ -426,6 +426,175 @@ function logNotifyOutcome(event: string, outcome: "sent" | "failed") {
   );
 }
 
+export type SendDevProposalApprovedEmailInput = {
+  to: string;
+  agencyName: string;
+  proposalTitle: string;
+  clientName: string;
+  totalAmount: number;
+  proposalUrl: string;
+};
+
+export async function sendDevProposalApprovedEmail(
+  input: SendDevProposalApprovedEmailInput,
+): Promise<ClientNotifyResult> {
+  const subject = `Approved: ${input.proposalTitle}`;
+  const text = [
+    `Hi ${input.agencyName || "there"},`,
+    "",
+    `${input.clientName || "Your client"} just approved "${input.proposalTitle}".`,
+    "",
+    `Amount: ${currencyFmt.format(input.totalAmount)}`,
+    "",
+    `A project, milestones, and deposit invoice have been created automatically.`,
+    "",
+    `Open the proposal: ${input.proposalUrl}`,
+    "",
+    "Velo",
+  ].join("\n");
+  return sendNotifyEmail({ to: input.to, subject, text, event: "dev_proposal_approved" });
+}
+
+export type SendDevChangesRequestedEmailInput = {
+  to: string;
+  agencyName: string;
+  proposalTitle: string;
+  clientName: string;
+  message: string;
+  proposalUrl: string;
+};
+
+export async function sendDevChangesRequestedEmail(
+  input: SendDevChangesRequestedEmailInput,
+): Promise<ClientNotifyResult> {
+  const subject = `Changes requested: ${input.proposalTitle}`;
+  const trimmed = input.message.length > 600
+    ? input.message.slice(0, 600) + "..."
+    : input.message;
+  const text = [
+    `Hi ${input.agencyName || "there"},`,
+    "",
+    `${input.clientName || "Your client"} requested changes on "${input.proposalTitle}":`,
+    "",
+    trimmed,
+    "",
+    `Open the proposal: ${input.proposalUrl}`,
+    "",
+    "Velo",
+  ].join("\n");
+  return sendNotifyEmail({ to: input.to, subject, text, event: "dev_changes_requested" });
+}
+
+export type SendClientChangeRequestDecisionEmailInput = {
+  to: string;
+  clientName: string;
+  agencyName: string;
+  proposalTitle: string;
+  decision: "approved" | "rejected";
+  note: string;
+  proposalUrl: string;
+};
+
+export async function sendClientChangeRequestDecisionEmail(
+  input: SendClientChangeRequestDecisionEmailInput,
+): Promise<ClientNotifyResult> {
+  const decisionLabel = input.decision === "approved" ? "approved" : "declined";
+  const subject = `Your change request was ${decisionLabel}`;
+  const trimmedNote = input.note.length > 600
+    ? input.note.slice(0, 600) + "..."
+    : input.note;
+  const lines = [
+    `Hi ${input.clientName || "there"},`,
+    "",
+    `${input.agencyName || "Your team"} ${decisionLabel} your change request on "${input.proposalTitle}".`,
+  ];
+  if (trimmedNote.trim().length > 0) {
+    lines.push("", "Note from your team:", trimmedNote);
+  }
+  lines.push("", `View the proposal: ${input.proposalUrl}`, "", "Velo");
+  return sendNotifyEmail({
+    to: input.to,
+    subject,
+    text: lines.join("\n"),
+    event: "client_change_request_decision",
+  });
+}
+
+export type SendClientProjectDeliveredEmailInput = {
+  to: string;
+  clientName: string;
+  agencyName: string;
+  projectTitle: string;
+  projectUrl: string;
+};
+
+export async function sendClientProjectDeliveredEmail(
+  input: SendClientProjectDeliveredEmailInput,
+): Promise<ClientNotifyResult> {
+  const subject = `Project delivered: ${input.projectTitle}`;
+  const text = [
+    `Hi ${input.clientName || "there"},`,
+    "",
+    `${input.agencyName || "Your team"} marked "${input.projectTitle}" as delivered.`,
+    "",
+    "All milestones are complete and the final invoice has been paid. Thanks for working with us.",
+    "",
+    `View the project: ${input.projectUrl}`,
+    "",
+    "Velo",
+  ].join("\n");
+  return sendNotifyEmail({ to: input.to, subject, text, event: "client_project_delivered" });
+}
+
+export type SendDevEmailDeliveryFailureInput = {
+  to: string;
+  agencyName: string;
+  failedEvent: string;
+  intendedRecipient: string;
+  reason: string;
+  contextLabel: string;
+};
+
+// Operator-facing alert when a client-bound notification email fails. The
+// recipient address is intentionally redacted to a domain hint, since this
+// notification is itself an email and we don't want to leak client addresses
+// through a chain of best-effort sends.
+export async function sendDevEmailDeliveryFailure(
+  input: SendDevEmailDeliveryFailureInput,
+): Promise<ClientNotifyResult> {
+  const subject = `Email delivery failed: ${input.failedEvent}`;
+  const recipientHint = redactEmailForLog(input.intendedRecipient);
+  const text = [
+    `Hi ${input.agencyName || "there"},`,
+    "",
+    `An email Velo tried to send on your behalf failed to deliver.`,
+    "",
+    `Event: ${input.failedEvent}`,
+    `Context: ${input.contextLabel}`,
+    `Recipient: ${recipientHint}`,
+    `Reason: ${input.reason}`,
+    "",
+    "The underlying action completed normally. Only the email send failed.",
+    "",
+    "Velo",
+  ].join("\n");
+  return sendNotifyEmail({
+    to: input.to,
+    subject,
+    text,
+    event: "dev_email_delivery_failure",
+  });
+}
+
+function redactEmailForLog(addr: string): string {
+  const at = addr.indexOf("@");
+  if (at <= 0) return "(unknown)";
+  const local = addr.slice(0, at);
+  const domain = addr.slice(at + 1);
+  const localHint = local.length <= 2 ? "*" : local[0] + "***";
+  return `${localHint}@${domain}`;
+}
+
 export function getAppBaseUrl(): string {
   const url = process.env.NEXT_PUBLIC_APP_URL ?? process.env.APP_URL;
   if (url) return url;

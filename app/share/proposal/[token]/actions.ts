@@ -8,9 +8,12 @@ import { getClientIp } from "@/lib/rate-limit";
 import { logSecurityEvent } from "@/lib/security-log";
 import {
   getAppBaseUrl,
+  sendDevChangesRequestedEmail,
+  sendDevProposalApprovedEmail,
   sendInvoiceIssuedEmail,
   sendProposalCommentEmail,
 } from "@/lib/email";
+import { logEmailFailureEvent, notifyDevOfFailure } from "@/lib/notifications";
 import { getOrCreateUser } from "@/lib/auth";
 
 // 64 hex chars = 32 random bytes = 256 bits of entropy.
@@ -64,7 +67,7 @@ export async function approveProposal(token: string): Promise<void> {
   }
 
   const items = await sql`
-    SELECT description, quantity, unit_price
+    SELECT description, quantity, unit_price, estimated_duration
     FROM line_items
     WHERE proposal_id = ${proposalId}
     ORDER BY created_at
@@ -92,8 +95,8 @@ export async function approveProposal(token: string): Promise<void> {
     ...items.map((item) => {
       const amount = Number(item.quantity) * Number(item.unit_price);
       return sql`
-        INSERT INTO milestones (proposal_id, title, amount, status)
-        VALUES (${proposalId}, ${item.description}, ${amount}, 'not_started')
+        INSERT INTO milestones (proposal_id, title, amount, status, estimated_duration)
+        VALUES (${proposalId}, ${item.description}, ${amount}, 'not_started', ${item.estimated_duration})
       `;
     }),
     sql`
@@ -109,36 +112,75 @@ export async function approveProposal(token: string): Promise<void> {
     `,
   ]);
 
-  // Fire the deposit-issued notification. Voided ($0) deposits don't need
-  // an email — there's nothing for the client to pay.
-  if (depositTotal > 0) {
+  // Fetch agency + client details once so both the dev-side approval
+  // notification and the client-side deposit invoice email can be sent
+  // from the same data. Agency email is used for operator alerts.
+  const details = await sql`
+    SELECT
+      c.email AS client_email,
+      c.name AS client_name,
+      u.email AS agency_email,
+      u.name AS agency_name
+    FROM clients c
+    JOIN users u ON u.id = ${p.user_id}
+    WHERE c.id = ${p.client_id}
+  `;
+  const row = details[0];
+  const clientEmail = (row?.client_email as string | undefined) ?? "";
+  const clientName = (row?.client_name as string | null) ?? "";
+  const agencyEmail = (row?.agency_email as string | undefined) ?? "";
+  const agencyName = (row?.agency_name as string | null) ?? "";
+  const proposalUrl = `${getAppBaseUrl()}/dashboard/proposals/${proposalId}`;
+  const projectUrl = `${getAppBaseUrl()}/share/project/${projectShareToken}`;
+
+  // Dev-side: tell the operator their proposal was approved.
+  if (agencyEmail) {
     try {
-      const details = await sql`
-        SELECT
-          c.email AS client_email,
-          c.name AS client_name,
-          u.name AS agency_name
-        FROM clients c
-        JOIN users u ON u.id = ${p.user_id}
-        WHERE c.id = ${p.client_id}
-      `;
-      const row = details[0];
-      if (row?.client_email) {
-        await sendInvoiceIssuedEmail({
-          to: row.client_email as string,
-          clientName: (row.client_name as string) ?? "",
-          agencyName: (row.agency_name as string) ?? "",
-          invoiceType: "deposit",
-          totalAmount: depositTotal,
-          projectTitle: (p.title as string) ?? "",
-          projectUrl: `${getAppBaseUrl()}/share/project/${projectShareToken}`,
-        });
+      const res = await sendDevProposalApprovedEmail({
+        to: agencyEmail,
+        agencyName,
+        proposalTitle: (p.title as string) ?? "",
+        clientName,
+        totalAmount: total,
+        proposalUrl,
+      });
+      if (!res.ok) {
+        await logEmailFailureEvent(proposalId, "dev_proposal_approved");
       }
     } catch {
-      // Best effort.
+      await logEmailFailureEvent(proposalId, "dev_proposal_approved");
+    }
+  }
+
+  // Client-side: deposit invoice notification. Voided ($0) deposits don't
+  // need an email since there's nothing to pay.
+  if (depositTotal > 0 && clientEmail) {
+    const res = await sendInvoiceIssuedEmail({
+      to: clientEmail,
+      clientName,
+      agencyName,
+      invoiceType: "deposit",
+      totalAmount: depositTotal,
+      projectTitle: (p.title as string) ?? "",
+      projectUrl,
+    }).catch((err: unknown) => ({
+      ok: false as const,
+      reason: err instanceof Error ? err.message : "send threw",
+    }));
+    if (!res.ok) {
+      await notifyDevOfFailure({
+        proposalId,
+        agencyEmail,
+        agencyName,
+        failedEvent: "invoice_issued_deposit",
+        intendedRecipient: clientEmail,
+        reason: res.reason,
+        contextLabel: `Deposit invoice for "${p.title}"`,
+      });
     }
   }
 }
+
 
 export async function submitChangeRequest(
   token: string,
@@ -196,6 +238,38 @@ export async function submitChangeRequest(
       ${`Client requested changes: ${trimmed}`}
     )
   `;
+
+  // Dev-side: tell the operator their client wants changes.
+  try {
+    const details = await sql`
+      SELECT
+        p.title AS proposal_title,
+        c.name AS client_name,
+        u.email AS agency_email,
+        u.name AS agency_name
+      FROM proposals p
+      JOIN clients c ON c.id = p.client_id
+      JOIN users u ON u.id = p.user_id
+      WHERE p.id = ${proposalId}
+    `;
+    const row = details[0];
+    const agencyEmail = (row?.agency_email as string | undefined) ?? "";
+    if (agencyEmail) {
+      const res = await sendDevChangesRequestedEmail({
+        to: agencyEmail,
+        agencyName: (row?.agency_name as string | null) ?? "",
+        proposalTitle: (row?.proposal_title as string) ?? "",
+        clientName: (row?.client_name as string | null) ?? "",
+        message: trimmed,
+        proposalUrl: `${getAppBaseUrl()}/dashboard/proposals/${proposalId}`,
+      });
+      if (!res.ok) {
+        await logEmailFailureEvent(proposalId, "dev_changes_requested");
+      }
+    }
+  } catch {
+    await logEmailFailureEvent(proposalId, "dev_changes_requested");
+  }
 }
 
 // ── Comments ─────────────────────────────────────────────────────────────────
@@ -259,9 +333,11 @@ export async function postClientComment(
     VALUES (${p.id}, ${user.id}, 'client', ${trimmed})
   `;
 
-  // Notify the agency.
+  // Notify the agency. The target is the operator, so a failed send is
+  // logged in the audit trail; there's no follow-up email since we can't
+  // alert the dev via the channel that just failed.
   try {
-    await sendProposalCommentEmail({
+    const res = await sendProposalCommentEmail({
       to: p.agency_email,
       recipientName: p.agency_name ?? "",
       authorRole: "client",
@@ -270,8 +346,9 @@ export async function postClientComment(
       body: trimmed,
       proposalUrl: `${getAppBaseUrl()}/dashboard/proposals/${p.id}`,
     });
+    if (!res.ok) await logEmailFailureEvent(p.id, "proposal_comment_to_agency");
   } catch {
-    // Best effort.
+    await logEmailFailureEvent(p.id, "proposal_comment_to_agency");
   }
 
   revalidatePath(`/share/proposal/${token}`);

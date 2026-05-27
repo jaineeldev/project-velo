@@ -146,6 +146,11 @@ export default async function ProjectDetailPage({
                       <span className="text-sm text-muted-foreground">
                         {currencyFmt.format(Number(m.amount))}
                       </span>
+                      {m.estimated_duration && (
+                        <span className="text-sm text-muted-foreground">
+                          · {m.estimated_duration}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <MilestoneStatusSelect

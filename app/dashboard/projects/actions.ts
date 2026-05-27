@@ -11,9 +11,11 @@ import {
 } from "@/lib/validation";
 import {
   getAppBaseUrl,
+  sendClientChangeRequestDecisionEmail,
   sendInvoiceIssuedEmail,
   sendMilestoneCompletedEmail,
 } from "@/lib/email";
+import { logEmailFailureEvent, notifyDevOfFailure } from "@/lib/notifications";
 
 export type ProjectListItem = {
   id: string;
@@ -47,6 +49,7 @@ export type ProjectMilestone = {
   title: string;
   status: string;
   amount: string;
+  estimated_duration: string | null;
   deliverables: ProjectDeliverable[];
 };
 
@@ -109,7 +112,7 @@ export async function getProject(projectId: string): Promise<ProjectDetail | nul
 
   const [milestones, deliverables, timeEntries, invoices, pendingChangeRequests] = await Promise.all([
     sql`
-      SELECT id, title, status, amount
+      SELECT id, title, status, amount, estimated_duration
       FROM milestones
       WHERE proposal_id = ${row.proposal_id}
       ORDER BY created_at
@@ -420,6 +423,46 @@ export async function respondToChangeRequest(
     VALUES (${proposalId}, ${`change_request_${decision}`}, ${description})
   `;
 
+  // Notify the client of the decision. Best-effort: failure is logged but
+  // doesn't break the response action.
+  try {
+    const details = await sql`
+      SELECT p.title AS proposal_title, p.share_token,
+             c.email AS client_email, c.name AS client_name,
+             u.email AS agency_email, u.name AS agency_name
+      FROM proposals p
+      JOIN clients c ON c.id = p.client_id
+      JOIN users u ON u.id = p.user_id
+      WHERE p.id = ${proposalId}
+    `;
+    const row = details[0];
+    const clientEmail = (row?.client_email as string | undefined) ?? "";
+    if (clientEmail) {
+      const res = await sendClientChangeRequestDecisionEmail({
+        to: clientEmail,
+        clientName: (row?.client_name as string | null) ?? "",
+        agencyName: (row?.agency_name as string | null) ?? "",
+        proposalTitle: (row?.proposal_title as string) ?? "",
+        decision,
+        note: trimmedNote,
+        proposalUrl: `${getAppBaseUrl()}/share/proposal/${row?.share_token}`,
+      });
+      if (!res.ok) {
+        await notifyDevOfFailure({
+          proposalId,
+          agencyEmail: (row?.agency_email as string | undefined) ?? "",
+          agencyName: (row?.agency_name as string | null) ?? "",
+          failedEvent: "client_change_request_decision",
+          intendedRecipient: clientEmail,
+          reason: res.reason,
+          contextLabel: `Change-request decision (${decision})`,
+        });
+      }
+    }
+  } catch {
+    await logEmailFailureEvent(proposalId, "client_change_request_decision");
+  }
+
   revalidatePath(`/dashboard/projects/${projectId}`);
   revalidatePath(`/dashboard/proposals/${proposalId}`);
 }
@@ -511,8 +554,10 @@ async function notifyMilestoneCompleted(args: {
       SELECT
         pr.title AS project_title,
         pr.share_token,
+        pr.proposal_id,
         c.email AS client_email,
         c.name AS client_name,
+        u.email AS agency_email,
         u.name AS agency_name
       FROM projects pr
       JOIN clients c ON c.id = pr.client_id
@@ -521,16 +566,28 @@ async function notifyMilestoneCompleted(args: {
     `;
     const row = rows[0];
     if (!row?.client_email) return;
-    await sendMilestoneCompletedEmail({
-      to: row.client_email as string,
+    const clientEmail = row.client_email as string;
+    const res = await sendMilestoneCompletedEmail({
+      to: clientEmail,
       clientName: (row.client_name as string) ?? "",
       agencyName: (row.agency_name as string) ?? "",
       milestoneTitle: args.milestoneTitle,
       projectTitle: (row.project_title as string) ?? "",
       projectUrl: `${getAppBaseUrl()}/share/project/${row.share_token}`,
     });
+    if (!res.ok) {
+      await notifyDevOfFailure({
+        proposalId: (row.proposal_id as string) ?? null,
+        agencyEmail: (row.agency_email as string) ?? "",
+        agencyName: (row.agency_name as string) ?? "",
+        failedEvent: "milestone_completed",
+        intendedRecipient: clientEmail,
+        reason: res.reason,
+        contextLabel: `Milestone "${args.milestoneTitle}"`,
+      });
+    }
   } catch {
-    // Best effort. Failure is logged inside the email sender.
+    // Outer DB failure: nothing safe to do without context.
   }
 }
 
@@ -545,8 +602,10 @@ async function notifyInvoiceIssued(args: {
       SELECT
         pr.title AS project_title,
         pr.share_token,
+        pr.proposal_id,
         c.email AS client_email,
         c.name AS client_name,
+        u.email AS agency_email,
         u.name AS agency_name
       FROM projects pr
       JOIN clients c ON c.id = pr.client_id
@@ -555,8 +614,9 @@ async function notifyInvoiceIssued(args: {
     `;
     const row = rows[0];
     if (!row?.client_email) return;
-    await sendInvoiceIssuedEmail({
-      to: row.client_email as string,
+    const clientEmail = row.client_email as string;
+    const res = await sendInvoiceIssuedEmail({
+      to: clientEmail,
       clientName: (row.client_name as string) ?? "",
       agencyName: (row.agency_name as string) ?? "",
       invoiceType: args.invoiceType,
@@ -564,7 +624,18 @@ async function notifyInvoiceIssued(args: {
       projectTitle: (row.project_title as string) ?? "",
       projectUrl: `${getAppBaseUrl()}/share/project/${row.share_token}`,
     });
+    if (!res.ok) {
+      await notifyDevOfFailure({
+        proposalId: (row.proposal_id as string) ?? null,
+        agencyEmail: (row.agency_email as string) ?? "",
+        agencyName: (row.agency_name as string) ?? "",
+        failedEvent: `invoice_issued_${args.invoiceType}`,
+        intendedRecipient: clientEmail,
+        reason: res.reason,
+        contextLabel: `${args.invoiceType === "deposit" ? "Deposit" : "Final"} invoice for "${row.project_title}"`,
+      });
+    }
   } catch {
-    // Best effort.
+    // Outer DB failure: nothing safe to do without context.
   }
 }

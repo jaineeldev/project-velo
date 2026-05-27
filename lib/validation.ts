@@ -137,6 +137,23 @@ export type WebhookUser = z.infer<typeof webhookUserSchema>;
 // Reusable guard for UUID-shaped server action parameters.
 export const uuidSchema = z.uuid();
 
+// Fixed dropdown of duration buckets the operator can attach to a line item.
+// Order matters here: the form renders the <select> options in this order
+// and the same order is shown to the client.
+export const LINE_ITEM_DURATIONS = [
+  "<1 day",
+  "1-2 days",
+  "3-5 days",
+  "1 week",
+  "2 weeks",
+  "3-4 weeks",
+  "1 month",
+  "2 months",
+  "3+ months",
+] as const;
+
+export type LineItemDuration = (typeof LINE_ITEM_DURATIONS)[number];
+
 export const lineItemSchema = z.object({
   description: z
     .string()
@@ -151,6 +168,14 @@ export const lineItemSchema = z.object({
     .number()
     .min(0, "Unit price cannot be negative")
     .max(999_999_999, "Unit price is too large"),
+  // Optional; empty string from the form collapses to null so the DB
+  // CHECK constraint isn't triggered by a literal "".
+  estimatedDuration: z.preprocess(
+    toTrimmedStringOrNull,
+    z
+      .enum(LINE_ITEM_DURATIONS, "Pick a duration from the list")
+      .nullable(),
+  ),
 });
 
 export const proposalSchema = z.object({

@@ -51,6 +51,7 @@ export default async function EditProposalPage({
             description: item.description,
             quantity: item.quantity,
             unitPrice: item.unit_price,
+            estimatedDuration: item.estimated_duration,
           })),
         }}
       />

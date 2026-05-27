@@ -4,12 +4,17 @@ import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
-import { proposalSchema, uuidSchema } from "@/lib/validation";
+import {
+  proposalSchema,
+  uuidSchema,
+  type LineItemDuration,
+} from "@/lib/validation";
 import {
   sendProposalEmail,
   sendProposalCommentEmail,
   getAppBaseUrl,
 } from "@/lib/email";
+import { notifyDevOfFailure } from "@/lib/notifications";
 
 const GST_RATE = 0.1;
 
@@ -17,7 +22,12 @@ export type CreateProposalInput = {
   clientId: string;
   title: string;
   description: string;
-  lineItems: { description: string; quantity: number; unitPrice: number }[];
+  lineItems: {
+    description: string;
+    quantity: number;
+    unitPrice: number;
+    estimatedDuration: LineItemDuration | null;
+  }[];
   depositPercentage: number;
 };
 
@@ -48,8 +58,8 @@ export async function createProposal(input: CreateProposalInput): Promise<string
   await Promise.all([
     ...lineItems.map(
       (item) => sql`
-        INSERT INTO line_items (proposal_id, description, quantity, unit_price)
-        VALUES (${proposal.id}, ${item.description}, ${item.quantity}, ${item.unitPrice})
+        INSERT INTO line_items (proposal_id, description, quantity, unit_price, estimated_duration)
+        VALUES (${proposal.id}, ${item.description}, ${item.quantity}, ${item.unitPrice}, ${item.estimatedDuration})
       `,
     ),
     sql`
@@ -120,8 +130,8 @@ export async function updateProposal(
   await Promise.all([
     ...lineItems.map(
       (item) => sql`
-        INSERT INTO line_items (proposal_id, description, quantity, unit_price)
-        VALUES (${proposalId}, ${item.description}, ${item.quantity}, ${item.unitPrice})
+        INSERT INTO line_items (proposal_id, description, quantity, unit_price, estimated_duration)
+        VALUES (${proposalId}, ${item.description}, ${item.quantity}, ${item.unitPrice}, ${item.estimatedDuration})
       `,
     ),
     sql`
@@ -267,7 +277,13 @@ export type ProposalDetail = {
   created_at: string;
   client_name: string;
   client_email: string | null;
-  lineItems: { id: string; description: string; quantity: string; unit_price: string }[];
+  lineItems: {
+    id: string;
+    description: string;
+    quantity: string;
+    unit_price: string;
+    estimated_duration: LineItemDuration | null;
+  }[];
   events: ProposalEvent[];
   latestChangeRequest: ChangeRequest | null;
 };
@@ -290,7 +306,7 @@ export async function getProposal(proposalId: string): Promise<ProposalDetail | 
 
   const [items, events, changeRequests] = await Promise.all([
     sql`
-      SELECT id, description, quantity, unit_price
+      SELECT id, description, quantity, unit_price, estimated_duration
       FROM line_items
       WHERE proposal_id = ${proposalId}
       ORDER BY created_at
@@ -367,6 +383,7 @@ export async function postAgencyComment(
     SELECT p.id, p.user_id, p.title, p.share_token,
            c.email AS client_email,
            c.name AS client_name,
+           u.email AS agency_email,
            u.name AS agency_name
     FROM proposals p
     JOIN clients c ON c.id = p.client_id
@@ -380,6 +397,7 @@ export async function postAgencyComment(
     share_token: string;
     client_email: string;
     client_name: string | null;
+    agency_email: string;
     agency_name: string | null;
   };
 
@@ -390,18 +408,28 @@ export async function postAgencyComment(
 
   // Notify the client.
   if (p.client_email) {
-    try {
-      await sendProposalCommentEmail({
-        to: p.client_email,
-        recipientName: p.client_name ?? "",
-        authorRole: "agency",
-        authorName: p.agency_name ?? user.name ?? user.email,
-        proposalTitle: p.title,
-        body: trimmed,
-        proposalUrl: `${getAppBaseUrl()}/share/proposal/${p.share_token}`,
+    const res = await sendProposalCommentEmail({
+      to: p.client_email,
+      recipientName: p.client_name ?? "",
+      authorRole: "agency",
+      authorName: p.agency_name ?? user.name ?? user.email,
+      proposalTitle: p.title,
+      body: trimmed,
+      proposalUrl: `${getAppBaseUrl()}/share/proposal/${p.share_token}`,
+    }).catch((err: unknown) => ({
+      ok: false as const,
+      reason: err instanceof Error ? err.message : "send threw",
+    }));
+    if (!res.ok) {
+      await notifyDevOfFailure({
+        proposalId,
+        agencyEmail: p.agency_email ?? "",
+        agencyName: p.agency_name ?? "",
+        failedEvent: "proposal_comment_to_client",
+        intendedRecipient: p.client_email,
+        reason: res.reason,
+        contextLabel: `Comment on "${p.title}"`,
       });
-    } catch {
-      // Best effort.
     }
   }
 

@@ -4,6 +4,12 @@ import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
 import { currencyFmt, dateShortFmt, formatStatus } from "@/lib/format";
 import { cn, focusRing } from "@/lib/utils";
+import {
+  AllWorkSection,
+  type DashboardItem,
+  type ProjectRow,
+  type ProposalRow,
+} from "./all-work-section";
 
 // Client-only landing surface. Lists every proposal and project an
 // agency has shared with this account's email. Match is on email rather
@@ -17,50 +23,17 @@ import { cn, focusRing } from "@/lib/utils";
 //   "Needs attention" — proposals awaiting the client's decision
 //                       (sent / changes_requested) and projects with any
 //                       unpaid invoice. Derived in JS from the queries
-//                       below; no extra DB hit.
+//                       below; no extra DB hit. Stays unfiltered so the
+//                       client never accidentally hides something urgent.
 //   "All work"        — every non-draft proposal and every project,
-//                       regardless of status. Items appear here even if
-//                       they're already in Needs attention.
+//                       regardless of status. Filterable via a toolbar.
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-
-type ProposalRow = {
-  id: string;
-  title: string;
-  status: string;
-  total_amount: string;
-  share_token: string;
-  agency_name: string | null;
-  sent_at: string | null;
-  created_at: string;
-};
-
-type ProjectRow = {
-  id: string;
-  title: string;
-  status: string;
-  share_token: string;
-  agency_name: string | null;
-  milestone_count: number;
-  milestones_completed: number;
-  has_unpaid_invoice: boolean;
-  created_at: string;
-};
-
-type DashboardItem =
-  | { kind: "proposal"; row: ProposalRow; createdAt: number }
-  | { kind: "project"; row: ProjectRow; createdAt: number };
 
 export default async function ClientDashboardPage() {
   const user = await getOrCreateUser();
 
   const [proposals, projects, balanceRow] = (await Promise.all([
-    // sent_at comes from proposal_events rather than a column on
-    // proposals — there's no sent_at column on proposals; the row's
-    // sent timestamp is recorded as an event_type='sent' row in the
-    // audit trail. MAX(created_at) handles the legitimate case where a
-    // proposal was reset to draft and re-sent (we want the most recent
-    // send time, not the first).
     sql`
       SELECT
         p.id, p.title, p.status, p.total_amount, p.share_token,
@@ -78,15 +51,6 @@ export default async function ClientDashboardPage() {
         AND p.status <> 'draft'
       ORDER BY p.created_at DESC
     `,
-    // Client linkage is resolved via proposals → clients rather than
-    // projects.client_id directly. Functionally equivalent today because
-    // approval copies the proposal's client_id onto the project, but
-    // routing through the proposal makes the proposal the single source
-    // of truth for "which client is this for" and matches how the
-    // Proposals query above resolves the same relationship.
-    //
-    // No status filter — "All work" is meant to be the complete view, so
-    // active / completed / delivered (and any future status) all surface.
     sql`
       SELECT
         pr.id, pr.title, pr.status, pr.share_token, pr.created_at,
@@ -109,8 +73,6 @@ export default async function ClientDashboardPage() {
       GROUP BY pr.id, pr.title, pr.status, pr.share_token, u.name, pr.created_at
       ORDER BY pr.created_at DESC
     `,
-    // Outstanding balance across every agency. Voided ($0) invoices are
-    // excluded so they don't inflate the count to "1 unpaid invoice · $0".
     sql`
       SELECT
         COALESCE(SUM(i.total_amount), 0)::numeric AS owed,
@@ -131,9 +93,6 @@ export default async function ClientDashboardPage() {
   const owed = Number(balance?.owed ?? 0);
   const owedCount = balance?.count ?? 0;
 
-  // Merge into one timeline and split into the two views in JS. The
-  // queries already return non-overlapping sets (a row is either a
-  // proposal or a project), so no de-dup is needed.
   const allWork: DashboardItem[] = [
     ...proposals.map<DashboardItem>((row) => ({
       kind: "proposal",
@@ -190,9 +149,9 @@ export default async function ClientDashboardPage() {
       ) : (
         <div className="mt-12 space-y-16">
           {needsAttention.length > 0 && (
-            <Section title="Needs attention" items={needsAttention} />
+            <NeedsAttentionSection items={needsAttention} />
           )}
-          <Section title="All work" items={allWork} />
+          <AllWorkSection items={allWork} />
         </div>
       )}
     </div>
@@ -211,10 +170,6 @@ function CombinedEmptyState() {
   );
 }
 
-// Amber "this is on you" indicator. The colour values are explicit
-// Tailwind hex aliases — we don't have a semantic 'warning' token in
-// the design system, and the rest of the app uses neutral + primary
-// only. If a token gets added later, swap these classes for it.
 function PaymentPill({ label }: { label: string }) {
   return (
     <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
@@ -224,17 +179,14 @@ function PaymentPill({ label }: { label: string }) {
   );
 }
 
-function Section({
-  title,
-  items,
-}: {
-  title: string;
-  items: DashboardItem[];
-}) {
+// Static (no toolbar) section above the filterable list. Keeping this one
+// unfiltered avoids accidentally hiding something the client actually
+// needs to act on.
+function NeedsAttentionSection({ items }: { items: DashboardItem[] }) {
   return (
     <section>
       <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-        {title}
+        Needs attention
       </h2>
       <ul className="overflow-hidden rounded-lg border border-border bg-card">
         {items.map((item) => (
@@ -242,7 +194,7 @@ function Section({
             key={`${item.kind}-${item.row.id}`}
             className="border-b border-border last:border-0"
           >
-            <DashboardCard item={item} />
+            <NeedsAttentionCard item={item} />
           </li>
         ))}
       </ul>
@@ -250,7 +202,7 @@ function Section({
   );
 }
 
-function DashboardCard({ item }: { item: DashboardItem }) {
+function NeedsAttentionCard({ item }: { item: DashboardItem }) {
   const cardClass = cn(
     "block px-7 py-6 transition-colors hover:bg-accent",
     focusRing,
@@ -353,9 +305,6 @@ function CardHeader({
 }
 
 function StatusBadge({ status }: { status: string }) {
-  // "Done"-ish states (approved / completed / delivered) get the primary
-  // tone. Everything else — including any future status — falls through
-  // to a neutral pill so this page never crashes on unfamiliar data.
   const tone =
     status === "approved" ||
     status === "completed" ||

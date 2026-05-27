@@ -1,10 +1,7 @@
-import Link from "next/link";
 import { Receipt } from "lucide-react";
 import { getInvoices } from "./actions";
-import { currencyFmt, dateShortFmt } from "@/lib/format";
-import { cn, focusRing } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
-import { StatusBadge } from "@/components/ui/status-badge";
+import { InvoicesList } from "./invoices-list";
 
 export default async function InvoicesPage() {
   const invoices = await getInvoices();
@@ -30,40 +27,7 @@ export default async function InvoicesPage() {
           </CardContent>
         </Card>
       ) : (
-        <Card className="mt-10 overflow-hidden">
-          <ul className="divide-y divide-border">
-            {invoices.map((i) => (
-              <li key={i.id}>
-                <Link
-                  href={`/dashboard/invoices/${i.id}`}
-                  className={cn(
-                    "flex items-center gap-4 px-5 py-4 transition-colors hover:bg-accent",
-                    focusRing,
-                  )}
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-foreground">
-                      {i.project_title}
-                    </p>
-                    <p className="mt-0.5 truncate text-sm text-muted-foreground">
-                      {i.client_name}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-4">
-                    <StatusBadge status={i.type} />
-                    <StatusBadge status={i.status} />
-                    <p className="w-24 text-right text-sm font-medium text-foreground">
-                      {currencyFmt.format(Number(i.total_amount))}
-                    </p>
-                    <p className="w-28 text-right text-xs text-muted-foreground">
-                      {dateShortFmt.format(new Date(i.created_at))}
-                    </p>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </Card>
+        <InvoicesList invoices={invoices} />
       )}
     </div>
   );

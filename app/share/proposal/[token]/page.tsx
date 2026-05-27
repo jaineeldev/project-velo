@@ -28,6 +28,7 @@ type LineItemRow = {
   description: string;
   quantity: string;
   unit_price: string;
+  estimated_duration: string | null;
 };
 
 type PublicProposal = {
@@ -72,7 +73,7 @@ async function getPublicProposal(token: string) {
 
   const [items, events] = await Promise.all([
     sql`
-      SELECT description, quantity, unit_price
+      SELECT description, quantity, unit_price, estimated_duration
       FROM line_items
       WHERE proposal_id = ${proposalId}
       ORDER BY created_at
@@ -206,8 +207,8 @@ export default async function ShareProposalPage({
           </h2>
 
           <div className="overflow-hidden rounded-lg border border-border">
-            <div className="grid grid-cols-[1fr_4rem_7rem_6rem] gap-3 border-b border-border bg-muted px-4 py-2">
-              {["Description", "Qty", "Unit price", "Total"].map((h) => (
+            <div className="grid grid-cols-[1fr_3.5rem_6rem_6.5rem_5.5rem] gap-3 border-b border-border bg-muted px-4 py-2">
+              {["Description", "Qty", "Unit price", "Duration", "Total"].map((h) => (
                 <span
                   key={h}
                   className="text-xs font-medium text-muted-foreground"
@@ -223,7 +224,7 @@ export default async function ShareProposalPage({
               return (
                 <div
                   key={i}
-                  className="grid grid-cols-[1fr_4rem_7rem_6rem] gap-3 border-b border-border px-4 py-3 last:border-0"
+                  className="grid grid-cols-[1fr_3.5rem_6rem_6.5rem_5.5rem] gap-3 border-b border-border px-4 py-3 last:border-0"
                 >
                   <span className="text-sm text-foreground">
                     {item.description}
@@ -231,6 +232,9 @@ export default async function ShareProposalPage({
                   <span className="text-sm text-muted-foreground">{qty}</span>
                   <span className="text-sm text-muted-foreground">
                     {currencyFmt.format(price)}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    {item.estimated_duration ?? "—"}
                   </span>
                   <span className="text-right text-sm font-medium text-foreground">
                     {currencyFmt.format(qty * price)}

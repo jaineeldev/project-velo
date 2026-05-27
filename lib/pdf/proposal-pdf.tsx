@@ -3,6 +3,8 @@ import { styles, formatCurrency, formatDate, shortNumber } from "./styles";
 import { AgencyBlock } from "./agency-block";
 import type { UserProfile } from "@/lib/user-profile";
 
+const colDuration = { width: 70, textAlign: "right" as const };
+
 export type ProposalPdfProps = {
   proposal: {
     id: string;
@@ -18,7 +20,12 @@ export type ProposalPdfProps = {
     email: string | null;
     company_name?: string | null;
   };
-  lineItems: { description: string; quantity: string; unit_price: string }[];
+  lineItems: {
+    description: string;
+    quantity: string;
+    unit_price: string;
+    estimated_duration: string | null;
+  }[];
   profile: UserProfile;
   account: { name: string | null; email: string };
 };
@@ -94,6 +101,7 @@ export function ProposalPdf(props: ProposalPdfProps) {
           <Text style={[styles.colDescription, styles.th]}>Description</Text>
           <Text style={[styles.colQty, styles.th]}>Qty</Text>
           <Text style={[styles.colUnit, styles.th]}>Unit price</Text>
+          <Text style={[colDuration, styles.th]}>Duration</Text>
           <Text style={[styles.colTotal, styles.th]}>Total</Text>
         </View>
         {lineItems.map((item, i) => {
@@ -107,6 +115,9 @@ export function ProposalPdf(props: ProposalPdfProps) {
               <Text style={[styles.colQty, styles.tdMuted]}>{qty}</Text>
               <Text style={[styles.colUnit, styles.tdMuted]}>
                 {formatCurrency(price)}
+              </Text>
+              <Text style={[colDuration, styles.tdMuted]}>
+                {item.estimated_duration ?? "—"}
               </Text>
               <Text style={[styles.colTotal, styles.td]}>
                 {formatCurrency(qty * price)}

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { currencyFmt, GST_RATE } from "@/lib/format";
 import { cn, focusRing } from "@/lib/utils";
+import { LINE_ITEM_DURATIONS, type LineItemDuration } from "@/lib/validation";
 import { createProposal, updateProposal } from "../actions";
 
 type ClientOption = { id: string; name: string };
@@ -13,6 +14,7 @@ type LineItem = {
   description: string;
   quantity: string;
   unitPrice: string;
+  estimatedDuration: LineItemDuration | "";
 };
 
 type InitialValues = {
@@ -20,7 +22,12 @@ type InitialValues = {
   title: string;
   description: string | null;
   depositPercentage: string;
-  lineItems: { description: string; quantity: string; unitPrice: string }[];
+  lineItems: {
+    description: string;
+    quantity: string;
+    unitPrice: string;
+    estimatedDuration: LineItemDuration | null;
+  }[];
 };
 
 const inputCls =
@@ -63,8 +70,17 @@ export function ProposalForm({
           description: item.description,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
+          estimatedDuration: item.estimatedDuration ?? "",
         }))
-      : [{ key: makeKey(), description: "", quantity: "1", unitPrice: "" }],
+      : [
+          {
+            key: makeKey(),
+            description: "",
+            quantity: "1",
+            unitPrice: "",
+            estimatedDuration: "",
+          },
+        ],
   );
   const [depositPct, setDepositPct] = useState(
     initialValues?.depositPercentage ?? "0",
@@ -83,7 +99,13 @@ export function ProposalForm({
   function addLineItem() {
     setLineItems((prev) => [
       ...prev,
-      { key: makeKey(), description: "", quantity: "1", unitPrice: "" },
+      {
+        key: makeKey(),
+        description: "",
+        quantity: "1",
+        unitPrice: "",
+        estimatedDuration: "",
+      },
     ]);
   }
 
@@ -126,6 +148,8 @@ export function ProposalForm({
             description: item.description,
             quantity: parseNum(item.quantity),
             unitPrice: parseNum(item.unitPrice),
+            estimatedDuration:
+              item.estimatedDuration === "" ? null : item.estimatedDuration,
           })),
           depositPercentage: parseNum(depositPct),
         };
@@ -219,8 +243,8 @@ export function ProposalForm({
           Line items
         </h2>
 
-        <div className="grid grid-cols-[1fr_5rem_8rem_7rem_2rem] gap-3">
-          {["Description", "Qty", "Unit price", "Total", ""].map((h) => (
+        <div className="grid grid-cols-[1fr_5rem_8rem_8rem_7rem_2rem] gap-3">
+          {["Description", "Qty", "Unit price", "Duration", "Total", ""].map((h) => (
             <span
               key={h}
               className="text-xs font-medium text-muted-foreground"
@@ -235,7 +259,7 @@ export function ProposalForm({
           return (
             <div
               key={item.key}
-              className="grid grid-cols-[1fr_5rem_8rem_7rem_2rem] items-center gap-3"
+              className="grid grid-cols-[1fr_5rem_8rem_8rem_7rem_2rem] items-center gap-3"
             >
               <input
                 type="text"
@@ -271,6 +295,21 @@ export function ProposalForm({
                 required
                 className={inputCls}
               />
+              <select
+                aria-label="Estimated duration"
+                value={item.estimatedDuration}
+                onChange={(e) =>
+                  updateLineItem(item.key, "estimatedDuration", e.target.value)
+                }
+                className={inputCls}
+              >
+                <option value="">—</option>
+                {LINE_ITEM_DURATIONS.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </select>
               <span className="text-right text-sm text-foreground">
                 {fmt(rowTotal)}
               </span>

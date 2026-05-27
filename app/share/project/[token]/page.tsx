@@ -27,7 +27,12 @@ type PortalProject = {
   client_name: string;
 };
 
-type MilestoneRow = { id: string; title: string; status: string };
+type MilestoneRow = {
+  id: string;
+  title: string;
+  status: string;
+  estimated_duration: string | null;
+};
 type DeliverableRow = { milestone_id: string; label: string; url: string };
 type TimeRow = { hours: string };
 type InvoiceRow = {
@@ -64,7 +69,7 @@ async function getPortalProject(token: string) {
 
   const [milestones, deliverables, timeEntries, invoices] = await Promise.all([
     sql`
-      SELECT id, title, status
+      SELECT id, title, status, estimated_duration
       FROM milestones
       WHERE proposal_id = ${project.proposal_id}
       ORDER BY created_at
@@ -185,10 +190,17 @@ export default async function ShareProjectPage({
                     className={i > 0 ? "border-t border-border" : ""}
                   >
                     <div className="flex items-center justify-between gap-4 px-4 py-3">
-                      <span className="truncate text-sm text-foreground">
+                      <span className="min-w-0 truncate text-sm text-foreground">
                         {m.title}
                       </span>
-                      <StatusBadge status={m.status} />
+                      <div className="flex shrink-0 items-center gap-3">
+                        {m.estimated_duration && (
+                          <span className="text-xs text-muted-foreground">
+                            {m.estimated_duration}
+                          </span>
+                        )}
+                        <StatusBadge status={m.status} />
+                      </div>
                     </div>
                     {showDeliverables && (
                       <ul className="border-t border-border bg-muted/40 px-4 py-3 space-y-1.5">

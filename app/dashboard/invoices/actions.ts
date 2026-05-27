@@ -4,7 +4,12 @@ import { revalidatePath } from "next/cache";
 import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
 import { uuidSchema } from "@/lib/validation";
-import { getAppBaseUrl, sendInvoicePaidEmail } from "@/lib/email";
+import {
+  getAppBaseUrl,
+  sendClientProjectDeliveredEmail,
+  sendInvoicePaidEmail,
+} from "@/lib/email";
+import { notifyDevOfFailure } from "@/lib/notifications";
 
 export type InvoiceListItem = {
   id: string;
@@ -150,7 +155,8 @@ export async function markInvoiceAsPaid(invoiceId: string): Promise<void> {
   };
 
   // Paying the final invoice marks the project as delivered.
-  if (invoice.type === "final") {
+  const justDelivered = invoice.type === "final";
+  if (justDelivered) {
     await sql`
       UPDATE projects SET status = 'delivered'
       WHERE id = ${invoice.project_id} AND user_id = ${user.id}
@@ -159,36 +165,82 @@ export async function markInvoiceAsPaid(invoiceId: string): Promise<void> {
     revalidatePath("/dashboard/projects");
   }
 
-  // Send the receipt email. Voided ($0) invoices don't need a receipt.
+  // Look up the project + client + agency once for the receipt and the
+  // optional delivered-confirmation email below. Both need the same join.
   const amount = Number(invoice.total_amount);
-  if (amount > 0) {
-    try {
-      const details = await sql`
-        SELECT
-          pr.title AS project_title,
-          pr.share_token,
-          c.email AS client_email,
-          c.name AS client_name,
-          u.name AS agency_name
-        FROM projects pr
-        JOIN clients c ON c.id = pr.client_id
-        JOIN users u ON u.id = pr.user_id
-        WHERE pr.id = ${invoice.project_id} AND pr.user_id = ${user.id}
-      `;
-      const row = details[0];
-      if (row?.client_email) {
-        await sendInvoicePaidEmail({
-          to: row.client_email as string,
-          clientName: (row.client_name as string) ?? "",
-          agencyName: (row.agency_name as string) ?? "",
-          invoiceType: invoice.type === "deposit" ? "deposit" : "final",
-          totalAmount: amount,
-          projectTitle: (row.project_title as string) ?? "",
-          projectUrl: `${getAppBaseUrl()}/share/project/${row.share_token}`,
-        });
-      }
-    } catch {
-      // Best effort.
+  const details = await sql`
+    SELECT
+      pr.title AS project_title,
+      pr.share_token,
+      pr.proposal_id,
+      c.email AS client_email,
+      c.name AS client_name,
+      u.email AS agency_email,
+      u.name AS agency_name
+    FROM projects pr
+    JOIN clients c ON c.id = pr.client_id
+    JOIN users u ON u.id = pr.user_id
+    WHERE pr.id = ${invoice.project_id} AND pr.user_id = ${user.id}
+  `;
+  const row = details[0];
+  const clientEmail = (row?.client_email as string | undefined) ?? "";
+  const clientName = (row?.client_name as string | null) ?? "";
+  const agencyEmail = (row?.agency_email as string | undefined) ?? "";
+  const agencyName = (row?.agency_name as string | null) ?? "";
+  const projectTitle = (row?.project_title as string) ?? "";
+  const proposalId = (row?.proposal_id as string | undefined) ?? null;
+  const projectUrl = `${getAppBaseUrl()}/share/project/${row?.share_token}`;
+
+  // Receipt email. Voided ($0) invoices don't need one.
+  if (amount > 0 && clientEmail) {
+    const res = await sendInvoicePaidEmail({
+      to: clientEmail,
+      clientName,
+      agencyName,
+      invoiceType: invoice.type === "deposit" ? "deposit" : "final",
+      totalAmount: amount,
+      projectTitle,
+      projectUrl,
+    }).catch((err: unknown) => ({
+      ok: false as const,
+      reason: err instanceof Error ? err.message : "send threw",
+    }));
+    if (!res.ok) {
+      await notifyDevOfFailure({
+        proposalId,
+        agencyEmail,
+        agencyName,
+        failedEvent: "invoice_paid_receipt",
+        intendedRecipient: clientEmail,
+        reason: res.reason,
+        contextLabel: `Receipt for "${projectTitle}"`,
+      });
+    }
+  }
+
+  // Delivered-confirmation email goes out the moment the final invoice is
+  // marked paid, since the project status flips to 'delivered' above.
+  if (justDelivered && clientEmail) {
+    const res = await sendClientProjectDeliveredEmail({
+      to: clientEmail,
+      clientName,
+      agencyName,
+      projectTitle,
+      projectUrl,
+    }).catch((err: unknown) => ({
+      ok: false as const,
+      reason: err instanceof Error ? err.message : "send threw",
+    }));
+    if (!res.ok) {
+      await notifyDevOfFailure({
+        proposalId,
+        agencyEmail,
+        agencyName,
+        failedEvent: "client_project_delivered",
+        intendedRecipient: clientEmail,
+        reason: res.reason,
+        contextLabel: `Delivery confirmation for "${projectTitle}"`,
+      });
     }
   }
 

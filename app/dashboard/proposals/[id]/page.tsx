@@ -140,8 +140,8 @@ export default async function ProposalDetailPage({
 
       {/* Line items */}
       <div className="mt-10">
-        <div className="grid grid-cols-[1fr_5rem_8rem_7rem] gap-3 border-b border-border pb-2">
-          {["Description", "Qty", "Unit price", "Total"].map((h) => (
+        <div className="grid grid-cols-[1fr_4rem_7rem_7rem_6rem] gap-3 border-b border-border pb-2">
+          {["Description", "Qty", "Unit price", "Duration", "Total"].map((h) => (
             <span
               key={h}
               className="text-xs font-medium text-muted-foreground"
@@ -157,7 +157,7 @@ export default async function ProposalDetailPage({
           return (
             <div
               key={i}
-              className="grid grid-cols-[1fr_5rem_8rem_7rem] gap-3 border-b border-border py-3"
+              className="grid grid-cols-[1fr_4rem_7rem_7rem_6rem] gap-3 border-b border-border py-3"
             >
               <span className="text-sm text-foreground">
                 {item.description}
@@ -165,6 +165,9 @@ export default async function ProposalDetailPage({
               <span className="text-sm text-muted-foreground">{qty}</span>
               <span className="text-sm text-muted-foreground">
                 {currencyFmt.format(price)}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {item.estimated_duration ?? "—"}
               </span>
               <span className="text-right text-sm font-medium text-foreground">
                 {currencyFmt.format(qty * price)}

@@ -253,13 +253,13 @@ export function PricingSection({
             </div>
             <div className="sm:shrink-0">
               <Link
-                href="/sign-up"
+                href="/waitlist"
                 className={cn(
                   "inline-flex h-11 w-full items-center justify-center rounded-full border border-white/20 bg-transparent px-6 text-sm font-semibold text-white transition-colors hover:bg-white/[0.06] sm:w-auto",
                   focusRing,
                 )}
               >
-                Start free trial
+                Join the waitlist
               </Link>
             </div>
           </div>

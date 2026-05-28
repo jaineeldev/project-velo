@@ -2,7 +2,11 @@
 
 import { headers } from "next/headers";
 import { z } from "zod";
-import { sendWaitlistEmail } from "@/lib/email";
+import { sql } from "@/lib/db";
+import {
+  sendWaitlistConfirmationEmail,
+  sendWaitlistEmail,
+} from "@/lib/email";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 const waitlistSchema = z.object({
@@ -10,7 +14,8 @@ const waitlistSchema = z.object({
     .string()
     .trim()
     .toLowerCase()
-    .email("That doesn't look like a valid email."),
+    .email("That doesn't look like a valid email.")
+    .max(254),
 });
 
 export type SubmitWaitlistInput = z.infer<typeof waitlistSchema>;
@@ -35,11 +40,26 @@ export async function submitWaitlist(input: SubmitWaitlistInput): Promise<void> 
     );
   }
 
-  const result = await sendWaitlistEmail({ email: parsed.data.email, ip });
+  // Canonical record. ON CONFLICT keeps the form idempotent: re-submitting
+  // the same email is a no-op the user can't tell from a fresh signup. A
+  // previously unsubscribed address re-subscribes by clearing
+  // unsubscribed_at. `(xmax = 0)` is the standard PG trick for distinguishing
+  // a fresh INSERT from an ON CONFLICT UPDATE so we only fire the support
+  // notification for genuinely new entries.
+  const [row] = await sql`
+    INSERT INTO waitlist_signups (email, ip)
+    VALUES (${parsed.data.email}, ${ip})
+    ON CONFLICT (email) DO UPDATE SET unsubscribed_at = NULL
+    RETURNING (xmax = 0) AS inserted
+  `;
+  const inserted = Boolean(row?.inserted);
 
-  if (!result.ok) {
-    throw new Error(
-      "Couldn't save your spot right now. Please try again, or email jaineelk.dev@gmail.com.",
-    );
+  // Best-effort emails on fresh inserts only. Neither send failure rolls
+  // back the DB row; the broadcast list comes from the table, not the inbox.
+  if (inserted) {
+    await Promise.allSettled([
+      sendWaitlistEmail({ email: parsed.data.email, ip }),
+      sendWaitlistConfirmationEmail({ to: parsed.data.email }),
+    ]);
   }
 }

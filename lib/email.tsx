@@ -231,6 +231,75 @@ function logWaitlistOutcome(outcome: "sent" | "failed") {
   );
 }
 
+export type SendWaitlistConfirmationInput = {
+  to: string;
+};
+
+export type SendWaitlistConfirmationResult =
+  | { ok: true; id: string }
+  | { ok: false; reason: string };
+
+// Visitor-facing confirmation. Replies route to the support inbox so a
+// reply-all to this email reaches Jaineel directly without exposing the
+// shared sender. Test-mode caveat: while FROM_ADDRESS is the shared
+// onboarding@resend.dev sender, Resend will only deliver this to the email
+// registered against the Resend account. A verified custom domain unlocks
+// arbitrary recipients.
+export async function sendWaitlistConfirmationEmail(
+  input: SendWaitlistConfirmationInput,
+): Promise<SendWaitlistConfirmationResult> {
+  const resend = getResend();
+  if (!resend) {
+    return { ok: false, reason: "RESEND_API_KEY is not configured" };
+  }
+
+  const text = [
+    "Hi,",
+    "",
+    "Thanks for joining the Velo waitlist.",
+    "",
+    "Velo is in private build right now. I'll send one email when something material ships: Stripe payments, CRM, team accounts. No marketing, no calendar invites.",
+    "",
+    "If you have feedback or questions, hit reply. I read everything.",
+    "",
+    "Cheers,",
+    "Jaineel",
+  ].join("\n");
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_ADDRESS,
+      to: input.to,
+      replyTo: SUPPORT_INBOX,
+      subject: "You're on the Velo waitlist",
+      text,
+    });
+
+    if (error) {
+      logWaitlistConfirmationOutcome("failed");
+      return { ok: false, reason: error.message };
+    }
+    logWaitlistConfirmationOutcome("sent");
+    return { ok: true, id: data?.id ?? "" };
+  } catch (err) {
+    logWaitlistConfirmationOutcome("failed");
+    return {
+      ok: false,
+      reason: err instanceof Error ? err.message : "Unknown email error",
+    };
+  }
+}
+
+function logWaitlistConfirmationOutcome(outcome: "sent" | "failed") {
+  console.log(
+    JSON.stringify({
+      ts: new Date().toISOString(),
+      event: "waitlist_confirmation",
+      outcome,
+    }),
+  );
+}
+
 // ── Client-facing notification emails ────────────────────────────────────────
 
 type ClientNotifyResult =

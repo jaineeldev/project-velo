@@ -4,7 +4,6 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { cn, focusRing } from "@/lib/utils";
 import { stillRoughGroups, team, whatsNextItems } from "../_lib/data";
 import { StructuredData } from "../_components/structured-data";
-import { Waitlist } from "../_components/waitlist";
 
 export const metadata: Metadata = {
   title: "About",
@@ -20,7 +19,6 @@ export default function AboutPage() {
       <Manifesto />
       <TeamSection />
       <ShutdownReassurance />
-      <WaitlistBlock />
       <EarlyBetaNote />
       <ContactLine />
       <CtaToSecurity />
@@ -253,16 +251,6 @@ function ShutdownReassurance() {
             worst possible moment.
           </p>
         </div>
-      </div>
-    </section>
-  );
-}
-
-function WaitlistBlock() {
-  return (
-    <section className="relative border-t border-white/[0.06] bg-[#0d0d0f]">
-      <div className="mx-auto max-w-3xl px-6 py-32 sm:px-10 sm:py-40">
-        <Waitlist />
       </div>
     </section>
   );

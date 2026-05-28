@@ -76,13 +76,13 @@ export function Hero() {
 
           <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row">
             <Link
-              href="/sign-up"
+              href="/waitlist"
               className={cn(
                 "group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-7 text-sm font-semibold text-white transition-colors hover:bg-primary/90",
                 focusRing,
               )}
             >
-              Start free trial
+              Join the waitlist
               <ArrowRight
                 aria-hidden
                 className="h-4 w-4 transition-transform group-hover:translate-x-0.5"

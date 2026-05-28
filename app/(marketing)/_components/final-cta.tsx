@@ -50,8 +50,8 @@ export function FinalCTA({
   const resolvedSubtle =
     subtle ?? "Early beta. Things will break. Send feedback when they do.";
   const resolvedPrimary = primaryCta ?? {
-    label: "Start free trial",
-    href: "/sign-up",
+    label: "Join the waitlist",
+    href: "/waitlist",
   };
 
   return (

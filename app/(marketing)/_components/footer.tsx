@@ -11,8 +11,7 @@ const productLinks = [
 ];
 
 const accountLinks = [
-  { label: "Sign in", href: "/sign-in" },
-  { label: "Start free trial", href: "/sign-up" },
+  { label: "Join waitlist", href: "/waitlist" },
 ];
 
 const legalLinks = [

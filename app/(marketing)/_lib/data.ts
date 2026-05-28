@@ -162,7 +162,7 @@ export const plans: Plan[] = [
       { label: "PDF export" },
       { label: "Stripe payments", comingSoon: true },
     ],
-    cta: { label: "Try Starter free", href: "/sign-up" },
+    cta: { label: "Join the waitlist", href: "/waitlist" },
   },
   {
     name: "Studio",
@@ -175,7 +175,7 @@ export const plans: Plan[] = [
       { label: "Lead pipeline", comingSoon: true },
     ],
     highlighted: true,
-    cta: { label: "Try Studio free", href: "/sign-up" },
+    cta: { label: "Join the waitlist", href: "/waitlist" },
   },
   {
     name: "Agency",
@@ -186,7 +186,7 @@ export const plans: Plan[] = [
       { label: "Everything in Studio" },
       { label: "Multi-user workspaces", comingSoon: true },
     ],
-    cta: { label: "Try Agency free", href: "/sign-up" },
+    cta: { label: "Join the waitlist", href: "/waitlist" },
   },
   {
     name: "Scale",
@@ -200,10 +200,7 @@ export const plans: Plan[] = [
       { label: "Dedicated support" },
       { label: "White-label client portal", comingSoon: true },
     ],
-    cta: {
-      label: "Talk to me",
-      href: "mailto:hello@velo.app?subject=Velo%20Scale%20plan",
-    },
+    cta: { label: "Join the waitlist", href: "/waitlist" },
   },
 ];
 

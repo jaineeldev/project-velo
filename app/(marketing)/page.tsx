@@ -211,13 +211,13 @@ function PricingTeaser() {
             />
           </Link>
           <Link
-            href="/sign-up"
+            href="/waitlist"
             className={cn(
               "rounded-sm text-sm text-white/60 underline-offset-2 hover:text-white hover:underline",
               focusRing,
             )}
           >
-            Or start free trial →
+            Or join the waitlist →
           </Link>
         </div>
       </div>

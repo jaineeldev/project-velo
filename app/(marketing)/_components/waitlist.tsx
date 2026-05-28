@@ -70,12 +70,16 @@ export function Waitlist() {
       </p>
 
       {sent ? (
-        <div
-          role="status"
-          className="mx-auto mt-8 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white"
-        >
-          <CheckCircle2 aria-hidden className="h-4 w-4 text-primary" />
-          You&apos;re on the list. Talk soon.
+        <div role="status" className="mx-auto mt-8 max-w-md">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white">
+            <CheckCircle2 aria-hidden className="h-4 w-4 text-primary" />
+            You&apos;re on the list.
+          </div>
+          <p className="mt-4 text-sm text-white/55">
+            Check your inbox for a confirmation from{" "}
+            <span className="text-white/75">onboarding@resend.dev</span>. If
+            it&apos;s not there in a minute, peek in spam.
+          </p>
         </div>
       ) : (
         <form

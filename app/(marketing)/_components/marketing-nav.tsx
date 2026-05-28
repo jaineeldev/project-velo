@@ -79,22 +79,13 @@ export function MarketingNav() {
 
         <div className="flex items-center gap-2">
           <Link
-            href="/sign-in"
+            href="/waitlist"
             className={cn(
-              "hidden rounded-md px-3 py-1.5 text-sm text-white/60 transition-colors hover:text-white sm:inline-flex",
+              "hidden items-center justify-center rounded-full bg-primary px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-primary/90 sm:inline-flex",
               focusRing,
             )}
           >
-            Sign in
-          </Link>
-          <Link
-            href="/sign-up"
-            className={cn(
-              "inline-flex items-center justify-center rounded-full bg-primary px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-primary/90",
-              focusRing,
-            )}
-          >
-            Start free trial
+            Join waitlist
           </Link>
           <button
             type="button"
@@ -154,15 +145,15 @@ export function MarketingNav() {
                   </li>
                 );
               })}
-              <li>
+              <li className="pt-2">
                 <Link
-                  href="/sign-in"
+                  href="/waitlist"
                   className={cn(
-                    "block rounded-md px-3 py-2 text-base text-white/65 transition-colors hover:text-white",
+                    "inline-flex w-full items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90",
                     focusRing,
                   )}
                 >
-                  Sign in
+                  Join waitlist
                 </Link>
               </li>
             </ul>

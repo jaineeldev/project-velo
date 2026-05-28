@@ -129,13 +129,13 @@ function ClientsHero() {
         </p>
         <div className="mt-12 flex items-center justify-center">
           <Link
-            href="/sign-up"
+            href="/waitlist"
             className={cn(
               "group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-8 text-sm font-semibold text-white transition-colors hover:bg-primary/90",
               focusRing,
             )}
           >
-            Start free trial
+            Join the waitlist
             <ArrowRight
               aria-hidden
               className="h-4 w-4 transition-transform group-hover:translate-x-0.5"

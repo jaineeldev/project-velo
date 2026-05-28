@@ -56,6 +56,11 @@ const sections: Section[] = [
           no sale to advertisers.
         </p>
         <p>
+          You can export all your proposals, invoices, and client records as
+          CSV at any time from your account settings. Your data is never
+          locked in.
+        </p>
+        <p>
           If you delete your account, every record I hold for you is
           permanently removed within 30 days. That includes backups and the
           identifier I use to link your records together.
@@ -95,6 +100,10 @@ const sections: Section[] = [
     title: "How I protect your data",
     body: (
       <>
+        <p className="not-prose rounded-lg border border-white/10 bg-white/[0.03] p-4 text-sm text-white/60">
+          Velo runs on Vercel. Your data lives in Neon serverless Postgres,
+          Sydney region, with disk-level encryption.
+        </p>
         <p>
           Connections to Velo run over TLS, so every byte of data in transit
           between your browser and the servers is encrypted. At rest, your

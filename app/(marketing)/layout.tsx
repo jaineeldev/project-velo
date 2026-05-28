@@ -3,6 +3,7 @@ import { marketingTheme } from "./_lib/shared";
 import { MarketingNav } from "./_components/marketing-nav";
 import { Footer } from "./_components/footer";
 import { MarketingChrome } from "./_components/marketing-chrome";
+import { ScrollToTop } from "@/components/scroll-to-top";
 
 export default function MarketingLayout({
   children,
@@ -26,6 +27,7 @@ export default function MarketingLayout({
         {children}
       </main>
       <Footer />
+      <ScrollToTop />
     </div>
   );
 }

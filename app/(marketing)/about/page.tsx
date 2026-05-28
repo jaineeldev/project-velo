@@ -114,15 +114,15 @@ function TeamSection() {
                   focusRing,
                 )}
               >
-                <div className="flex items-baseline gap-4">
+                <div className="flex flex-col gap-1">
                   <span className="text-3xl font-extrabold tracking-[-0.03em] text-white sm:text-4xl">
                     @{member.handle}
                   </span>
-                </div>
-                <div className="flex items-center gap-4 sm:gap-6">
-                  <span className="text-sm text-white/60 sm:text-base">
+                  <span className="text-sm text-white/40">
                     {member.role}
                   </span>
+                </div>
+                <div className="flex items-center gap-4 sm:gap-6">
                   <span
                     aria-hidden
                     className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-white/40 transition-colors group-hover:text-primary"
@@ -271,7 +271,7 @@ function WaitlistBlock() {
 function ContactLine() {
   return (
     <section className="relative bg-[#0d0d0f]">
-      <p className="py-4 text-center text-sm text-white/40">
+      <p className="py-4 text-center text-sm text-white/60">
         Questions? Email me at jaineelk.dev@gmail.com. I read everything.
       </p>
     </section>

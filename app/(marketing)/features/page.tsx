@@ -15,14 +15,15 @@ const bucketLabels: Record<string, string> = {
   invoicing: "Get paid",
 };
 
-const featureRoadmap = [
+const featureRoadmap: { label: string; date?: string }[] = [
   { label: "Stripe payments" },
   { label: "Multi-user workspaces and team roles" },
-  { label: "Mobile app (PWA)" },
+  { label: "Mobile app (PWA)", date: "Q4 2026" },
   { label: "Client e-signatures on proposals" },
   { label: "Automated payment reminders" },
   { label: "GitHub and Linear integrations" },
   { label: "White-label client portal" },
+  { label: "API and webhooks", date: "2027" },
 ];
 
 export const metadata: Metadata = {
@@ -36,7 +37,10 @@ export default function FeaturesPage() {
     <>
       <StructuredData />
       <FeaturesHero />
-      <section className="relative border-t border-gray-100 bg-[#fafafa] text-black">
+      <section
+        data-bg="light"
+        className="relative border-t border-gray-100 bg-[#fafafa] text-black"
+      >
         <div>
           {allFeatures.map((feature, i) => {
             const bucketLabel = bucketLabels[feature.mockup];
@@ -103,13 +107,13 @@ function FeaturesHero() {
           Everything you need to run{" "}
           <span className="text-primary">client work.</span>
         </h1>
-        <p className="mx-auto mt-10 max-w-2xl text-base leading-relaxed text-white/60 sm:text-lg">
-          Velo replaces the proposal doc, the project board, the invoice
-          generator, and the client-update email. Eight pieces, scoped tight,
-          designed to feel like one product instead of a stitched-together
-          toolkit. Designed specifically for the way Australian freelancers
-          and dev agencies work: GST, AUD invoicing, and local compliance
-          built in.
+        <p className="mx-auto mt-10 max-w-2xl text-balance text-center text-xl font-medium text-white/70">
+          One approval. Project, milestones, and deposit invoice created
+          automatically.
+        </p>
+        <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-white/60 sm:text-lg">
+          Proposals, approvals, project tracking, client updates, deliverables,
+          and invoices. One connected flow instead of five separate tools.
         </p>
       </div>
     </section>
@@ -134,7 +138,7 @@ function FeatureRoadmap() {
           </p>
         </div>
         <ol className="mx-auto mt-16 max-w-2xl">
-          {featureRoadmap.map(({ label }, i) => {
+          {featureRoadmap.map(({ label, date }, i) => {
             const isLast = i === featureRoadmap.length - 1;
             return (
               <li
@@ -150,14 +154,19 @@ function FeatureRoadmap() {
                 <span className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/[0.1] bg-[#0d0d0f] font-mono text-[11px] font-semibold tabular-nums text-primary">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <span className="pt-[5px] text-base font-medium text-white sm:text-lg">
-                  {label}
+                <span className="flex flex-1 flex-wrap items-baseline gap-x-3 pt-[5px] text-base font-medium text-white sm:text-lg">
+                  <span>{label}</span>
+                  {date ? (
+                    <span className="text-xs font-semibold uppercase tracking-[0.18em] text-white/40">
+                      {date}
+                    </span>
+                  ) : null}
                 </span>
               </li>
             );
           })}
         </ol>
-        <p className="mx-auto mt-12 max-w-2xl text-sm text-white/30">
+        <p className="mx-auto mt-12 max-w-2xl text-sm text-white/60">
           Order can shift as I learn what people need most. Follow along at{" "}
           <a
             href="https://github.com/jaineeldev/project-velo"

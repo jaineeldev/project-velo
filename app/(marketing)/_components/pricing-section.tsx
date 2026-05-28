@@ -121,6 +121,9 @@ export function PricingSection({
                     <h3 className="text-xl font-bold tracking-[-0.02em] text-white">
                       {plan.name}
                     </h3>
+                    <p className="mt-1 text-xs text-white/40">
+                      {plan.description}
+                    </p>
                     <div className="mt-4 flex items-baseline gap-1">
                       {plan.priceFrom ? (
                         <span className="text-sm font-semibold text-white/60">
@@ -228,7 +231,7 @@ export function PricingSection({
               <ul className="mt-5 grid gap-x-6 gap-y-1.5 sm:grid-cols-2">
                 {trialFeatures.map((feature) => (
                   <li
-                    key={feature}
+                    key={feature.label}
                     className="flex items-start gap-2 text-sm text-white/75"
                   >
                     <Check
@@ -236,7 +239,14 @@ export function PricingSection({
                       className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary"
                       strokeWidth={2.5}
                     />
-                    <span className="leading-snug">{feature}</span>
+                    <span className="leading-snug">
+                      {feature.label}
+                      {feature.note ? (
+                        <span className="mt-1 block text-xs text-white/40">
+                          {feature.note}
+                        </span>
+                      ) : null}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -254,6 +264,14 @@ export function PricingSection({
             </div>
           </div>
         </motion.div>
+
+        <motion.p
+          variants={item}
+          className="mt-4 text-center text-xs text-white/30"
+        >
+          Invoices are currently settled via bank transfer. Native card payments
+          through Stripe are coming in Q3 2026.
+        </motion.p>
 
         <motion.p
           variants={item}

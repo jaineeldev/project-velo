@@ -31,7 +31,7 @@ export function Footer() {
               Ship code, not{" "}
               <span className="text-primary">spreadsheets.</span>
             </p>
-            <p className="mt-4 text-xs text-white/30">
+            <p className="mt-4 text-sm text-white/60">
               Built in Brisbane, Australia
             </p>
           </div>
@@ -68,8 +68,8 @@ export function Footer() {
           </a>
         </div>
 
-        <div className="mt-8 flex flex-col items-start justify-between gap-3 text-xs sm:flex-row sm:items-center">
-          <p className="text-white/40">
+        <div className="mt-8 flex flex-col items-start justify-between gap-3 text-sm sm:flex-row sm:items-center">
+          <p className="text-white/60">
             &copy; 2026 Velo. All rights reserved. Built in Brisbane.
           </p>
         </div>

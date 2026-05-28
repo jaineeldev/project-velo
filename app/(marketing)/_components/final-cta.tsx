@@ -78,7 +78,7 @@ export function FinalCTA({
           {resolvedBody}
         </p>
         {resolvedSubtle ? (
-          <p className="mx-auto mt-2 max-w-xl text-sm text-white/35">
+          <p className="mx-auto mt-2 max-w-xl text-sm text-white/60">
             {resolvedSubtle}
           </p>
         ) : null}

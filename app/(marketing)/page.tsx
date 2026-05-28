@@ -7,6 +7,7 @@ import { StructuredData } from "./_components/structured-data";
 import { Hero } from "./_components/hero";
 import { TrustStrip } from "./_components/trust-strip";
 import { HowItWorks } from "./_components/how-it-works";
+import { ReplaceWithVelo } from "./_components/replace-with-velo";
 import { FeatureRow } from "./_components/feature-row";
 import { FaqSection } from "./_components/faq-section";
 import { FinalCTA } from "./_components/final-cta";
@@ -25,8 +26,10 @@ export default function HomePage() {
       <TrustStrip />
       <HowItWorks />
 
-      {/* 3 featured highlights — full list lives on /features */}
-      <section className="relative bg-white text-black">
+      <ReplaceWithVelo />
+
+      {/* 3 featured highlights, full list lives on /features */}
+      <section data-bg="light" className="relative bg-white text-black">
         <div className="mx-auto max-w-7xl px-6 pb-10 pt-32 text-center sm:px-10 sm:pb-16 sm:pt-44">
           <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-neutral-500">
             A taste of what&apos;s inside
@@ -83,7 +86,7 @@ export default function HomePage() {
         }
         tight
         footer={
-          <p className="text-sm text-white/45">
+          <p className="text-sm text-white/60">
             More on the{" "}
             <Link
               href="/pricing#faq"
@@ -183,6 +186,11 @@ function PricingTeaser() {
             </li>
           ))}
         </ul>
+
+        <p className="mx-auto mt-6 max-w-2xl text-center text-sm text-white/50">
+          One approval. Project, milestones, and deposit invoice created
+          automatically.
+        </p>
 
         <p className="mx-auto mt-10 max-w-xl text-center text-base text-white/60 sm:text-lg">
           14-day free trial on every plan. No credit card. I never auto-charge.

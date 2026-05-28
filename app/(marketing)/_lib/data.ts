@@ -26,21 +26,21 @@ export const steps: Step[] = [
     icon: Send,
     title: "Send",
     description:
-      "Build a proposal with line items, deposit %, and GST. Email your client a private review link.",
+      "Create a proposal with scope, line items, deposit percentage, and GST in one place. Send your client a secure link. No account needed to view it.",
   },
   {
     number: "02",
     icon: CheckCircle2,
     title: "Approve",
     description:
-      "Clients sign in to a free Velo account (always free for clients) and approve in the browser. No PDF download, no chasing for sign-off.",
+      "Your client reviews the proposal in a clean portal and approves with a timestamped record. Consistent with Australia's Electronic Transactions Act 1999.",
   },
   {
     number: "03",
     icon: Sparkles,
     title: "Live",
     description:
-      "Project, milestones, and deposit invoice, all created the moment they approve.",
+      "Velo creates the project, milestones, client portal, and deposit invoice the moment your client approves. Nothing to set up manually.",
   },
 ];
 
@@ -139,6 +139,7 @@ export type PlanFeature = { label: string; comingSoon?: boolean };
 
 export type Plan = {
   name: string;
+  description: string;
   monthlyPrice: number;
   priceFrom?: boolean;
   seats: string;
@@ -151,6 +152,7 @@ export type Plan = {
 export const plans: Plan[] = [
   {
     name: "Starter",
+    description: "For solo freelancers getting started",
     monthlyPrice: 9,
     seats: "1 user",
     features: [
@@ -164,6 +166,7 @@ export const plans: Plan[] = [
   },
   {
     name: "Studio",
+    description: "For active freelancers with multiple clients",
     monthlyPrice: 24,
     seats: "Up to 5 users",
     features: [
@@ -176,6 +179,7 @@ export const plans: Plan[] = [
   },
   {
     name: "Agency",
+    description: "For small teams managing client work",
     monthlyPrice: 49,
     seats: "Up to 15 users",
     features: [
@@ -186,6 +190,7 @@ export const plans: Plan[] = [
   },
   {
     name: "Scale",
+    description: "For growing agencies with unlimited users",
     monthlyPrice: 99,
     priceFrom: true,
     seats: "Unlimited users",
@@ -202,13 +207,18 @@ export const plans: Plan[] = [
   },
 ];
 
-export const trialFeatures = [
-  "Up to 2 active projects",
-  "Proposals and client approvals",
-  "Project tracking and milestones",
-  "Deposit and final invoices",
-  "PDF export",
-  "Client portal",
+export type TrialFeature = { label: string; note?: string };
+
+export const trialFeatures: TrialFeature[] = [
+  {
+    label: "Up to 2 active projects",
+    note: "Completed projects don't count toward the limit. All your data is kept if you upgrade or cancel.",
+  },
+  { label: "Proposals and client approvals" },
+  { label: "Project tracking and milestones" },
+  { label: "Deposit and final invoices" },
+  { label: "PDF export" },
+  { label: "Client portal" },
 ];
 
 export type Faq = { q: string; a: string };
@@ -418,17 +428,17 @@ export type TeamMember = {
 export const team: TeamMember[] = [
   {
     handle: "jaineeldev",
-    role: "Lead. Building Velo solo from Brisbane.",
+    role: "Founder, product and engineering",
     url: "https://github.com/jaineeldev",
   },
   {
     handle: "JuiceM00n",
-    role: "Contributor.",
+    role: "Contributor",
     url: "https://github.com/JuiceM00n",
   },
   {
     handle: "Rockmancheese",
-    role: "Contributor.",
+    role: "Contributor",
     url: "https://github.com/Rockmancheese",
   },
 ];

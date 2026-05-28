@@ -68,10 +68,10 @@ export function Hero() {
           </h1>
 
           <p className="mt-10 max-w-2xl text-lg text-white/70">
-            Velo replaces the proposal doc, the project spreadsheet, and the
-            invoice tool. Send a proposal, get it approved online, track the
-            project, and invoice your client. All without leaving one tab.
-            Built for Australian freelance developers and agencies.
+            Velo turns an approved proposal into a live client project.
+            Milestones, invoices, and a client portal created automatically.
+            Built for Australian freelance developers and agencies who&apos;d
+            rather be coding.
           </p>
 
           <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row">
@@ -98,6 +98,25 @@ export function Hero() {
               See how it works
             </Link>
           </div>
+
+          <Link
+            href="/clients"
+            className={cn(
+              "mt-6 rounded-sm text-sm text-white/40 underline-offset-2 hover:text-white/70 hover:underline",
+              focusRing,
+            )}
+          >
+            See what your client sees →
+          </Link>
+          <Link
+            href="/share/proposal/demo"
+            className={cn(
+              "mt-2 rounded-sm text-sm text-white/40 underline-offset-2 hover:text-white/70 hover:underline",
+              focusRing,
+            )}
+          >
+            View a sample proposal →
+          </Link>
         </div>
 
         <div className="mt-16 flex flex-1 items-center justify-center sm:mt-20">

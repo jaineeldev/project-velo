@@ -25,8 +25,8 @@ export function HowItWorks() {
           How it works
         </p>
         <h2 className="mx-auto mt-6 max-w-3xl text-balance text-5xl font-extrabold leading-[1] tracking-[-0.03em] text-white sm:text-6xl md:text-7xl">
-          Approve once. The setup is{" "}
-          <span className="text-primary">done.</span>
+          One approval. Project, milestones, and deposit invoice created{" "}
+          <span className="text-primary">automatically.</span>
         </h2>
       </div>
 

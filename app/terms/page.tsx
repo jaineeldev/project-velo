@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { cn, focusRing } from "@/lib/utils";
+import { ScrollToTop } from "@/components/scroll-to-top";
+import { TableOfContents } from "@/components/table-of-contents";
 
 export const metadata = {
   title: "Terms of Service",
@@ -89,8 +91,10 @@ export default function TermsPage() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-3xl px-6 py-12">
-        <article className="prose prose-neutral max-w-none dark:prose-invert">
+      <div className="mx-auto max-w-3xl px-6 py-12 lg:max-w-6xl">
+        <div className="lg:flex lg:gap-12">
+          <TableOfContents sections={sections} />
+          <article className="prose prose-neutral max-w-none dark:prose-invert lg:min-w-0 lg:flex-1">
           <h1>Terms of Service</h1>
           <p className="text-sm text-muted-foreground">Last updated May 19, 2026</p>
 
@@ -1140,7 +1144,9 @@ export default function TermsPage() {
             <BackToTop />
           </section>
         </article>
+        </div>
       </div>
+      <ScrollToTop variant="light" />
     </main>
   );
 }

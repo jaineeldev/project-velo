@@ -49,7 +49,7 @@ const sections: Section[] = [
     eyebrow: "Their own dashboard",
     iconKey: "dashboard",
     title: "Clients always know where things stand.",
-    body: "Every client gets a free Velo account, no paid subscription required. From their dashboard they can see all proposals and active projects shared with them, track milestone progress, and see when payments are due. No more 'just checking in' emails.",
+    body: "Clients are invited to a secure Velo portal. They never pay for an account, and they only ever see the proposals, projects, and invoices you share with them, nothing else.",
     mockup: <ClientDashboardMock />,
     tone: "light",
   },
@@ -72,6 +72,7 @@ export default function ClientsPage() {
       {sections.map((section, i) => (
         <section
           key={section.eyebrow}
+          data-bg={section.tone}
           className={cn(
             "relative",
             section.tone === "light"
@@ -184,7 +185,7 @@ function FreeForClientsSection() {
             </li>
           ))}
         </ul>
-        <p className="mx-auto mt-10 max-w-xl text-sm text-white/40">
+        <p className="mx-auto mt-10 max-w-xl text-sm text-white/60">
           Velo is billed to the agency or freelancer. Clients sign up for free
           and only ever see their own proposals and projects.
         </p>

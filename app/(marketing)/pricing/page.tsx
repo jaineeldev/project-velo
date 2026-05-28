@@ -47,7 +47,7 @@ function PricingHero() {
           14-day free trial · 2 projects · No credit card required. Pick a plan
           when you&apos;re ready. I never auto-charge.
         </p>
-        <p className="mt-2 text-sm text-white/40">
+        <p className="mt-2 text-sm text-white/60">
           All prices in AUD. GST included where applicable.
         </p>
       </div>

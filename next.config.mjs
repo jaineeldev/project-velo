@@ -41,6 +41,22 @@ const nextConfig = {
       },
     ];
   },
+  images: {
+    // Vercel Blob serves uploaded avatars from per-store subdomains under
+    // *.public.blob.vercel-storage.com (public access) and
+    // *.blob.vercel-storage.com (private access, requires signed URL query
+    // string). Whitelisting both lets next/image optimise either kind.
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.blob.vercel-storage.com",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

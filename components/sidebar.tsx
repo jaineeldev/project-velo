@@ -14,6 +14,7 @@ import {
   LogOut,
   type LucideIcon,
 } from "lucide-react";
+import { Avatar } from "@/components/avatar";
 import { cn, focusRing } from "@/lib/utils";
 
 type NavItem = { href: string; label: string; icon: LucideIcon };
@@ -104,20 +105,25 @@ function UserCard({ onSignOut }: { onSignOut?: () => void }) {
   const name =
     [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "Account";
   const email = user?.primaryEmailAddress?.emailAddress ?? "";
-  const initials =
-    [user?.firstName?.[0], user?.lastName?.[0]]
-      .filter(Boolean)
-      .join("")
-      .toUpperCase() ||
-    email.slice(0, 1).toUpperCase() ||
-    "·";
 
   return (
     <div className="mt-auto border-t border-border p-3">
-      <div className="flex items-center gap-3 rounded-md px-2 py-2">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-          {isLoaded ? initials : ""}
-        </div>
+      <Link
+        href="/dashboard/settings"
+        onClick={onSignOut}
+        className={cn(
+          "flex items-center gap-3 rounded-md px-2 py-2 cursor-pointer transition-colors hover:bg-accent/50",
+          focusRing,
+        )}
+      >
+        {isLoaded && user ? (
+          <Avatar userId={user.id} name={name} size="sm" />
+        ) : (
+          <div
+            aria-hidden
+            className="h-8 w-8 shrink-0 animate-pulse rounded-full bg-accent"
+          />
+        )}
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-medium text-foreground">
             {isLoaded ? name : " "}
@@ -126,7 +132,7 @@ function UserCard({ onSignOut }: { onSignOut?: () => void }) {
             {isLoaded ? email : " "}
           </div>
         </div>
-      </div>
+      </Link>
 
       <SignOutButton>
         <button

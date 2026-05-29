@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ArrowRight, CreditCard } from "lucide-react";
 import { AppearanceToggle } from "@/components/appearance-toggle";
+import { ProfileUploader } from "@/components/profile-uploader";
+import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
 import { cn, focusRing } from "@/lib/utils";
 import { checkDeletionEligibility, getProfile } from "./actions";
@@ -14,11 +16,31 @@ export default async function SettingsPage() {
     checkDeletionEligibility(),
   ]);
 
+  const avatarRows = await sql`
+    SELECT avatar_url FROM user_profiles WHERE user_id = ${user.id} LIMIT 1
+  `;
+  const hasAvatar = Boolean(avatarRows[0]?.avatar_url);
+
   return (
     <div className="max-w-3xl px-10 py-12">
       <h1 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
         Settings
       </h1>
+
+      <section className="mt-10 border-t border-neutral-200 pt-8 dark:border-neutral-800">
+        <h2 className="text-base font-medium text-neutral-900 dark:text-neutral-100">
+          Profile
+        </h2>
+        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+          Your photo, name, and email. Editable name and email coming later.
+        </p>
+        <ProfileUploader
+          userId={user.clerk_id}
+          name={user.name}
+          email={user.email}
+          initialHasAvatar={hasAvatar}
+        />
+      </section>
 
       <section className="mt-10 border-t border-neutral-200 pt-8 dark:border-neutral-800">
         <h2 className="text-base font-medium text-neutral-900 dark:text-neutral-100">

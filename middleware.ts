@@ -20,10 +20,26 @@ const isAgencyRoute = createRouteMatcher([
 // hand-edited URL) gets sent back to their own dashboard.
 const isClientRoute = createRouteMatcher(["/client/(.*)"]);
 
+// Operator admin surfaces. Primary gate: ADMIN_USER_IDS env allowlist.
+// Server components and admin API routes re-check via requireAdmin();
+// this middleware is the cheap first stop that keeps non-admins from
+// even loading the admin layout.
+const isAdminRoute = createRouteMatcher(["/admin(.*)", "/api/admin/(.*)"]);
+
 const isShareProposal = createRouteMatcher(["/share/proposal/(.*)"]);
 const isShareProject = createRouteMatcher(["/share/project/(.*)"]);
 const isSharePath = (req: Parameters<typeof isShareProposal>[0]) =>
   isShareProposal(req) || isShareProject(req);
+
+function parseAdminIds(): Set<string> {
+  const raw = process.env.ADMIN_USER_IDS ?? "";
+  return new Set(
+    raw
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean),
+  );
+}
 
 export default clerkMiddleware(async (auth, req) => {
   // Rate-limit public share pages by IP before any DB access. 30 req/min/IP
@@ -52,6 +68,28 @@ export default clerkMiddleware(async (auth, req) => {
     const res = NextResponse.next();
     res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
     res.headers.set("Pragma", "no-cache");
+    return res;
+  }
+
+  // Admin gate. Require a signed-in user, then check the env allowlist.
+  // Non-admins get redirected to /dashboard (where the agency-side
+  // guards take over). Denied attempts are logged: the operator can
+  // see them in /admin/security.
+  if (isAdminRoute(req)) {
+    const { userId } = await auth.protect();
+    const adminIds = parseAdminIds();
+    if (!userId || !adminIds.has(userId)) {
+      logSecurityEvent({
+        event: "admin_access_denied",
+        route: "/admin",
+        ip: getClientIp(req.headers),
+        outcome: "denied",
+        reason: "userid_not_in_allowlist",
+      });
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+    const res = NextResponse.next();
+    res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
     return res;
   }
 

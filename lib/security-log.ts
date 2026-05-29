@@ -1,7 +1,11 @@
 // Structured JSON logger for security-relevant events. Each call emits one
-// JSON object per line — easy to grep locally, easy to ship to Logtail or
-// Axiom or any log aggregator later without re-formatting. Never log share
-// tokens, client emails, passwords, or any PII.
+// JSON object per line (easy to grep locally, easy to ship to Logtail or
+// Axiom or any log aggregator later without re-formatting) AND inserts a
+// row into security_events so the operator admin panel can query it.
+//
+// Never log share tokens, client emails, passwords, or any PII.
+
+import { sql } from "@/lib/db";
 
 export type SecurityEventType =
   | "invalid_share_token"
@@ -14,7 +18,9 @@ export type SecurityEventType =
   | "clerk_delete_failed"
   | "auth_failed"
   | "client_role_finalize_invalid"
-  | "comment_authorization_failed";
+  | "comment_authorization_failed"
+  | "admin_access_denied"
+  | "admin_export";
 
 export type SecurityOutcome = "success" | "failure" | "denied";
 
@@ -30,11 +36,41 @@ export type SecurityLogInput = {
 };
 
 export function logSecurityEvent(input: SecurityLogInput): void {
+  const ts = new Date().toISOString();
   console.log(
     JSON.stringify({
-      ts: new Date().toISOString(),
+      ts,
       level: "security",
       ...input,
     }),
   );
+
+  // Fire-and-forget DB write. The request path never awaits this: if Neon
+  // is slow or unreachable, stdout (captured by Vercel logs) is still the
+  // record. Swallowing the rejection prevents an unhandled promise from
+  // crashing the worker.
+  void sql`
+    INSERT INTO security_events
+      (created_at, level, event_type, route, ip, outcome, reason, metadata)
+    VALUES (
+      ${ts},
+      'security',
+      ${input.event},
+      ${input.route},
+      ${input.ip ?? null},
+      ${input.outcome},
+      ${input.reason ?? null},
+      ${JSON.stringify(input.meta ?? {})}::jsonb
+    )
+  `.catch((err) => {
+    console.log(
+      JSON.stringify({
+        ts: new Date().toISOString(),
+        level: "error",
+        event: "security_log_db_write_failed",
+        original_event: input.event,
+        reason: err instanceof Error ? err.message : "unknown",
+      }),
+    );
+  });
 }

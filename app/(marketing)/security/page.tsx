@@ -101,22 +101,22 @@ const sections: Section[] = [
     body: (
       <>
         <p className="not-prose rounded-lg border border-white/10 bg-white/[0.03] p-4 text-sm text-white/60">
-          Velo runs on Vercel. Your data lives in Neon serverless Postgres,
-          Sydney region, with disk-level encryption.
+          All data is encrypted in transit using TLS and encrypted at rest.
+          Backups run automatically.
         </p>
         <p>
           Connections to Velo run over TLS, so every byte of data in transit
           between your browser and the servers is encrypted. At rest, your
           records live in{" "}
-          <span className="font-semibold text-white">Neon serverless Postgres</span>{" "}
-          in the Sydney region with disk-level encryption.
+          <span className="font-semibold text-white">an encrypted serverless database</span>{" "}
+          in Australia with disk-level encryption.
         </p>
         <p>
           The application itself runs on{" "}
-          <span className="font-semibold text-white">Vercel</span>, fronted by
-          Clerk for authentication. Session tokens are HttpOnly cookies, scoped
-          to the Velo domain, with the standard set of CSRF and SameSite
-          protections.
+          <span className="font-semibold text-white">a serverless hosting platform</span>,
+          fronted by a dedicated authentication provider. Session tokens are
+          HttpOnly cookies, scoped to the Velo domain, with the standard set
+          of CSRF and SameSite protections.
         </p>
       </>
     ),

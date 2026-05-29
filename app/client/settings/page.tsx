@@ -1,4 +1,6 @@
 import { AppearanceToggle } from "@/components/appearance-toggle";
+import { ProfileUploader } from "@/components/profile-uploader";
+import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
 import { checkDeletionEligibility } from "./actions";
 import { ProfileForm } from "./profile-form";
@@ -13,6 +15,11 @@ export default async function ClientSettingsPage() {
     checkDeletionEligibility(),
   ]);
 
+  const avatarRows = await sql`
+    SELECT avatar_url FROM user_profiles WHERE user_id = ${user.id} LIMIT 1
+  `;
+  const hasAvatar = Boolean(avatarRows[0]?.avatar_url);
+
   return (
     <div className="mx-auto w-full max-w-3xl px-6 py-10 sm:py-16">
       <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
@@ -24,6 +31,19 @@ export default async function ClientSettingsPage() {
 
       <section className="mt-10 border-t border-border pt-8">
         <h2 className="text-base font-medium text-foreground">Profile</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Your photo, name, and email. Editable name and email coming later.
+        </p>
+        <ProfileUploader
+          userId={user.clerk_id}
+          name={user.name}
+          email={user.email}
+          initialHasAvatar={hasAvatar}
+        />
+      </section>
+
+      <section className="mt-10 border-t border-border pt-8">
+        <h2 className="text-base font-medium text-foreground">Account</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Changing your name or email also updates the contact details every
           agency working with you sees on their end.

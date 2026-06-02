@@ -10,6 +10,8 @@ import { currencyFmt, dateShortFmt } from "@/lib/format";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ShareBackLink } from "@/components/share-back-link";
 import { SharePaymentButton } from "@/components/share-payment-button";
+import { SharePaymentStatusBanner } from "@/components/share-payment-status-banner";
+import { ChangeRequestForm } from "./change-request-form";
 
 // Public portal must always reflect the current milestone/invoice state —
 // otherwise a status change in the dashboard is invisible to the client until
@@ -109,13 +111,36 @@ async function getPortalProject(token: string) {
 
 export default async function ShareProjectPage({
   params,
+  searchParams,
 }: {
   params: { token: string };
+  searchParams: { paid?: string; cancelled?: string };
 }) {
   const data = await getPortalProject(params.token);
   if (!data) notFound();
 
   const { project, milestones, deliverables, timeEntries, invoices } = data;
+
+  // Banner state after Stripe redirects back. `paid` carries the invoice id
+  // so we can verify it actually belongs to this share token and show the
+  // matched amount. `cancelled` is just a flag — Stripe redirects with no
+  // identifying payload when the user backs out.
+  const paidInvoiceId = (searchParams.paid ?? "").trim() || null;
+  const isCancelled = searchParams.cancelled === "1";
+  const paidInvoice = paidInvoiceId
+    ? invoices.find((i) => i.id === paidInvoiceId)
+    : undefined;
+  const paymentBanner: {
+    variant: "received" | "confirming" | "cancelled";
+    amount?: string;
+  } | null = paidInvoice
+    ? {
+        variant: paidInvoice.status === "paid" ? "received" : "confirming",
+        amount: currencyFmt.format(Number(paidInvoice.total_amount)),
+      }
+    : isCancelled
+      ? { variant: "cancelled" }
+      : null;
   const totalHours = timeEntries.reduce((sum, e) => sum + Number(e.hours), 0);
 
   // Back-link destination depends on the viewer's role. Anonymous viewers
@@ -157,6 +182,13 @@ export default async function ShareProjectPage({
             <ShareBackLink href={backHref} />
           </div>
         )}
+
+        {paymentBanner ? (
+          <SharePaymentStatusBanner
+            variant={paymentBanner.variant}
+            amount={paymentBanner.amount}
+          />
+        ) : null}
 
         <div className="mb-10 border-b border-border pb-8">
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
@@ -229,6 +261,15 @@ export default async function ShareProjectPage({
           )}
         </section>
 
+        {/* Change requests. Hidden once the project is delivered, since the
+            engagement is closed and the change_requests insert filter mirrors
+            this in submitProjectChangeRequest. */}
+        {(project.status === "active" || project.status === "completed") && (
+          <section className="mt-10">
+            <ChangeRequestForm token={params.token} />
+          </section>
+        )}
+
         {/* Time logged */}
         <section className="mt-12">
           <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
@@ -261,7 +302,9 @@ export default async function ShareProjectPage({
                 // StatusBadge for status and show a Voided pill so the
                 // line reads cleanly without "Unpaid · $0.00".
                 const isVoided = amount <= 0;
-                const isPayable = inv.status === "unpaid" && !isVoided;
+                const isConfirming = inv.id === paidInvoiceId;
+                const isPayable =
+                  inv.status === "unpaid" && !isVoided && !isConfirming;
                 const payLabel =
                   inv.type === "deposit" ? "Pay deposit" : "Pay invoice";
                 return (
@@ -301,6 +344,8 @@ export default async function ShareProjectPage({
                           label={payLabel}
                           amount={currencyFmt.format(amount)}
                           size="sm"
+                          token={params.token}
+                          invoiceId={inv.id}
                         />
                       </div>
                     )}

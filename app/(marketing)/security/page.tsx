@@ -136,15 +136,15 @@ const sections: Section[] = [
           </p>
         </div>
         <p>
-          Today, invoices include your bank details and your client pays you
-          directly via bank transfer.
+          Clients pay invoices by card through{" "}
+          <span className="font-semibold text-white">Stripe Checkout</span>{" "}
+          directly on the share link. Card numbers go from the client&apos;s
+          browser straight to Stripe. Velo only ever sees the resulting
+          status (paid, refunded, disputed).
         </p>
         <p>
-          When native card payments ship (coming soon), they will be handled
-          end-to-end by{" "}
-          <span className="font-semibold text-white">Stripe</span>. Card
-          numbers go from your client&apos;s browser straight to Stripe; Velo
-          only ever sees the resulting status (paid, refunded, disputed).
+          For clients who prefer bank transfer, your invoice PDF still
+          includes your bank details as a fallback.
         </p>
       </>
     ),

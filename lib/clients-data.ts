@@ -11,6 +11,9 @@ export type ClientRow = {
   company_name: string | null;
   industry: string | null;
   website: string | null;
+  notes: string | null;
+  tags: string[];
+  last_contacted_at: string | Date | null;
   created_at: string | Date;
 };
 
@@ -43,7 +46,8 @@ export async function getClientsList(userId: string): Promise<ClientRow[]> {
   return unstable_cache(
     async () => {
       const rows = await sql`
-        SELECT id, name, email, phone, company_name, industry, website, created_at
+        SELECT id, name, email, phone, company_name, industry, website,
+               notes, tags, last_contacted_at, created_at
         FROM clients
         WHERE user_id = ${userId}
         ORDER BY created_at DESC

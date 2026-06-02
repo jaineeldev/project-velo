@@ -63,3 +63,23 @@ export const dateWeekdayFmt = new Intl.DateTimeFormat("en-US", {
   month: "long",
   day: "numeric",
 });
+
+// Compact relative-time helper. Returns "Just now", "5m ago", "3h ago", etc.
+// Null input renders as "Never" so callers can pass nullable columns directly.
+export function timeAgo(value: string | Date | null): string {
+  if (!value) return "Never";
+  const then = new Date(value).getTime();
+  const ms = Date.now() - then;
+  if (ms < 60_000) return "Just now";
+  const minutes = Math.floor(ms / 60_000);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  const weeks = Math.floor(days / 7);
+  if (weeks < 5) return `${weeks}w ago`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months}mo ago`;
+  return `${Math.floor(days / 365)}y ago`;
+}

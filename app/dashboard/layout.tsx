@@ -19,8 +19,9 @@ export default async function DashboardLayout({
   // and this catches the client before the agency layout/onboarding
   // renders even for a frame.
   const roleRows = await sql`
-    SELECT role FROM user_profiles WHERE user_id = ${user.id}
+    SELECT role, suspended_at FROM user_profiles WHERE user_id = ${user.id}
   `;
+  if (roleRows[0]?.suspended_at) redirect("/suspended");
   if (roleRows[0]?.role === "client") redirect("/client/dashboard");
 
   // First-time users get bounced to the welcome flow. Once they submit or

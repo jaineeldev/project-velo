@@ -178,6 +178,19 @@ export async function sendProposal(proposalId: string): Promise<string> {
     WHERE id = ${proposalId} AND user_id = ${user.id} AND status = 'draft'
   `;
 
+  // Bump last_contacted_at on the client so it shows up in the "recently
+  // contacted" sort on the clients list. Subquery + user_id guard keeps this
+  // safe even if proposalId somehow points at another agency's record.
+  await sql`
+    UPDATE clients
+    SET last_contacted_at = now()
+    WHERE id = (
+      SELECT client_id FROM proposals
+      WHERE id = ${proposalId} AND user_id = ${user.id}
+    )
+      AND user_id = ${user.id}
+  `;
+
   await sql`
     INSERT INTO proposal_events (proposal_id, event_type, description)
     VALUES (${proposalId}, 'sent', 'Proposal sent to client')

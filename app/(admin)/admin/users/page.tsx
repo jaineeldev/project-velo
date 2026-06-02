@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { Search, Users as UsersIcon } from "lucide-react";
 import { sql } from "@/lib/db";
 import { requireAdmin } from "@/lib/admin-auth";
 import { cn, focusRing } from "@/lib/utils";
@@ -125,8 +125,16 @@ export default async function AdminUsersPage({
 
       <div className="mt-5 overflow-hidden rounded-lg border border-border bg-card">
         {rows.length === 0 ? (
-          <div className="px-6 py-16 text-center text-sm text-muted-foreground">
-            {query ? "No matches." : "No users in this tab yet."}
+          <div className="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/60">
+              <UsersIcon
+                aria-hidden
+                className="h-5 w-5 text-muted-foreground"
+              />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {query ? "No matches." : "No users in this tab yet."}
+            </p>
           </div>
         ) : (
           <table className="w-full text-sm">

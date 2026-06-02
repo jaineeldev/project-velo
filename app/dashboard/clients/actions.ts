@@ -17,21 +17,70 @@ export async function createClient(formData: FormData) {
     industry: formData.get("industry"),
     website: formData.get("website"),
     notes: formData.get("notes"),
+    tags: formData.get("tags"),
   });
 
   if (!result.success) {
     throw new Error(result.error.issues[0].message);
   }
 
-  const { name, email, phone, companyName, industry, website, notes } = result.data;
+  const { name, email, phone, companyName, industry, website, notes, tags } =
+    result.data;
 
   await sql`
-    INSERT INTO clients (user_id, name, email, phone, company_name, industry, website, notes)
+    INSERT INTO clients (
+      user_id, name, email, phone, company_name, industry, website, notes, tags
+    )
     VALUES (
       ${user.id}, ${name}, ${email}, ${phone},
-      ${companyName}, ${industry}, ${website}, ${notes}
+      ${companyName}, ${industry}, ${website}, ${notes}, ${tags}
     )
   `;
+
+  revalidateTag(clientsTag(user.id));
+  revalidatePath("/dashboard/clients");
+}
+
+export async function updateClient(clientId: string, formData: FormData) {
+  if (!uuidSchema.safeParse(clientId).success) {
+    throw new Error("Client not found.");
+  }
+
+  const user = await getOrCreateUser();
+
+  const result = clientSchema.safeParse({
+    name: formData.get("name"),
+    email: formData.get("email"),
+    phone: formData.get("phone"),
+    companyName: formData.get("companyName"),
+    industry: formData.get("industry"),
+    website: formData.get("website"),
+    notes: formData.get("notes"),
+    tags: formData.get("tags"),
+  });
+
+  if (!result.success) {
+    throw new Error(result.error.issues[0].message);
+  }
+
+  const { name, email, phone, companyName, industry, website, notes, tags } =
+    result.data;
+
+  const rows = await sql`
+    UPDATE clients
+    SET name = ${name},
+        email = ${email},
+        phone = ${phone},
+        company_name = ${companyName},
+        industry = ${industry},
+        website = ${website},
+        notes = ${notes},
+        tags = ${tags}
+    WHERE id = ${clientId} AND user_id = ${user.id}
+    RETURNING id
+  `;
+
+  if (rows.length === 0) throw new Error("Client not found.");
 
   revalidateTag(clientsTag(user.id));
   revalidatePath("/dashboard/clients");

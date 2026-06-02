@@ -26,7 +26,7 @@ const emailExpectations: EmailExpectation[] = [
     icon: MailCheck,
     title: "One email when something material ships",
     detail:
-      "Stripe payments, CRM, team accounts. Not weekly updates, not roadmap teases.",
+      "CRM, team accounts, public API. Not weekly updates, not roadmap teases.",
   },
   {
     icon: Sparkles,
@@ -43,10 +43,10 @@ const emailExpectations: EmailExpectation[] = [
 ];
 
 const whatsComing: string[] = [
-  "Stripe card payments on invoices",
   "CRM upgrade for clients: notes, tags, lead stages, communications log",
   "Team workspaces and roles (owner, admin, member, viewer)",
   "Custom sending domain so proposals stop landing in spam",
+  "Recurring invoices and retainers for ongoing engagements",
 ];
 
 export default function WaitlistPage() {

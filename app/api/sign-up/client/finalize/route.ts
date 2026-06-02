@@ -23,7 +23,7 @@ const TOKEN_RE = /^[0-9a-f]{64}$/;
 
 export async function GET(req: NextRequest) {
   const ip = getClientIp(req.headers);
-  const limit = checkRateLimit(`signup:client:finalize:${ip}`, 20, 60_000);
+  const limit = await checkRateLimit(`signup:client:finalize:${ip}`, 20, 60_000);
   if (!limit.ok) {
     return new NextResponse("Too many requests", {
       status: 429,

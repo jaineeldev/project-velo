@@ -26,7 +26,7 @@ export default function PricingPage() {
         }
         body="14 days, every feature, no credit card. Cancel by closing the tab."
         subtle="If a plan doesn't fit, email me. It's just me building this, and I read every message."
-        secondaryCta={{ label: "Email me", href: "mailto:hello@velo.app" }}
+        secondaryCta={{ label: "Email me", href: "mailto:jaineelk.dev@gmail.com" }}
       />
     </>
   );

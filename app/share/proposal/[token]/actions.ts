@@ -8,12 +8,14 @@ import { getClientIp } from "@/lib/rate-limit";
 import { logSecurityEvent } from "@/lib/security-log";
 import {
   getAppBaseUrl,
-  sendDevChangesRequestedEmail,
-  sendDevProposalApprovedEmail,
   sendInvoiceIssuedEmail,
   sendProposalCommentEmail,
 } from "@/lib/email";
-import { logEmailFailureEvent, notifyDevOfFailure } from "@/lib/notifications";
+import {
+  logEmailFailureEvent,
+  notifyDevOfFailure,
+  sendOperatorNotification,
+} from "@/lib/notifications";
 import { getOrCreateUser } from "@/lib/auth";
 
 // 64 hex chars = 32 random bytes = 256 bits of entropy.
@@ -130,27 +132,18 @@ export async function approveProposal(token: string): Promise<void> {
   const clientName = (row?.client_name as string | null) ?? "";
   const agencyEmail = (row?.agency_email as string | undefined) ?? "";
   const agencyName = (row?.agency_name as string | null) ?? "";
-  const proposalUrl = `${getAppBaseUrl()}/dashboard/proposals/${proposalId}`;
   const projectUrl = `${getAppBaseUrl()}/share/project/${projectShareToken}`;
 
-  // Dev-side: tell the operator their proposal was approved.
-  if (agencyEmail) {
-    try {
-      const res = await sendDevProposalApprovedEmail({
-        to: agencyEmail,
-        agencyName,
-        proposalTitle: (p.title as string) ?? "",
-        clientName,
-        totalAmount: total,
-        proposalUrl,
-      });
-      if (!res.ok) {
-        await logEmailFailureEvent(proposalId, "dev_proposal_approved");
-      }
-    } catch {
-      await logEmailFailureEvent(proposalId, "dev_proposal_approved");
-    }
-  }
+  // Operator notification: fire-and-forget. The approval is already
+  // committed, so the email is best-effort and never blocks this action.
+  sendOperatorNotification(p.user_id as string, {
+    kind: "proposal_approved",
+    proposalId,
+    clientName,
+    proposalTitle: (p.title as string) ?? "",
+    totalAmount: total,
+    projectUrl: `${getAppBaseUrl()}/dashboard/projects/${projectId}`,
+  });
 
   // Client-side: deposit invoice notification. Voided ($0) deposits don't
   // need an email since there's nothing to pay.
@@ -239,36 +232,24 @@ export async function submitChangeRequest(
     )
   `;
 
-  // Dev-side: tell the operator their client wants changes.
-  try {
-    const details = await sql`
-      SELECT
-        p.title AS proposal_title,
-        c.name AS client_name,
-        u.email AS agency_email,
-        u.name AS agency_name
-      FROM proposals p
-      JOIN clients c ON c.id = p.client_id
-      JOIN users u ON u.id = p.user_id
-      WHERE p.id = ${proposalId}
-    `;
-    const row = details[0];
-    const agencyEmail = (row?.agency_email as string | undefined) ?? "";
-    if (agencyEmail) {
-      const res = await sendDevChangesRequestedEmail({
-        to: agencyEmail,
-        agencyName: (row?.agency_name as string | null) ?? "",
-        proposalTitle: (row?.proposal_title as string) ?? "",
-        clientName: (row?.client_name as string | null) ?? "",
-        message: trimmed,
-        proposalUrl: `${getAppBaseUrl()}/dashboard/proposals/${proposalId}`,
-      });
-      if (!res.ok) {
-        await logEmailFailureEvent(proposalId, "dev_changes_requested");
-      }
-    }
-  } catch {
-    await logEmailFailureEvent(proposalId, "dev_changes_requested");
+  // Operator notification: fire-and-forget. Resolves the agency user and
+  // their notifications_enabled flag inside the helper.
+  const details = await sql`
+    SELECT p.user_id, p.title AS proposal_title, c.name AS client_name
+    FROM proposals p
+    JOIN clients c ON c.id = p.client_id
+    WHERE p.id = ${proposalId}
+  `;
+  const row = details[0];
+  if (row?.user_id) {
+    sendOperatorNotification(row.user_id as string, {
+      kind: "changes_requested",
+      proposalId,
+      clientName: (row.client_name as string | null) ?? "",
+      proposalTitle: (row.proposal_title as string | null) ?? "",
+      message: trimmed,
+      proposalUrl: `${getAppBaseUrl()}/dashboard/proposals/${proposalId}`,
+    });
   }
 }
 

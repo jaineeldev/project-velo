@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Wallet } from "lucide-react";
-import { currencyFmt, dateShortFmt, formatStatus } from "@/lib/format";
+import { MessageSquare, Wallet } from "lucide-react";
+import { currencyFmt, formatStatus } from "@/lib/format";
 import { cn, focusRing } from "@/lib/utils";
 import { ListToolbar, NoMatches } from "@/components/list-toolbar";
 
@@ -12,9 +12,7 @@ export type ProposalRow = {
   title: string;
   status: string;
   total_amount: string;
-  share_token: string;
-  agency_name: string | null;
-  sent_at: string | null;
+  client_name: string;
   created_at: string;
 };
 
@@ -22,11 +20,11 @@ export type ProjectRow = {
   id: string;
   title: string;
   status: string;
-  share_token: string;
-  agency_name: string | null;
+  client_name: string;
   milestone_count: number;
   milestones_completed: number;
   has_unpaid_invoice: boolean;
+  has_pending_change_request: boolean;
   created_at: string;
 };
 
@@ -40,10 +38,9 @@ const KIND_OPTIONS = [
   { value: "project", label: "Projects only" },
 ] as const;
 
-// Payment status is a project concept (proposals have no invoice yet). When
-// either 'outstanding' or 'paid' is selected, proposals fall away because the
-// question doesn't apply to them. 'all' is the only setting that keeps
-// proposals in the list.
+// Payment status is a project concept. Picking 'outstanding' or 'paid'
+// drops proposals from the list because the question doesn't apply to
+// them. 'all' is the only setting that keeps proposals in view.
 const PAYMENT_OPTIONS = [
   { value: "all", label: "All payments" },
   { value: "outstanding", label: "Payment outstanding" },
@@ -55,19 +52,17 @@ const SORT_OPTIONS = [
   { value: "oldest", label: "Oldest first" },
 ] as const;
 
-type NeedsAttentionPredicate = (item: DashboardItem) => boolean;
+// Operator's urgency view: client pushed back on a proposal, client filed
+// a CR on an active project that the operator hasn't responded to, or money
+// is still outstanding. Anything else lives in 'All work' until it lands in
+// one of these states.
+const needsAttention = (item: DashboardItem): boolean => {
+  if (item.kind === "proposal") {
+    return item.row.status === "changes_requested";
+  }
+  return item.row.has_unpaid_invoice || item.row.has_pending_change_request;
+};
 
-const needsAttentionPredicate: NeedsAttentionPredicate = (item) =>
-  item.kind === "proposal"
-    ? item.row.status === "sent" ||
-      item.row.status === "changes_requested"
-    : item.row.has_unpaid_invoice;
-
-// Top-level client wrapper for the two filterable sections. Owns the toolbar
-// state so search/filter/sort apply across both lists in lockstep. The
-// 'Needs attention' section is hidden when its filtered slice is empty so
-// the client never sees a header with no rows; 'All work' falls back to the
-// shared NoMatches state instead.
 export function DashboardSections({ items }: { items: DashboardItem[] }) {
   const [search, setSearch] = useState("");
   const [kind, setKind] = useState<string>("all");
@@ -93,10 +88,7 @@ export function DashboardSections({ items }: { items: DashboardItem[] }) {
     return matches;
   }, [items, search, kind, payment, sort]);
 
-  const needsAttention = useMemo(
-    () => filtered.filter(needsAttentionPredicate),
-    [filtered],
-  );
+  const needs = useMemo(() => filtered.filter(needsAttention), [filtered]);
 
   function clear() {
     setSearch("");
@@ -135,9 +127,7 @@ export function DashboardSections({ items }: { items: DashboardItem[] }) {
         ]}
       />
 
-      {needsAttention.length > 0 && (
-        <NeedsAttentionSection items={needsAttention} />
-      )}
+      {needs.length > 0 && <NeedsAttentionSection items={needs} />}
 
       <AllWorkSection items={filtered} onClear={clear} />
     </div>
@@ -203,19 +193,14 @@ function DashboardCard({ item }: { item: DashboardItem }) {
   if (item.kind === "proposal") {
     const p = item.row;
     return (
-      <Link href={`/share/proposal/${p.share_token}`} className={cardClass}>
+      <Link href={`/dashboard/proposals/${p.id}`} className={cardClass}>
         <CardHeader
           kindLabel="Proposal"
           title={p.title}
-          agencyName={p.agency_name}
+          clientName={p.client_name}
           status={p.status}
         />
-        <div className="mt-4 flex items-end justify-between gap-4">
-          <p className="text-xs text-muted-foreground">
-            {p.sent_at
-              ? `Sent ${dateShortFmt.format(new Date(p.sent_at))}`
-              : ""}
-          </p>
+        <div className="mt-4 flex items-end justify-end gap-4">
           <div className="text-right">
             <p className="text-sm font-medium tabular-nums text-foreground">
               {currencyFmt.format(Number(p.total_amount))}
@@ -235,11 +220,11 @@ function DashboardCard({ item }: { item: DashboardItem }) {
   const pct = total === 0 ? 0 : Math.round((done / total) * 100);
 
   return (
-    <Link href={`/share/project/${pr.share_token}`} className={cardClass}>
+    <Link href={`/dashboard/projects/${pr.id}`} className={cardClass}>
       <CardHeader
         kindLabel="Project"
         title={pr.title}
-        agencyName={pr.agency_name}
+        clientName={pr.client_name}
         status={pr.status}
       />
       <div className="mt-4">
@@ -263,19 +248,49 @@ function DashboardCard({ item }: { item: DashboardItem }) {
           />
         </div>
       </div>
-      {pr.has_unpaid_invoice && (
-        <div className="mt-3">
-          <PaymentPill label="Payment outstanding" />
+      {(pr.has_pending_change_request || pr.has_unpaid_invoice) && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {pr.has_pending_change_request && (
+            <Pill
+              icon={<MessageSquare aria-hidden className="h-3.5 w-3.5" />}
+              label="Change request pending"
+              tone="neutral"
+            />
+          )}
+          {pr.has_unpaid_invoice && (
+            <Pill
+              icon={<Wallet aria-hidden className="h-3.5 w-3.5" />}
+              label="Payment outstanding"
+              tone="amber"
+            />
+          )}
         </div>
       )}
     </Link>
   );
 }
 
-function PaymentPill({ label }: { label: string }) {
+function Pill({
+  icon,
+  label,
+  tone,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  tone: "amber" | "neutral";
+}) {
+  const toneClass =
+    tone === "amber"
+      ? "border-amber-200 bg-amber-50 text-amber-700"
+      : "border-border bg-muted text-foreground";
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
-      <Wallet aria-hidden className="h-3.5 w-3.5" />
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium",
+        toneClass,
+      )}
+    >
+      {icon}
       {label}
     </span>
   );
@@ -284,12 +299,12 @@ function PaymentPill({ label }: { label: string }) {
 function CardHeader({
   kindLabel,
   title,
-  agencyName,
+  clientName,
   status,
 }: {
   kindLabel: string;
   title: string;
-  agencyName: string | null;
+  clientName: string;
   status: string;
 }) {
   return (
@@ -297,7 +312,7 @@ function CardHeader({
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-foreground">{title}</p>
         <p className="mt-1 truncate text-xs text-muted-foreground">
-          {kindLabel} · {agencyName ?? "Agency"}
+          {kindLabel} · {clientName}
         </p>
       </div>
       <StatusBadge status={status} />

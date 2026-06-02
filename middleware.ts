@@ -48,7 +48,7 @@ export default clerkMiddleware(async (auth, req) => {
   if (isSharePath(req)) {
     const scope = isShareProposal(req) ? "share:proposal" : "share:project";
     const ip = getClientIp(req.headers);
-    const result = checkRateLimit(`${scope}:${ip}`, 30, 60_000);
+    const result = await checkRateLimit(`${scope}:${ip}`, 30, 60_000);
     if (!result.ok) {
       logSecurityEvent({
         event: "rate_limit_blocked",

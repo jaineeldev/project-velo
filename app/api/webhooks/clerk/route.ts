@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   // webhook traffic is tiny (user.created on signup), so 60/min is well above
   // legitimate use and well below what an attacker would need to be a problem.
   const ip = getClientIp(req.headers);
-  const limit = checkRateLimit(`webhook:clerk:${ip}`, 60, 60_000);
+  const limit = await checkRateLimit(`webhook:clerk:${ip}`, 60, 60_000);
   if (!limit.ok) {
     return new Response("Too many requests", {
       status: 429,

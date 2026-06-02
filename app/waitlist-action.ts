@@ -33,7 +33,7 @@ export async function submitWaitlist(input: SubmitWaitlistInput): Promise<void> 
 
   const headerStore = await headers();
   const ip = getClientIp(headerStore);
-  const limit = checkRateLimit(`waitlist:${ip}`, LIMIT_PER_HOUR, 60 * 60 * 1000);
+  const limit = await checkRateLimit(`waitlist:${ip}`, LIMIT_PER_HOUR, 60 * 60 * 1000);
   if (!limit.ok) {
     throw new Error(
       `Too many sign-ups from this network. Try again in ${limit.retryAfterSeconds}s.`,

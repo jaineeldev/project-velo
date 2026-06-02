@@ -105,6 +105,33 @@ export const clientSchema = z.object({
       .max(1000, "Notes must be 1000 characters or fewer")
       .nullable(),
   ),
+
+  // Freeform tags. Accepts either a string (comma-separated from the form
+  // input) or an already-parsed array. Tags are lowercased and de-duped here
+  // so the stored shape is always canonical.
+  tags: z.preprocess(
+    (val) => {
+      const raw = Array.isArray(val)
+        ? val.map((v) => String(v))
+        : (toTrimmedStringOrNull(val) ?? "").split(",");
+      const cleaned = raw
+        .map((t) => t.trim().toLowerCase())
+        .filter(Boolean);
+      return Array.from(new Set(cleaned));
+    },
+    z
+      .array(
+        z
+          .string()
+          .min(1)
+          .max(40, "Each tag must be 40 characters or fewer")
+          .regex(
+            /^[a-z0-9 _-]+$/,
+            "Tags can only contain letters, numbers, spaces, hyphens, and underscores",
+          ),
+      )
+      .max(10, "You can have at most 10 tags per client"),
+  ),
 });
 
 export type ClientInput = z.infer<typeof clientSchema>;

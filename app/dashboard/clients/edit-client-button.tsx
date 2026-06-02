@@ -1,11 +1,13 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import { Pencil } from "lucide-react";
 import { cn, focusRing } from "@/lib/utils";
-import { createClient } from "./actions";
+import { updateClient } from "./actions";
 import { ClientFormFields } from "./client-form-fields";
+import type { ClientRow } from "@/lib/clients-data";
 
-export function NewClientButton() {
+export function EditClientButton({ client }: { client: ClientRow }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -23,8 +25,7 @@ export function NewClientButton() {
 
     startTransition(async () => {
       try {
-        await createClient(formData);
-        form.reset();
+        await updateClient(client.id, formData);
         close();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Something went wrong");
@@ -37,12 +38,14 @@ export function NewClientButton() {
       <button
         type="button"
         onClick={open}
+        aria-label={`Edit ${client.name}`}
         className={cn(
-          "rounded-md bg-neutral-900 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200",
+          "inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
           focusRing,
         )}
       >
-        New client
+        <Pencil aria-hidden className="h-3.5 w-3.5" />
+        Edit
       </button>
 
       <dialog
@@ -51,14 +54,14 @@ export function NewClientButton() {
         className="w-full max-w-lg rounded-lg border border-neutral-200 bg-white p-6 shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900"
       >
         <h2 className="text-base font-medium text-neutral-900 dark:text-neutral-100">
-          New client
+          Edit client
         </h2>
         <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-          Add a client to start sending proposals.
+          Update this client&apos;s details.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          <ClientFormFields />
+          <ClientFormFields client={client} />
 
           {error && (
             <p
@@ -90,7 +93,7 @@ export function NewClientButton() {
                 focusRing,
               )}
             >
-              {isPending ? "Saving…" : "Save client"}
+              {isPending ? "Saving…" : "Save changes"}
             </button>
           </div>
         </form>

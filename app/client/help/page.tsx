@@ -33,14 +33,14 @@ export default function ClientHelpPage() {
           reach me directly.
         </p>
         <a
-          href="mailto:hello@velo.au"
+          href="mailto:jaineelk.dev@gmail.com"
           className={cn(
             "mt-4 inline-flex items-center gap-2 rounded-md border border-border bg-card px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent",
             focusRing,
           )}
         >
           <Mail aria-hidden className="h-4 w-4" />
-          hello@velo.au
+          jaineelk.dev@gmail.com
         </a>
       </section>
 

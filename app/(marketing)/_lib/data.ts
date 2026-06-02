@@ -160,7 +160,7 @@ export const plans: Plan[] = [
       { label: "Client portal" },
       { label: "GST support" },
       { label: "PDF export" },
-      { label: "Stripe payments", comingSoon: true },
+      { label: "Stripe payments on invoices" },
     ],
     cta: { label: "Join the waitlist", href: "/waitlist" },
   },
@@ -235,7 +235,7 @@ export const faqs: Faq[] = [
   },
   {
     q: "How do I get paid?",
-    a: "Invoices are PDFs with your bank details, and clients pay you directly. Native payments aren't part of v1.",
+    a: "Clients pay invoices by card through Stripe, directly on the share link. If they'd rather not pay by card, your invoice PDF still includes your bank details for a manual transfer.",
   },
   {
     q: "Is my data secure?",
@@ -268,11 +268,6 @@ export const stillRoughGroups: RoughGroup[] = [
         title: "Email sometimes lands in spam",
         detail:
           "Sending from Resend's shared sender while I verify a custom domain.",
-      },
-      {
-        title: "Rate limiting resets on restart",
-        detail:
-          "Counters live in memory today. Upstash Redis is on the way before public beta.",
       },
       {
         title: "No public API or webhooks",
@@ -335,11 +330,6 @@ export const stillRoughGroups: RoughGroup[] = [
           "Every invoice is one-off. Monthly retainers and subscription billing are on the roadmap.",
       },
       {
-        title: "Payments are bank-transfer PDFs",
-        detail:
-          "Invoices include your bank details. Native Stripe payments are on the roadmap.",
-      },
-      {
         title: "No automated payment reminders",
         detail:
           "Invoices don't chase themselves. You'll nudge late-paying clients by hand until reminder workflows ship.",
@@ -368,11 +358,6 @@ export const whatsNextItems: { title: string; detail: string }[] = [
     title: "Custom sending domain for email",
     detail:
       "Verifying my own domain so proposals stop landing in client spam folders.",
-  },
-  {
-    title: "Stripe payments",
-    detail:
-      "Native card payments on invoices, replacing the bank-transfer-PDF flow.",
   },
   {
     title: "CRM upgrade for clients",

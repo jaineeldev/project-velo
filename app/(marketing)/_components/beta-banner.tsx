@@ -16,7 +16,7 @@ export function BetaBanner() {
           </span>
           <span>. Expect rough edges. </span>
           <a
-            href="mailto:hello@velo.app"
+            href="mailto:jaineelk.dev@gmail.com"
             className={cn(
               "rounded-sm font-medium text-primary underline-offset-2 hover:underline",
               focusRing,

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Shield } from "lucide-react";
 import { sql } from "@/lib/db";
 import { requireAdmin } from "@/lib/admin-auth";
 import { cn, focusRing } from "@/lib/utils";
@@ -51,6 +52,21 @@ function outcomeStyle(outcome: EventRow["outcome"]): string {
       return "border-warning/40 bg-warning/10 text-foreground";
     case "failure":
       return "border-destructive/40 bg-destructive/15 text-foreground";
+  }
+}
+
+// Outcome dot colour. Spec maps allowed=green, denied=red, warning=yellow.
+// In our schema "denied" is the access-denied case (warning-amber) and
+// "failure" is the harder fault case (destructive-red), so the dot picks
+// the colour that matches the user's mental model.
+function outcomeDot(outcome: EventRow["outcome"]): string {
+  switch (outcome) {
+    case "success":
+      return "bg-success";
+    case "denied":
+      return "bg-warning";
+    case "failure":
+      return "bg-destructive";
   }
 }
 
@@ -138,17 +154,25 @@ export default async function AdminSecurityPage({
         {(range !== "7d" || outcome !== "any" || typeFilter) && (
           <Link
             href="/admin/security"
-            className="h-9 text-xs text-muted-foreground hover:text-foreground"
+            className={cn(
+              "inline-flex h-9 items-center rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground",
+              focusRing,
+            )}
           >
-            Reset
+            Clear filters
           </Link>
         )}
       </form>
 
       <div className="mt-6 overflow-hidden rounded-lg border border-border bg-card">
         {rows.length === 0 ? (
-          <div className="px-6 py-16 text-center text-sm text-muted-foreground">
-            No events match the current filter.
+          <div className="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/60">
+              <Shield aria-hidden className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              No events match the current filter.
+            </p>
           </div>
         ) : (
           <table className="w-full text-sm">
@@ -179,10 +203,17 @@ export default async function AdminSecurityPage({
                   <td className="px-5 py-3">
                     <span
                       className={cn(
-                        "rounded-md border px-2 py-0.5 text-xs font-medium uppercase tracking-wider",
+                        "inline-flex items-center gap-2 rounded-md border px-2 py-0.5 text-xs font-medium uppercase tracking-wider",
                         outcomeStyle(ev.outcome),
                       )}
                     >
+                      <span
+                        aria-hidden
+                        className={cn(
+                          "inline-block h-2 w-2 rounded-full",
+                          outcomeDot(ev.outcome),
+                        )}
+                      />
                       {ev.outcome}
                     </span>
                   </td>

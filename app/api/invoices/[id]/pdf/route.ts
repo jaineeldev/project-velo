@@ -19,7 +19,7 @@ export async function GET(
 ) {
   const user = await getOrCreateUser();
 
-  const limit = checkRateLimit(`pdf:user:${user.id}`, 10, 60_000);
+  const limit = await checkRateLimit(`pdf:user:${user.id}`, 10, 60_000);
   if (!limit.ok) {
     return new NextResponse("Too many requests", {
       status: 429,

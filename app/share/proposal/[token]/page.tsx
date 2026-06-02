@@ -6,11 +6,12 @@ import { CheckCircle2, Lock, MessageSquare } from "lucide-react";
 import { sql } from "@/lib/db";
 import { getClientIp } from "@/lib/rate-limit";
 import { logSecurityEvent } from "@/lib/security-log";
+import { getAppBaseUrl } from "@/lib/email";
+import { sendOperatorNotification } from "@/lib/notifications";
 import { currencyFmt, dateTimeFmt, splitGst } from "@/lib/format";
 import { cn, focusRing } from "@/lib/utils";
 import { ProposalActions } from "./proposal-actions";
 import { ShareBackLink } from "@/components/share-back-link";
-import { SharePaymentButton } from "@/components/share-payment-button";
 import {
   ProposalComments,
   type ProposalCommentRow,
@@ -111,6 +112,57 @@ async function getPublicProposal(token: string) {
   };
 }
 
+// Fire-and-forget: writes a one-time proposal_viewed event and pings the
+// operator the first time their client opens the share link. The
+// INSERT ... WHERE NOT EXISTS makes the write idempotent at the single-
+// statement level. No-op if the viewer is the proposal's owning agency
+// user — operators load-testing their own link should never ping
+// themselves.
+async function triggerFirstViewNotification(
+  token: string,
+  clerkUserId: string,
+): Promise<void> {
+  try {
+    const ownerRows = await sql`
+      SELECT p.id, p.user_id, p.title,
+             c.name AS client_name,
+             u.clerk_id AS owner_clerk_id
+      FROM proposals p
+      JOIN clients c ON c.id = p.client_id
+      JOIN users u ON u.id = p.user_id
+      WHERE p.share_token = ${token}
+        AND p.status <> 'draft'
+    `;
+    const owner = ownerRows[0];
+    if (!owner) return;
+    if (owner.owner_clerk_id === clerkUserId) return;
+
+    const proposalId = owner.id as string;
+    const inserted = await sql`
+      INSERT INTO proposal_events (proposal_id, event_type, description)
+      SELECT ${proposalId}, 'proposal_viewed', 'Client viewed the proposal'
+      WHERE NOT EXISTS (
+        SELECT 1 FROM proposal_events
+        WHERE proposal_id = ${proposalId} AND event_type = 'proposal_viewed'
+      )
+      RETURNING id
+    `;
+    if (inserted.length === 0) return;
+
+    sendOperatorNotification(owner.user_id as string, {
+      kind: "proposal_viewed",
+      proposalId,
+      clientName: (owner.client_name as string | null) ?? "",
+      proposalTitle: (owner.title as string | null) ?? "",
+      viewedAt: new Date(),
+      proposalUrl: `${getAppBaseUrl()}/dashboard/proposals/${proposalId}`,
+    });
+  } catch {
+    // Best-effort: a view-tracking miss is acceptable. The page render
+    // path must never fail because the notification side-channel did.
+  }
+}
+
 export default async function ShareProposalPage({
   params,
 }: {
@@ -155,6 +207,14 @@ export default async function ShareProposalPage({
     `;
     const r = roleRows[0]?.role;
     if (r === "client" || r === "agency") viewerRole = r;
+  }
+
+  // First-view notification. Fires once per proposal, idempotency keyed by
+  // the proposal_viewed row in proposal_events (INSERT ... WHERE NOT EXISTS
+  // returns zero rows on subsequent loads). Skipped when the agency owner
+  // is viewing their own share link, so test-views don't ping themselves.
+  if (userId) {
+    void triggerFirstViewNotification(params.token, userId);
   }
 
   // Clients land on the dashboard for "delivered" — there's nothing left
@@ -319,17 +379,14 @@ export default async function ShareProposalPage({
                 {depositPct > 0 && (
                   <div className="mt-6 border-t border-border pt-5">
                     {deposit > 0 ? (
-                      <>
+                      <div className="flex items-center justify-between gap-4">
                         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                           Deposit owed
                         </p>
-                        <div className="mt-3">
-                          <SharePaymentButton
-                            label="Pay deposit"
-                            amount={currencyFmt.format(deposit)}
-                          />
-                        </div>
-                      </>
+                        <span className="font-mono text-sm tabular-nums text-foreground">
+                          {currencyFmt.format(deposit)}
+                        </span>
+                      </div>
                     ) : (
                       <div className="flex items-center justify-between gap-4">
                         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">

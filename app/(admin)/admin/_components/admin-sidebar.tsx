@@ -37,7 +37,7 @@ export function AdminSidebar() {
 
   return (
     <aside className="hidden h-screen w-60 shrink-0 flex-col border-r border-border bg-card md:flex">
-      <div className="flex h-14 items-center justify-between border-b border-border px-5">
+      <div className="mb-2 flex h-14 items-center justify-between border-b border-white/10 px-5 pb-4">
         <div className="flex items-center gap-2.5">
           <span
             aria-hidden
@@ -52,7 +52,7 @@ export function AdminSidebar() {
         </div>
       </div>
 
-      <nav className="flex-1 space-y-0.5 overflow-y-auto p-3">
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 pb-3">
         {navItems.map(({ href, label, icon: Icon }) => {
           const active = isActive(pathname, href);
           return (
@@ -61,26 +61,19 @@ export function AdminSidebar() {
               href={href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "group relative flex items-center gap-3 rounded-md py-2 pl-4 pr-3 text-sm font-medium transition-colors",
+                "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                 active
-                  ? "bg-accent text-foreground"
+                  ? "bg-white/10 text-white"
                   : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
                 focusRing,
               )}
             >
-              <span
-                aria-hidden
-                className={cn(
-                  "absolute left-0 top-1 bottom-1 w-[3px] rounded-r-full transition-colors",
-                  active ? "bg-primary" : "bg-transparent",
-                )}
-              />
               <Icon
                 aria-hidden
                 className={cn(
                   "h-4 w-4 shrink-0 transition-colors",
                   active
-                    ? "text-foreground"
+                    ? "text-white"
                     : "text-muted-foreground group-hover:text-foreground",
                 )}
               />

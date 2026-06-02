@@ -1,7 +1,8 @@
-import { Download } from "lucide-react";
+import { Download, Mail } from "lucide-react";
 import { sql } from "@/lib/db";
 import { requireAdmin } from "@/lib/admin-auth";
 import { cn, focusRing } from "@/lib/utils";
+import { CopyEmailButton } from "./copy-email-button";
 
 export const dynamic = "force-dynamic";
 
@@ -82,8 +83,13 @@ export default async function AdminWaitlistPage() {
 
       <div className="mt-6 overflow-hidden rounded-lg border border-border bg-card">
         {rows.length === 0 ? (
-          <div className="px-6 py-16 text-center text-sm text-muted-foreground">
-            No waitlist signups yet.
+          <div className="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/60">
+              <Mail aria-hidden className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              No waitlist signups yet.
+            </p>
           </div>
         ) : (
           <table className="w-full text-sm">
@@ -95,6 +101,7 @@ export default async function AdminWaitlistPage() {
                 <th className="px-5 py-3 text-right font-medium">
                   Unsubscribed
                 </th>
+                <th className="w-1 px-5 py-3" aria-hidden />
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -124,6 +131,9 @@ export default async function AdminWaitlistPage() {
                       {r.unsubscribed_at
                         ? shortDateTime(r.unsubscribed_at)
                         : "·"}
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <CopyEmailButton email={r.email} />
                     </td>
                   </tr>
                 );

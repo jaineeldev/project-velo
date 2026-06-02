@@ -65,8 +65,8 @@ export function Waitlist() {
         Stay in the <span className="text-primary">loop.</span>
       </h3>
       <p className="mx-auto mt-5 max-w-md text-base leading-relaxed text-white/60">
-        One email when something material ships: Stripe payments, CRM,
-        team accounts. No marketing, no calendar invites.
+        One email when something material ships: CRM, team accounts, public
+        API. No marketing, no calendar invites.
       </p>
 
       {sent ? (

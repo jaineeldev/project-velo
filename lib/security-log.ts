@@ -20,7 +20,10 @@ export type SecurityEventType =
   | "client_role_finalize_invalid"
   | "comment_authorization_failed"
   | "admin_access_denied"
-  | "admin_export";
+  | "admin_export"
+  | "admin_account_suspended"
+  | "admin_account_unsuspended"
+  | "notification_failed";
 
 export type SecurityOutcome = "success" | "failure" | "denied";
 

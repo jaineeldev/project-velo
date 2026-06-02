@@ -77,7 +77,7 @@ export function PricingSection({
                   "ml-2 rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
                   billing === "annual"
                     ? "bg-primary/15 text-primary"
-                    : "bg-white/10 text-white/60",
+                    : "bg-white/15 text-white/80",
                 )}
               >
                 Save 20%
@@ -124,13 +124,13 @@ export function PricingSection({
                     <p className="mt-1 text-xs text-white/40">
                       {plan.description}
                     </p>
-                    <div className="mt-4 flex items-baseline gap-1">
+                    <div className="mt-4 flex flex-wrap items-baseline gap-x-1 gap-y-0">
                       {plan.priceFrom ? (
                         <span className="text-sm font-semibold text-white/60">
                           From
                         </span>
                       ) : null}
-                      <span className="text-5xl font-extrabold leading-none tracking-[-0.04em] text-white tabular-nums">
+                      <span className="text-4xl font-extrabold leading-none tracking-[-0.04em] text-white tabular-nums xl:text-5xl">
                         AU${priceDisplay}
                       </span>
                       <span className="text-sm text-white/60">/mo</span>
@@ -267,19 +267,11 @@ export function PricingSection({
 
         <motion.p
           variants={item}
-          className="mt-4 text-center text-xs text-white/30"
-        >
-          Invoices are currently settled via bank transfer. Native card payments
-          through Stripe are coming in Q3 2026.
-        </motion.p>
-
-        <motion.p
-          variants={item}
           className="mt-14 text-center text-sm text-white/60"
         >
           More features rolling out through 2026. Got something you need?{" "}
           <a
-            href="mailto:hello@velo.app?subject=Velo%20feature%20request"
+            href="mailto:jaineelk.dev@gmail.com?subject=Velo%20feature%20request"
             className={cn(
               "rounded-sm font-semibold text-primary underline-offset-2 hover:underline",
               focusRing,

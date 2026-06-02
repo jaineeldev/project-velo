@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Inbox, ShieldOff } from "lucide-react";
 import { sql } from "@/lib/db";
 import { requireAdmin } from "@/lib/admin-auth";
 import { cn, focusRing } from "@/lib/utils";
+import { SuspendButtons } from "./suspend-buttons";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,7 @@ type UserDetail = {
   state: string | null;
   postcode: string | null;
   onboarded_at: string | null;
+  suspended_at: string | null;
 };
 
 type EventRow = {
@@ -77,7 +79,8 @@ export default async function AdminUserDetailPage({
       up.city,
       up.state,
       up.postcode,
-      up.onboarded_at
+      up.onboarded_at,
+      up.suspended_at
     FROM users u
     LEFT JOIN user_profiles up ON up.user_id = u.id
     WHERE u.clerk_id = ${clerkId}
@@ -153,7 +156,7 @@ export default async function AdminUserDetailPage({
         Back to users
       </Link>
 
-      <header className="mt-4 flex items-end justify-between gap-6">
+      <header className="mt-4 flex flex-wrap items-end justify-between gap-6">
         <div className="min-w-0">
           <h1 className="truncate text-xl font-semibold tracking-tight text-foreground">
             {user.name || user.email}
@@ -162,8 +165,33 @@ export default async function AdminUserDetailPage({
             {user.email}
           </p>
         </div>
-        <RoleBadge role={user.role} />
+        <div className="flex flex-col items-end gap-3">
+          <div className="flex items-center gap-2">
+            {user.suspended_at ? <SuspendedBadge /> : null}
+            <RoleBadge role={user.role} />
+          </div>
+          <SuspendButtons
+            clerkId={user.clerk_id}
+            isSuspended={Boolean(user.suspended_at)}
+          />
+        </div>
       </header>
+
+      {user.suspended_at ? (
+        <div className="mt-6 flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm">
+          <ShieldOff
+            aria-hidden
+            className="mt-0.5 h-4 w-4 shrink-0 text-destructive"
+          />
+          <div className="min-w-0">
+            <p className="font-medium text-foreground">Account suspended</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Since {shortDateTime(user.suspended_at)}. The user is redirected
+              to /suspended on every protected route until unsuspended.
+            </p>
+          </div>
+        </div>
+      ) : null}
 
       <section className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Field label="Clerk ID" mono value={user.clerk_id} />
@@ -208,8 +236,16 @@ export default async function AdminUserDetailPage({
           </h2>
           <div className="mt-3 overflow-hidden rounded-lg border border-border bg-card">
             {recentEvents.length === 0 ? (
-              <div className="px-5 py-10 text-center text-sm text-muted-foreground">
-                No proposal activity yet.
+              <div className="flex flex-col items-center justify-center gap-3 px-6 py-12 text-center">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/60">
+                  <Inbox
+                    aria-hidden
+                    className="h-5 w-5 text-muted-foreground"
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  No proposal activity yet.
+                </p>
               </div>
             ) : (
               <ul className="divide-y divide-border">
@@ -244,8 +280,16 @@ export default async function AdminUserDetailPage({
           </h2>
           <div className="mt-3 overflow-hidden rounded-lg border border-border bg-card">
             {clientProposals.length === 0 ? (
-              <div className="px-5 py-10 text-center text-sm text-muted-foreground">
-                No proposals linked to this email.
+              <div className="flex flex-col items-center justify-center gap-3 px-6 py-12 text-center">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/60">
+                  <Inbox
+                    aria-hidden
+                    className="h-5 w-5 text-muted-foreground"
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  No proposals linked to this email.
+                </p>
               </div>
             ) : (
               <table className="w-full text-sm">
@@ -337,6 +381,15 @@ function Stat({ label, value }: { label: string; value: number }) {
         {value.toLocaleString()}
       </div>
     </div>
+  );
+}
+
+function SuspendedBadge() {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-md border border-destructive/40 bg-destructive/15 px-2 py-1 text-xs font-medium uppercase tracking-wider text-foreground">
+      <ShieldOff aria-hidden className="h-3 w-3 text-destructive" />
+      Suspended
+    </span>
   );
 }
 

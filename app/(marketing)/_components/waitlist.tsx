@@ -3,12 +3,9 @@
 import { useState, useTransition } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
-import { cn, focusRing } from "@/lib/utils";
 import { EASE_OUT } from "../_lib/shared";
 import { submitWaitlist } from "@/app/waitlist-action";
 
-// Quiet waitlist form. Used on /about under the early-beta note. Posts to the
-// existing server action.
 export function Waitlist() {
   const prefersReduced = useReducedMotion();
   const [email, setEmail] = useState("");
@@ -23,9 +20,9 @@ export function Waitlist() {
         transition: { duration: 0 },
       }
     : {
-        initial: { opacity: 0, y: 20 },
+        initial: { opacity: 0, y: 16 },
         whileInView: { opacity: 1, y: 0 },
-        transition: { duration: 0.7, ease: EASE_OUT },
+        transition: { duration: 0.5, ease: EASE_OUT },
       };
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -56,35 +53,39 @@ export function Waitlist() {
     <motion.div
       {...fadeUp}
       viewport={{ once: true, amount: 0.3 }}
-      className="text-center"
+      className="rounded-xl border border-[#2A2A2A] bg-[#111] p-8 text-center sm:p-10"
     >
-      <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
+      <p className="mb-4 font-mono text-xs uppercase tracking-widest text-[#555]">
         Get notified
       </p>
-      <h3 className="mt-6 text-balance text-4xl font-extrabold leading-[1] tracking-[-0.03em] text-white sm:text-5xl">
-        Stay in the <span className="text-primary">loop.</span>
+      <h3 className="font-display text-3xl font-black leading-[0.95] tracking-tight text-white sm:text-4xl">
+        Stay in the <span className="text-[#4F7EF7]">loop.</span>
       </h3>
-      <p className="mx-auto mt-5 max-w-md text-base leading-relaxed text-white/60">
+      <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-[#A0A0A0]">
         One email when something material ships: CRM, team accounts, public
         API. No marketing, no calendar invites.
       </p>
 
       {sent ? (
         <div role="status" className="mx-auto mt-8 max-w-md">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white">
-            <CheckCircle2 aria-hidden className="h-4 w-4 text-primary" />
+          <div className="inline-flex items-center gap-2 rounded-lg border border-[#2A2A2A] bg-[#1A1A1A] px-4 py-3 text-sm font-medium text-white">
+            <CheckCircle2
+              aria-hidden
+              className="h-4 w-4 text-[#22C55E]"
+              strokeWidth={2}
+            />
             You&apos;re on the list.
           </div>
-          <p className="mt-4 text-sm text-white/55">
+          <p className="mt-4 text-sm text-[#A0A0A0]">
             Check your inbox for a confirmation from{" "}
-            <span className="text-white/75">onboarding@resend.dev</span>. If
-            it&apos;s not there in a minute, peek in spam.
+            <span className="font-mono text-white">onboarding@resend.dev</span>
+            . If it&apos;s not there in a minute, peek in spam.
           </p>
         </div>
       ) : (
         <form
           onSubmit={handleSubmit}
-          className="mx-auto mt-8 flex max-w-md flex-col gap-2 sm:flex-row"
+          className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:flex-row"
         >
           <label htmlFor="waitlist-email" className="sr-only">
             Email address
@@ -97,18 +98,12 @@ export function Waitlist() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={isPending}
-            className={cn(
-              "h-11 flex-1 rounded-full border border-white/15 bg-white/[0.04] px-5 text-sm text-white placeholder:text-white/40 transition-colors focus:border-white/40 focus:outline-none disabled:opacity-50",
-              focusRing,
-            )}
+            className="h-12 flex-1 rounded-lg border border-[#2A2A2A] bg-[#0A0A0A] px-4 text-sm font-medium text-white placeholder:text-[#555] focus:border-[#4F7EF7] focus:outline-none focus:ring-2 focus:ring-[#4F7EF7]/30 disabled:opacity-50"
           />
           <button
             type="submit"
             disabled={isPending}
-            className={cn(
-              "inline-flex h-11 items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:opacity-60",
-              focusRing,
-            )}
+            className="inline-flex h-12 items-center justify-center rounded-lg bg-[#4F7EF7] px-6 text-sm font-bold text-white transition-colors hover:bg-[#3B6AE8] disabled:opacity-60"
           >
             {isPending ? "Saving…" : "Notify me"}
           </button>
@@ -116,7 +111,7 @@ export function Waitlist() {
       )}
 
       {error ? (
-        <p role="alert" className="mt-3 text-sm text-red-400">
+        <p role="alert" className="mt-3 text-sm font-medium text-[#EF4444]">
           {error}
         </p>
       ) : null}

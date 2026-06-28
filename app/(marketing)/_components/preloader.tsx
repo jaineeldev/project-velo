@@ -5,9 +5,9 @@ import { useEffect, useRef, useState } from "react";
 import { EASE_OUT } from "../_lib/shared";
 
 const BAR_START_DELAY_MS = 350;
-const BAR_FILL_MS = 1800;
-const BAR_FULL_HOLD_MS = 700;
-const FADE_OUT_MS = 550;
+const BAR_FILL_MS = 1600;
+const BAR_FULL_HOLD_MS = 600;
+const FADE_OUT_MS = 500;
 const PRELOADER_SEEN_KEY = "velo-preloader-seen";
 
 const TAGLINES = [
@@ -18,9 +18,8 @@ const TAGLINES = [
   "AU-only for now.",
 ];
 
-// Shows once per session on first marketing-page load. The `onReady` callback
-// fires when the preloader resolves, so downstream effects (like GeoNotice)
-// don't surface before the first impression lands.
+// Shows once per session on first marketing-page load. Now lives on the warm
+// canvas surface, matched to the rest of the marketing site.
 export function Preloader({ onReady }: { onReady?: () => void }) {
   const prefersReduced = useReducedMotion();
   const [show, setShow] = useState(false);
@@ -37,7 +36,7 @@ export function Preloader({ onReady }: { onReady?: () => void }) {
     try {
       seen = window.sessionStorage.getItem(PRELOADER_SEEN_KEY) === "1";
     } catch {
-      // Private browsing / blocked storage. Treat as unseen.
+      // ignore
     }
     if (seen) {
       onReady?.();
@@ -58,9 +57,6 @@ export function Preloader({ onReady }: { onReady?: () => void }) {
     };
   }, [prefersReduced, onReady]);
 
-  // Only schedule the dismiss AFTER the bar's animation has actually finished.
-  // Relying on a single setTimeout that runs in parallel with the bar can fire
-  // early under timer throttling, leaving the bar mid-fill when the fade starts.
   function handleBarComplete() {
     if (barCompletedRef.current) return;
     barCompletedRef.current = true;
@@ -77,7 +73,7 @@ export function Preloader({ onReady }: { onReady?: () => void }) {
           key="preloader"
           role="status"
           aria-label="Loading Velo"
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#0d0d0f]"
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#0A0A0A]"
           initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -87,14 +83,14 @@ export function Preloader({ onReady }: { onReady?: () => void }) {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1, ease: EASE_OUT }}
-            className="inline-flex items-baseline text-6xl font-extrabold leading-none tracking-[-0.04em] text-white sm:text-7xl"
+            className="inline-flex items-baseline font-display text-6xl font-black leading-none tracking-[-0.05em] text-white sm:text-7xl"
           >
             Velo
-            <span className="text-primary">.</span>
+            <span className="text-[#4F7EF7]">.</span>
           </motion.span>
 
           <div
-            className="relative mt-10 h-[3px] w-44 overflow-hidden bg-white/[0.08] sm:w-56"
+            className="relative mt-10 h-[2px] w-44 overflow-hidden bg-[#2A2A2A] sm:w-56"
             aria-hidden
           >
             <motion.div
@@ -107,7 +103,7 @@ export function Preloader({ onReady }: { onReady?: () => void }) {
               }}
               style={{ transformOrigin: "left" }}
               onAnimationComplete={handleBarComplete}
-              className="absolute inset-0 bg-primary"
+              className="absolute inset-0 bg-[#4F7EF7]"
             />
           </div>
 
@@ -115,7 +111,7 @@ export function Preloader({ onReady }: { onReady?: () => void }) {
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.6, ease: EASE_OUT }}
-            className="mt-5 max-w-[20rem] text-balance text-center text-[11px] font-medium uppercase tracking-[0.22em] text-white/40"
+            className="mt-5 max-w-[20rem] text-balance text-center font-mono text-[11px] font-medium uppercase tracking-[0.22em] text-[#555]"
           >
             {tagline}
           </motion.p>

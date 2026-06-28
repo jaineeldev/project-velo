@@ -1,34 +1,36 @@
-import { trustItems } from "../_lib/data";
+import { CreditCard, Receipt, Shield, Zap, type LucideIcon } from "lucide-react";
 
-// Trust row, dark surface. Leads with a live-status chip so the brand's
-// emerald 'approved' colour anchors the strip; the rest of the items
-// separate with the existing primary dots.
+const items: { icon: LucideIcon; label: string }[] = [
+  { icon: Shield, label: "Secure client accounts" },
+  { icon: Zap, label: "Automated workflow" },
+  { icon: Receipt, label: "GST ready invoicing" },
+  { icon: CreditCard, label: "Stripe payments" },
+];
+
 export function TrustStrip() {
   return (
-    <div className="border-y border-white/[0.06] bg-[#0d0d0f]">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-7 gap-y-3 px-6 py-6 text-[11px] font-medium uppercase tracking-[0.22em] text-white/60 sm:px-10">
-        <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-emerald-400">
-          <span
-            aria-hidden
-            className="relative flex h-1.5 w-1.5"
-          >
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
-          </span>
-          Early beta
-        </span>
-        {trustItems.map((item, i) => (
-          <span key={item} className="flex items-center gap-7">
-            <span>{item}</span>
-            {i < trustItems.length - 1 ? (
-              <span
+    <section className="border-y border-[#2A2A2A] bg-[#111] py-5">
+      <div className="mx-auto max-w-7xl px-6">
+        <ul className="grid grid-cols-2 md:grid-cols-4">
+          {items.map(({ icon: Icon, label }, i) => (
+            <li
+              key={label}
+              className={`flex items-center justify-center gap-2.5 px-4 py-2 ${
+                i > 0 ? "md:border-l md:border-[#2A2A2A]" : ""
+              } ${i % 2 === 1 ? "border-l border-[#2A2A2A]" : ""}`}
+            >
+              <Icon
                 aria-hidden
-                className="h-1 w-1 rounded-full bg-primary"
+                className="h-4 w-4 shrink-0 text-[#4F7EF7]"
+                strokeWidth={2}
               />
-            ) : null}
-          </span>
-        ))}
+              <span className="text-sm font-medium text-[#A0A0A0]">
+                {label}
+              </span>
+            </li>
+          ))}
+        </ul>
       </div>
-    </div>
+    </section>
   );
 }

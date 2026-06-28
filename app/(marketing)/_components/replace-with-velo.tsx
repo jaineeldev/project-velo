@@ -1,75 +1,136 @@
-import { Check } from "lucide-react";
+"use client";
 
-const before = [
-  "Email threads for proposal feedback",
-  "Google Docs for scope of work",
-  "Spreadsheets for project tracking",
-  "Manual invoice creation",
-  "“Any updates?” client messages",
+import { motion, useReducedMotion } from "framer-motion";
+import { X } from "lucide-react";
+import { EASE_OUT } from "../_lib/shared";
+
+const oldStack = [
+  "Google Docs",
+  "Email threads",
+  "Spreadsheets",
+  "Trello",
+  "Xero / manual invoices",
 ];
 
-const after = [
-  "Proposal builder with GST and line items",
-  "Client approval with legal timestamp",
-  "Milestone and time tracking",
-  "Automatic deposit and final invoices",
-  "Client portal with live project status",
+type Pill = { label: string; tone: "draft" | "active" | "done" };
+const projectPills: Pill[] = [
+  { label: "Approved", tone: "done" },
+  { label: "Deposit paid", tone: "done" },
+  { label: "In progress", tone: "active" },
+  { label: "Final invoice", tone: "draft" },
+  { label: "Paid", tone: "draft" },
 ];
+
+const PILL_CLASS: Record<Pill["tone"], string> = {
+  draft: "bg-[#2A2A2A] text-[#A0A0A0]",
+  active: "bg-blue-950 text-blue-400 border border-blue-800",
+  done: "bg-green-950 text-green-400",
+};
 
 export function ReplaceWithVelo() {
+  const prefersReduced = useReducedMotion();
+  const reveal = (delay = 0) => ({
+    initial: prefersReduced ? false : { opacity: 0, y: 16 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true, margin: "-80px" },
+    transition: prefersReduced
+      ? { duration: 0 }
+      : { duration: 0.5, ease: EASE_OUT, delay },
+  });
+
   return (
-    <section className="relative bg-[#0d0d0f]">
-      <div className="mx-auto max-w-7xl px-6 py-32 sm:px-10 sm:py-40">
-        <div className="text-center">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
-            Replace this with Velo
-          </p>
-          <h2 className="mx-auto mt-6 max-w-3xl text-balance text-5xl font-extrabold leading-[1] tracking-[-0.03em] text-white sm:text-6xl md:text-7xl">
-            One tool instead of{" "}
-            <span className="text-primary">five.</span>
-          </h2>
-        </div>
+    <section className="border-t border-[#2A2A2A] bg-[#0A0A0A] py-24">
+      <div className="mx-auto max-w-7xl px-6">
+        <motion.p
+          {...reveal(0)}
+          className="mb-4 font-mono text-xs uppercase tracking-widest text-[#555]"
+        >
+          The status quo
+        </motion.p>
+        <motion.h2
+          {...reveal(0.05)}
+          style={{ fontSize: "clamp(2rem, 5vw, 4rem)" }}
+          className="mb-16 max-w-4xl font-display font-black leading-[0.9] tracking-[-0.035em] text-white"
+        >
+          Stop rebuilding the same project
+          <br />
+          in five different <span className="text-[#4F7EF7]">tools.</span>
+        </motion.h2>
 
-        <div className="mx-auto mt-16 grid max-w-4xl gap-12 sm:mt-20 sm:grid-cols-2 sm:gap-16">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/35">
-              Before Velo
+        <div className="grid gap-6 md:grid-cols-2">
+          <motion.article
+            {...reveal(0.1)}
+            className="rounded-xl border border-[#2A2A2A] bg-[#111] p-8 transition-all hover:border-[#444] hover:bg-[#151515]"
+          >
+            <p className="mb-6 font-mono text-xs uppercase tracking-widest text-[#555]">
+              Without Velo
             </p>
-            <ul className="mt-6 space-y-3">
-              {before.map((item) => (
+            <ul className="space-y-3">
+              {oldStack.map((tool) => (
                 <li
-                  key={item}
-                  className="flex items-baseline gap-3 text-sm text-white/35 line-through decoration-white/20 decoration-1 sm:text-base"
+                  key={tool}
+                  className="flex items-center gap-3 border-b border-[#2A2A2A] pb-3 last:border-b-0 last:pb-0"
                 >
-                  <span aria-hidden className="text-white/25">
-                    ·
-                  </span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-primary">
-              With Velo
-            </p>
-            <ul className="mt-6 space-y-3">
-              {after.map((item) => (
-                <li
-                  key={item}
-                  className="flex items-baseline gap-3 text-sm text-white sm:text-base"
-                >
-                  <Check
+                  <X
                     aria-hidden
-                    className="h-4 w-4 shrink-0 translate-y-0.5 text-primary"
+                    className="h-4 w-4 shrink-0 text-red-500"
                     strokeWidth={2.5}
                   />
-                  <span>{item}</span>
+                  <span className="font-mono text-sm text-[#A0A0A0] line-through decoration-[#444]">
+                    {tool}
+                  </span>
                 </li>
               ))}
             </ul>
-          </div>
+            <p className="mt-6 font-mono text-xs italic text-[#555]">
+              Five versions of the same project. None of them talk to each
+              other.
+            </p>
+          </motion.article>
+
+          <motion.article
+            {...reveal(0.18)}
+            className="rounded-xl border border-[#2A2A2A] bg-[#111] p-8 transition-all hover:border-[#444] hover:bg-[#151515]"
+          >
+            <p className="mb-6 font-mono text-xs uppercase tracking-widest text-[#555]">
+              With Velo
+            </p>
+            <div className="rounded-lg border border-[#2A2A2A] bg-[#1A1A1A] p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-base font-bold text-white">
+                    Northstar Website Redesign
+                  </h3>
+                  <p className="mt-0.5 font-mono text-xs text-[#A0A0A0]">
+                    northstar.com.au
+                  </p>
+                </div>
+                <p className="font-mono text-sm font-bold text-[#4F7EF7]">
+                  A$8,400
+                </p>
+              </div>
+
+              <div className="mt-5 flex flex-wrap items-center gap-1.5">
+                {projectPills.map((pill, i) => (
+                  <span key={pill.label} className="flex items-center gap-1.5">
+                    <span
+                      className={`rounded-md px-2 py-0.5 font-mono text-[10px] font-bold uppercase ${
+                        PILL_CLASS[pill.tone]
+                      }`}
+                    >
+                      {pill.label}
+                    </span>
+                    {i < projectPills.length - 1 ? (
+                      <span aria-hidden className="h-px w-3 bg-[#2A2A2A]" />
+                    ) : null}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <p className="mt-6 font-mono text-xs italic text-[#555]">
+              One record. Every stage. Nothing duplicated.
+            </p>
+          </motion.article>
         </div>
       </div>
     </section>

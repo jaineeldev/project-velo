@@ -1,0 +1,6 @@
+/* Marketing-scoped styles. Loaded only via the marketing layout — keeps
+ * the global stylesheet untouched while still applying tabular numerals
+ * to every mono surface in the marketing tree. */
+.marketing-root .font-mono {
+  font-variant-numeric: tabular-nums;
+}

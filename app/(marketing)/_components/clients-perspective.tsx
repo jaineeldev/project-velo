@@ -13,9 +13,6 @@ import {
 import { cn } from "@/lib/utils";
 import { EASE_OUT } from "../_lib/shared";
 
-// Icon keys → lucide components. Resolved inside the client component so the
-// page server file can pass a plain string across the RSC boundary instead of
-// a function reference (which RSC refuses to serialise).
 export type ClientPerspectiveIconKey =
   | "mail"
   | "approve"
@@ -29,10 +26,6 @@ const iconMap = {
   payment: CreditCard,
 } as const;
 
-// Alternating two-column section used on the /clients page. Mirrors the
-// FeatureRow rhythm (eyebrow + hairline + icon + headline + body) but accepts
-// an arbitrary mockup as the right-hand element so each row can show a
-// purpose-built piece of client UI instead of one of the eight feature mocks.
 export function ClientPerspectiveRow({
   eyebrow,
   iconKey,
@@ -62,25 +55,26 @@ export function ClientPerspectiveRow({
         transition: { duration: 0 },
       }
     : {
-        initial: { opacity: 0, y: 24 },
+        initial: { opacity: 0, y: 18 },
         whileInView: { opacity: 1, y: 0 },
-        transition: { duration: 0.7, ease: EASE_OUT },
+        transition: { duration: 0.6, ease: EASE_OUT },
       };
 
   const isDark = tone === "dark";
   const titleClass = isDark ? "text-white" : "text-black";
-  const bodyClass = isDark ? "text-white/60" : "text-[#666666]";
-  const metaClass = isDark ? "text-white/40" : "text-neutral-400";
-  const dividerClass = isDark ? "bg-white/15" : "bg-neutral-200";
-  const borderClass = isDark ? "border-white/[0.06]" : "border-gray-100";
+  const bodyClass = isDark ? "text-white/70" : "text-[#737373]";
+  const metaClass = isDark ? "text-white/60" : "text-[#737373]";
 
   return (
     <motion.div
       {...fadeUp}
       viewport={{ once: true, amount: 0.25 }}
-      className={cn("border-b first:border-t", borderClass)}
+      className={cn(
+        "border-b-2 border-black first:border-t-2",
+        isDark && "border-b-2 border-white/20 first:border-t-2 first:border-white/20",
+      )}
     >
-      <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 py-20 sm:px-10 sm:py-24 md:grid-cols-2 md:gap-16 lg:gap-28">
+      <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 py-20 sm:px-10 sm:py-24 md:grid-cols-2 md:gap-16 lg:gap-20">
         <div
           className={cn(
             "flex flex-col justify-center",
@@ -90,17 +84,20 @@ export function ClientPerspectiveRow({
           <div className="flex items-center gap-4">
             <span
               className={cn(
-                "text-[11px] font-semibold uppercase tracking-[0.28em] tabular-nums",
+                "border-2 border-current px-2 py-0.5 font-mono text-xs font-bold uppercase tabular-nums",
                 metaClass,
               )}
             >
               {String(index).padStart(2, "0")}
             </span>
-            <span className={cn("h-px w-12", dividerClass)} />
-            <Icon aria-hidden className="h-4 w-4 text-primary" strokeWidth={2} />
+            <Icon
+              aria-hidden
+              className={cn("h-5 w-5", isDark ? "text-white" : "text-blue-600")}
+              strokeWidth={2.5}
+            />
             <span
               className={cn(
-                "text-[11px] font-semibold uppercase tracking-[0.22em]",
+                "font-mono text-xs font-bold uppercase tracking-widest",
                 metaClass,
               )}
             >
@@ -109,7 +106,7 @@ export function ClientPerspectiveRow({
           </div>
           <h3
             className={cn(
-              "mt-8 text-balance text-4xl font-extrabold leading-[1.05] tracking-[-0.03em] sm:text-5xl lg:text-6xl",
+              "mt-7 text-balance font-display text-4xl font-black leading-[0.95] tracking-[-0.04em] sm:text-5xl lg:text-6xl",
               titleClass,
             )}
           >
@@ -117,7 +114,7 @@ export function ClientPerspectiveRow({
           </h3>
           <p
             className={cn(
-              "mt-7 max-w-md text-base leading-relaxed sm:text-lg",
+              "mt-7 max-w-md text-lg leading-relaxed",
               bodyClass,
             )}
           >
@@ -133,25 +130,14 @@ export function ClientPerspectiveRow({
 }
 
 // =============================================================================
-// Mockups
+// Mockups — brut style, no rounded corners, black borders, offset shadows.
 // =============================================================================
-//
-// Each mockup is a tight slice of what the client themselves would see in
-// Velo. Same shell idiom as feature-mockup.tsx (rounded-2xl card, hairline
-// border, soft shadow) so the /clients page reads as part of the same product
-// surface, not a different design system.
 
 const lightShell =
-  "relative w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md";
+  "relative w-full overflow-hidden border-2 border-black bg-white shadow-brut";
 const darkShell =
-  "relative w-full overflow-hidden rounded-2xl border border-white/[0.08] bg-[#141416] shadow-[0_40px_80px_-40px_rgba(0,0,0,0.6)]";
+  "relative w-full overflow-hidden border-2 border-white bg-black shadow-brut-white";
 
-// ---------------------------------------------------------------------------
-// 1. Proposal share page (light)
-// ---------------------------------------------------------------------------
-// A faithful slice of velo.app/p/<token>. Wrapped in light browser chrome so
-// the visitor immediately reads it as "this is what shows up in my client's
-// browser." Bigger than the other mocks since it carries Section 1.
 export function ProposalSharePageMock() {
   return (
     <div className={lightShell}>
@@ -160,23 +146,22 @@ export function ProposalSharePageMock() {
       <div className="px-6 pb-7 pt-6 sm:px-8">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-400">
+            <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#737373]">
               For Tom Barrett, tom@ironbarkdigital.com.au
             </p>
-            <h4 className="mt-2 text-xl font-bold leading-tight tracking-[-0.02em] text-black sm:text-2xl">
+            <h4 className="mt-2 font-display text-xl font-black leading-tight tracking-[-0.02em] text-black sm:text-2xl">
               Website Redesign proposal
             </h4>
-            <p className="mt-1 text-xs text-neutral-500">
+            <p className="mt-1 text-xs text-[#737373]">
               From Jaineel, sent 2 days ago
             </p>
           </div>
-          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+          <span className="inline-flex shrink-0 items-center border-2 border-black bg-[#FF90E8] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-widest text-black">
             Awaiting you
           </span>
         </div>
 
-        <div className="mt-5 space-y-2 rounded-xl border border-gray-100 bg-gray-50/60 px-4 py-3.5">
+        <div className="mt-5 space-y-2 border-2 border-black bg-white px-4 py-3.5">
           {[
             { label: "Discovery & wireframes", value: "A$2,400" },
             { label: "Visual design", value: "A$4,800" },
@@ -186,50 +171,50 @@ export function ProposalSharePageMock() {
               key={label}
               className="flex items-baseline justify-between gap-3 text-xs"
             >
-              <span className="text-neutral-700">{label}</span>
-              <span className="shrink-0 font-semibold tabular-nums text-black">
+              <span className="text-[#737373]">{label}</span>
+              <span className="shrink-0 font-mono font-bold tabular-nums text-black">
                 {value}
               </span>
             </div>
           ))}
-          <div className="mt-1 space-y-1 border-t border-gray-200/80 pt-2 text-[11px]">
-            <div className="flex items-baseline justify-between text-neutral-500">
+          <div className="mt-1 space-y-1 border-t-2 border-black pt-2 text-[11px]">
+            <div className="flex items-baseline justify-between text-[#737373]">
               <span>Subtotal</span>
-              <span className="tabular-nums">A$15,200</span>
+              <span className="font-mono tabular-nums">A$15,200</span>
             </div>
-            <div className="flex items-baseline justify-between text-neutral-500">
+            <div className="flex items-baseline justify-between text-[#737373]">
               <span>GST (10%)</span>
-              <span className="tabular-nums">A$1,520</span>
+              <span className="font-mono tabular-nums">A$1,520</span>
             </div>
             <div className="flex items-baseline justify-between pt-1.5">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-500">
+              <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#737373]">
                 Total inc. GST
               </span>
-              <span className="text-lg font-bold tabular-nums tracking-tight text-black">
+              <span className="font-mono text-lg font-black tabular-nums text-black">
                 A$16,720
               </span>
             </div>
           </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-[1fr_1.4fr] gap-2.5">
+        <div className="mt-5 grid grid-cols-[1fr_1.4fr] gap-3">
           <button
             type="button"
-            className="rounded-md border border-gray-200 bg-white px-3 py-2.5 text-xs font-semibold text-neutral-700"
+            className="border-2 border-black bg-white px-3 py-2.5 text-xs font-bold text-black shadow-brut-sm"
             tabIndex={-1}
           >
             Request changes
           </button>
           <button
             type="button"
-            className="inline-flex items-center justify-center gap-1.5 rounded-md bg-emerald-500 px-3 py-2.5 text-xs font-semibold text-white"
+            className="inline-flex items-center justify-center gap-1.5 border-2 border-black bg-black px-3 py-2.5 text-xs font-bold text-white shadow-brut-sm"
             tabIndex={-1}
           >
             <Check aria-hidden className="h-3.5 w-3.5" strokeWidth={3} />
             Approve proposal
           </button>
         </div>
-        <p className="mt-3 text-center text-[10px] text-neutral-400">
+        <p className="mt-3 text-center text-[10px] text-[#737373]">
           No payment details required to approve
         </p>
       </div>
@@ -237,64 +222,55 @@ export function ProposalSharePageMock() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// 2. Approval confirmation (dark)
-// ---------------------------------------------------------------------------
-// What the client sees the instant they click Approve. Single green node up
-// top to mark the moment, a verified-by panel below to show the audit detail
-// gets recorded (timestamp + verified email) without saying "audit trail" in
-// marketing voice.
 export function ApprovalConfirmationMock() {
   return (
-    <div className={cn(darkShell, "mx-auto max-w-sm p-8 sm:p-10")}>
+    <div className={cn(darkShell, "mx-auto max-w-lg p-8 sm:p-10")}>
       <div className="flex flex-col items-center text-center">
-        <span className="flex h-14 w-14 items-center justify-center rounded-full border border-emerald-400/30 bg-emerald-500/10">
+        <span className="flex h-14 w-14 items-center justify-center border-2 border-white bg-white text-black">
           <CheckCircle2
             aria-hidden
-            className="h-7 w-7 text-emerald-400"
-            strokeWidth={2}
+            className="h-7 w-7"
+            strokeWidth={2.5}
           />
         </span>
-        <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.22em] text-emerald-400">
+        <p className="mt-5 font-mono text-[10px] font-bold uppercase tracking-widest text-white">
           Proposal approved
         </p>
-        <h4 className="mt-2 text-xl font-bold leading-tight tracking-[-0.02em] text-white sm:text-2xl">
+        <h4 className="mt-2 font-display text-xl font-black leading-tight tracking-[-0.02em] text-white sm:text-2xl">
           Website Redesign
         </h4>
-        <p className="mt-1 text-xs text-white/55">
+        <p className="mt-1 text-xs text-white/60">
           Ironbark Digital, A$16,720 inc. GST
         </p>
       </div>
 
-      <div className="mt-7 space-y-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 text-xs">
+      <div className="mt-7 space-y-3 border-2 border-white bg-black p-4 text-xs">
         <div className="flex items-baseline justify-between gap-3">
-          <span className="text-white/45">Approved by</span>
-          <span className="shrink-0 font-semibold text-white">
-            Tom Barrett
-          </span>
+          <span className="text-white/50">Approved by</span>
+          <span className="shrink-0 font-bold text-white">Tom Barrett</span>
         </div>
         <div className="flex items-baseline justify-between gap-3">
-          <span className="text-white/45">Verified email</span>
-          <span className="shrink-0 font-mono text-[11px] text-white/80">
+          <span className="text-white/50">Verified email</span>
+          <span className="shrink-0 font-mono text-[11px] text-white">
             tom@ironbarkdigital.com.au
           </span>
         </div>
-        <div className="flex items-baseline justify-between gap-3 border-t border-white/[0.06] pt-3">
-          <span className="text-white/45">Timestamp</span>
-          <span className="shrink-0 tabular-nums text-white/80">
+        <div className="flex items-baseline justify-between gap-3 border-t-2 border-white/40 pt-3">
+          <span className="text-white/50">Timestamp</span>
+          <span className="shrink-0 font-mono tabular-nums text-white">
             26 May 2026, 2:14pm AEST
           </span>
         </div>
       </div>
 
-      <div className="mt-5 flex items-center justify-between rounded-lg border border-primary/30 bg-primary/[0.06] px-4 py-3 text-xs">
+      <div className="mt-5 flex items-center justify-between border-2 border-white bg-[#FF90E8] px-4 py-3 text-xs text-black">
         <div className="flex items-center gap-3">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/15 text-primary">
-            <Check aria-hidden className="h-3.5 w-3.5" strokeWidth={2.5} />
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center border-2 border-black bg-white">
+            <Check aria-hidden className="h-3.5 w-3.5" strokeWidth={3} />
           </span>
           <div>
-            <p className="font-semibold text-white">Project kicked off</p>
-            <p className="mt-0.5 text-[11px] text-white/50">
+            <p className="font-bold text-black">Project kicked off</p>
+            <p className="mt-0.5 text-[11px] text-black/70">
               Milestones and deposit invoice now in your portal
             </p>
           </div>
@@ -304,83 +280,70 @@ export function ApprovalConfirmationMock() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// 3. Client dashboard (light)
-// ---------------------------------------------------------------------------
-// "Your projects" page from the client's portal. Stacked cards, two records:
-// one proposal still under review, one active project with milestone progress.
-// Tightly scoped so the visual story is "they get one screen, no clutter."
 export function ClientDashboardMock() {
   return (
     <div className={cn(lightShell, "p-6 sm:p-7")}>
-      <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+      <div className="flex items-center justify-between border-b-2 border-black pb-4">
         <div className="flex items-center gap-3">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold uppercase tracking-wider text-primary">
+          <span className="flex h-9 w-9 items-center justify-center border-2 border-black bg-white font-mono text-[10px] font-bold uppercase text-black">
             TB
           </span>
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-neutral-400">
+            <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#737373]">
               Your projects
             </p>
-            <p className="mt-0.5 text-sm font-semibold tracking-[-0.01em] text-black">
+            <p className="mt-0.5 text-sm font-bold tracking-tight text-black">
               Tom Barrett, Ironbark Digital
             </p>
           </div>
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-600">
+        <span className="inline-flex items-center border-2 border-black bg-white px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-widest text-black">
           2 active
         </span>
       </div>
 
       <div className="mt-4 space-y-3">
-        {/* Proposal awaiting client approval */}
-        <div className="rounded-xl border border-primary/25 bg-primary/[0.03] p-4">
+        <div className="border-2 border-black bg-white p-4 shadow-brut-sm">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">
+              <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#737373]">
                 Proposal
               </p>
-              <h5 className="mt-1 text-sm font-bold tracking-[-0.01em] text-black">
+              <h5 className="mt-1 text-sm font-bold tracking-tight text-black">
                 Website Redesign
               </h5>
-              <p className="mt-0.5 text-[11px] text-neutral-500">
+              <p className="mt-0.5 text-[11px] text-[#737373]">
                 From Jaineel, A$16,720
               </p>
             </div>
-            <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            <span className="inline-flex shrink-0 items-center border-2 border-black bg-[#FF90E8] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-widest text-black">
               Review
             </span>
           </div>
         </div>
 
-        {/* Active project with milestone progress */}
-        <div className="rounded-xl border border-gray-100 bg-gray-50/50 p-4">
+        <div className="border-2 border-black bg-white p-4 shadow-brut-sm">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">
+              <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#737373]">
                 Project
               </p>
-              <h5 className="mt-1 text-sm font-bold tracking-[-0.01em] text-black">
+              <h5 className="mt-1 text-sm font-bold tracking-tight text-black">
                 Brand Refresh
               </h5>
-              <p className="mt-0.5 text-[11px] text-neutral-500">
+              <p className="mt-0.5 text-[11px] text-[#737373]">
                 2 of 4 milestones, next due Apr 12
               </p>
             </div>
-            <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-700">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            <span className="inline-flex shrink-0 items-center border-2 border-black bg-black px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-widest text-white">
               Live
             </span>
           </div>
           <div className="mt-3 flex items-center gap-3">
-            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100">
-              <div
-                className="h-full rounded-full bg-primary"
-                style={{ width: "50%" }}
-              />
+            <div className="h-2 flex-1 border-2 border-black bg-white">
+              <div className="h-full bg-blue-600" style={{ width: "50%" }} />
             </div>
-            <span className="shrink-0 text-[10px] font-semibold tabular-nums text-neutral-500">
+            <span className="shrink-0 font-mono text-[10px] font-bold tabular-nums text-black">
               50%
             </span>
           </div>
@@ -390,68 +353,56 @@ export function ClientDashboardMock() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// 4. Payment pending (dark)
-// ---------------------------------------------------------------------------
-// The thing the client sees on their dashboard when there is money due. Amber
-// status pill, deposit row spelled out, remaining schedule below. The amber
-// is deliberate: it is the same warning hue used in the app's invoicing UI.
 export function PaymentPendingProjectMock() {
   return (
     <div className={cn(darkShell, "p-6 sm:p-7")}>
-      <div className="flex items-start justify-between gap-3 border-b border-white/[0.06] pb-4">
+      <div className="flex items-start justify-between gap-3 border-b-2 border-white/40 pb-4">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/40">
+          <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-white/60">
             Project, Ironbark Digital
           </p>
-          <h4 className="mt-1.5 text-sm font-bold tracking-[-0.01em] text-white">
+          <h4 className="mt-1.5 text-sm font-bold tracking-tight text-white">
             Website Redesign
           </h4>
         </div>
-        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-amber-500/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-400">
-          <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
-          Deposit payment pending
+        <span className="inline-flex shrink-0 items-center border-2 border-white bg-[#D97706] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-widest text-white">
+          Deposit pending
         </span>
       </div>
 
-      <div className="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/[0.04] p-4">
+      <div className="mt-4 border-2 border-white bg-black p-4">
         <div className="flex items-baseline justify-between gap-3">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-400/80">
+            <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-white">
               Deposit due
             </p>
-            <p className="mt-1 text-xs text-white/55">
+            <p className="mt-1 text-xs text-white/60">
               Bank transfer, INV-2026-018
             </p>
           </div>
-          <p className="text-2xl font-bold tabular-nums tracking-tight text-white">
+          <p className="font-mono text-2xl font-black tabular-nums text-white">
             A$5,040
           </p>
         </div>
-        <p className="mt-3 border-t border-amber-500/15 pt-3 text-[11px] text-white/55">
+        <p className="mt-3 border-t-2 border-white/40 pt-3 text-[11px] text-white/60">
           Due by 2 Jun 2026, 33% upfront before work begins
         </p>
       </div>
 
       <div className="mt-4 space-y-2 text-xs">
-        <div className="flex items-center justify-between text-white/55">
+        <div className="flex items-center justify-between text-white/60">
           <span>Remaining on milestones</span>
-          <span className="tabular-nums">A$11,680</span>
+          <span className="font-mono tabular-nums">A$11,680</span>
         </div>
-        <div className="flex items-center justify-between text-white/55">
+        <div className="flex items-center justify-between text-white/60">
           <span>Total project value</span>
-          <span className="tabular-nums">A$16,720</span>
+          <span className="font-mono tabular-nums">A$16,720</span>
         </div>
       </div>
     </div>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Shared: a tiny browser chrome strip. Two tone variants so the share-page
-// mock can sit on a light section without inheriting the dark-mode chrome
-// used elsewhere in how-it-works.
-// ---------------------------------------------------------------------------
 function BrowserChrome({
   tone,
   url,
@@ -463,50 +414,50 @@ function BrowserChrome({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 border-b px-4 py-3",
-        isDark
-          ? "border-white/[0.06] bg-white/[0.02]"
-          : "border-gray-100 bg-gray-50/80",
+        "flex items-center gap-3 border-b-2 px-4 py-3",
+        isDark ? "border-white bg-black" : "border-black bg-white",
       )}
     >
       <div className="flex gap-1.5">
         <span
           className={cn(
-            "h-2.5 w-2.5 rounded-full",
-            isDark ? "bg-white/15" : "bg-gray-300",
+            "h-3 w-3 border-2",
+            isDark ? "border-white bg-black" : "border-black bg-white",
           )}
         />
         <span
           className={cn(
-            "h-2.5 w-2.5 rounded-full",
-            isDark ? "bg-white/15" : "bg-gray-300",
+            "h-3 w-3 border-2",
+            isDark ? "border-white bg-black" : "border-black bg-white",
           )}
         />
         <span
           className={cn(
-            "h-2.5 w-2.5 rounded-full",
-            isDark ? "bg-white/15" : "bg-gray-300",
+            "h-3 w-3 border-2",
+            isDark ? "border-white bg-black" : "border-black bg-white",
           )}
         />
       </div>
       <div
         className={cn(
-          "flex flex-1 items-center justify-center gap-1.5 rounded-md border px-3 py-1 text-[11px]",
+          "flex flex-1 items-center justify-center gap-1.5 border-2 px-3 py-1 font-mono text-[11px] font-bold",
           isDark
-            ? "border-white/[0.05] bg-black/40 text-white/45"
-            : "border-gray-200 bg-white text-neutral-500",
+            ? "border-white bg-black text-white"
+            : "border-black bg-white text-black",
         )}
       >
-        <Lock aria-hidden className="h-3 w-3" strokeWidth={2.25} />
+        <Lock aria-hidden className="h-3 w-3" strokeWidth={2.5} />
         {url}
       </div>
       <span
         className={cn(
-          "hidden h-5 w-5 items-center justify-center rounded-md sm:flex",
-          isDark ? "text-white/40" : "text-neutral-400",
+          "hidden h-6 w-6 items-center justify-center border-2 sm:flex",
+          isDark
+            ? "border-white bg-black text-white"
+            : "border-black bg-white text-black",
         )}
       >
-        <Mail aria-hidden className="h-3 w-3" strokeWidth={2} />
+        <Mail aria-hidden className="h-3 w-3" strokeWidth={2.5} />
       </span>
     </div>
   );

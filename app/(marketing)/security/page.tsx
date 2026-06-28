@@ -1,9 +1,17 @@
 import type { Metadata } from "next";
-import { FileText, FolderKanban, Receipt, Shield } from "lucide-react";
-import { cn, focusRing } from "@/lib/utils";
+import { Check, FileText, FolderKanban, Receipt, Shield } from "lucide-react";
 import { StructuredData } from "../_components/structured-data";
 import { FinalCTA } from "../_components/final-cta";
 import { RoadmapList } from "../_components/roadmap-list";
+
+const atAGlance: string[] = [
+  "TLS encryption in transit",
+  "Encrypted at rest",
+  "Hosted in Australia",
+  "30-day account deletion",
+  "Stripe-handled payments",
+  "No card details stored",
+];
 
 const dataInScope = [
   {
@@ -75,8 +83,9 @@ const sections: Section[] = [
       <>
         <p>
           Every shared proposal is reached through a unique, cryptographic
-          share token tied to that one proposal. The link can&apos;t be guessed
-          or reused on another record, and abuse is rate-limited at the edge.
+          share token tied to that one proposal. The link can&apos;t be
+          guessed or reused on another record, and abuse is rate-limited at
+          the edge.
         </p>
         <p>
           Clients now sign in to a free Velo account to view and approve, so
@@ -88,10 +97,12 @@ const sections: Section[] = [
           . For high-value engagements I still recommend a separate signed
           contract.
         </p>
-        <p className="rounded-lg border border-white/10 bg-white/[0.03] p-4 text-sm text-white/55">
-          Velo is designed for use under Australian law. If you are outside
-          Australia, please review the terms carefully before signing up.
-        </p>
+        <div className="rounded-xl border border-[#2A2A2A] bg-[#111] p-6">
+          <p className="text-sm leading-relaxed text-[#A0A0A0]">
+            Velo is designed for use under Australian law. If you are outside
+            Australia, please review the terms carefully before signing up.
+          </p>
+        </div>
       </>
     ),
   },
@@ -100,21 +111,27 @@ const sections: Section[] = [
     title: "How I protect your data",
     body: (
       <>
-        <p className="not-prose rounded-lg border border-white/10 bg-white/[0.03] p-4 text-sm text-white/60">
-          All data is encrypted in transit using TLS and encrypted at rest.
-          Backups run automatically.
-        </p>
+        <div className="rounded-xl border border-[#2A2A2A] bg-[#111] p-6">
+          <p className="text-sm leading-relaxed text-[#A0A0A0]">
+            All data is encrypted in transit using TLS and encrypted at rest.
+            Backups run automatically.
+          </p>
+        </div>
         <p>
           Connections to Velo run over TLS, so every byte of data in transit
           between your browser and the servers is encrypted. At rest, your
           records live in{" "}
-          <span className="font-semibold text-white">an encrypted serverless database</span>{" "}
+          <span className="font-semibold text-white">
+            an encrypted serverless database
+          </span>{" "}
           in Australia with disk-level encryption.
         </p>
         <p>
           The application itself runs on{" "}
-          <span className="font-semibold text-white">a serverless hosting platform</span>,
-          fronted by a dedicated authentication provider. Session tokens are
+          <span className="font-semibold text-white">
+            a serverless hosting platform
+          </span>
+          , fronted by a dedicated authentication provider. Session tokens are
           HttpOnly cookies, scoped to the Velo domain, with the standard set
           of CSRF and SameSite protections.
         </p>
@@ -126,11 +143,11 @@ const sections: Section[] = [
     title: "Payments",
     body: (
       <>
-        <div className="not-prose flex items-start gap-4 rounded-xl border border-primary/30 bg-primary/[0.06] p-5 sm:p-6">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/15 text-primary">
+        <div className="flex items-start gap-4 rounded-xl border border-[#2A2A2A] bg-[#111] p-6">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#2A2A2A] bg-[#1A1A1A] text-[#4F7EF7]">
             <Shield aria-hidden className="h-5 w-5" strokeWidth={2} />
           </span>
-          <p className="text-base font-semibold leading-snug text-white sm:text-lg">
+          <p className="text-base font-semibold leading-snug text-white">
             Velo never stores card or bank details. Stripe handles all payment
             processing end-to-end.
           </p>
@@ -178,10 +195,7 @@ const sections: Section[] = [
           Found a security bug? Email{" "}
           <a
             href="mailto:jaineelk.dev@gmail.com"
-            className={cn(
-              "rounded-sm font-semibold text-primary underline-offset-2 hover:underline",
-              focusRing,
-            )}
+            className="font-medium text-[#4F7EF7] underline-offset-4 hover:underline"
           >
             jaineelk.dev@gmail.com
           </a>{" "}
@@ -200,26 +214,43 @@ export default function SecurityPage() {
       <StructuredData />
       <SecurityHero />
       <WhatVeloHandles />
-      <section className="relative bg-[#0d0d0f]">
-        <div className="mx-auto max-w-4xl px-6 pb-12 pt-8 sm:px-10 sm:pb-24 sm:pt-12">
-          {sections.map((section, i) => (
+      <section className="border-t border-[#2A2A2A] bg-[#0A0A0A]">
+        <div className="mx-auto max-w-4xl px-6 py-16">
+          <p className="mb-4 font-mono text-xs uppercase tracking-widest text-[#555]">
+            At a glance
+          </p>
+          <ul className="mb-16 grid grid-cols-2 gap-4 rounded-xl border border-[#2A2A2A] bg-[#111] p-6 md:grid-cols-3">
+            {atAGlance.map((label) => (
+              <li
+                key={label}
+                className="flex items-center gap-2.5 text-sm font-medium text-[#A0A0A0]"
+              >
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-green-800 bg-green-950 text-[#22C55E]">
+                  <Check aria-hidden className="h-3 w-3" strokeWidth={3} />
+                </span>
+                {label}
+              </li>
+            ))}
+          </ul>
+          {sections.map((section) => (
             <article
               key={section.number}
-              className={cn(
-                "border-t border-white/10 py-20 first:border-t-0 sm:py-24",
-                i === 0 && "first:pt-12",
-              )}
+              className="relative border-t border-[#2A2A2A] py-16"
             >
               <span
                 aria-hidden
-                className="mb-2 block select-none text-[5rem] font-bold leading-none text-white/[0.06] sm:text-[6rem]"
+                className="pointer-events-none absolute right-0 top-12 select-none font-mono font-black leading-none text-[#1A1A1A]"
+                style={{ fontSize: "8rem" }}
               >
                 {section.number}
               </span>
-              <h2 className="text-3xl font-extrabold leading-[1.05] tracking-[-0.03em] text-white sm:text-4xl md:text-4xl">
+              <p className="font-mono text-xs uppercase tracking-widest text-[#555]">
+                Section {section.number}
+              </p>
+              <h2 className="relative mt-4 max-w-2xl font-display text-4xl font-black leading-[0.95] tracking-[-0.035em] text-white sm:text-5xl">
                 {section.title}
               </h2>
-              <div className="mt-8 max-w-prose space-y-5 text-base leading-[1.75] text-white/60 sm:text-lg">
+              <div className="relative mt-8 max-w-prose space-y-5 text-base leading-[1.75] text-[#A0A0A0] sm:text-lg">
                 {section.body}
               </div>
             </article>
@@ -232,7 +263,7 @@ export default function SecurityPage() {
         heading={
           <>
             Read the Privacy{" "}
-            <span className="text-primary">Policy.</span>
+            <span className="text-[#4F7EF7]">Policy.</span>
           </>
         }
         body="The Privacy Policy and Terms of Service cover the full legal language. The summary on this page is the spirit of it."
@@ -244,26 +275,32 @@ export default function SecurityPage() {
   );
 }
 
-// Three-column summary near the top so visitors immediately know what data
-// categories Velo handles before digging into the numbered sections.
 function WhatVeloHandles() {
   return (
-    <section className="relative border-t border-white/[0.06] bg-[#0d0d0f]">
-      <div className="mx-auto max-w-5xl px-6 py-16 text-center sm:px-10 sm:py-20">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
+    <section className="border-t border-[#2A2A2A] bg-[#0A0A0A] py-24">
+      <div className="mx-auto max-w-5xl px-6">
+        <p className="mb-4 font-mono text-xs uppercase tracking-widest text-[#555]">
           What Velo handles
         </p>
-        <div className="mt-8 grid gap-4 text-left sm:grid-cols-3 sm:gap-5">
+        <h2
+          style={{ fontSize: "clamp(2rem, 5vw, 4rem)" }}
+          className="mb-12 max-w-2xl font-display font-black leading-[0.9] tracking-[-0.035em] text-white"
+        >
+          Three kinds of <span className="text-[#4F7EF7]">data.</span>
+        </h2>
+        <div className="grid gap-6 text-left sm:grid-cols-3">
           {dataInScope.map(({ icon: Icon, label, detail }) => (
             <div
               key={label}
-              className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-5 sm:p-6"
+              className="rounded-xl border border-[#2A2A2A] bg-[#111] p-6 transition-all hover:border-[#444] hover:bg-[#151515]"
             >
-              <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/15 text-primary">
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#2A2A2A] bg-[#1A1A1A] text-[#4F7EF7]">
                 <Icon aria-hidden className="h-4 w-4" strokeWidth={2} />
               </span>
-              <p className="mt-4 text-base font-bold text-white">{label}</p>
-              <p className="mt-1.5 text-sm leading-relaxed text-white/60">
+              <p className="mt-5 text-lg font-bold tracking-tight text-white">
+                {label}
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-[#A0A0A0]">
                 {detail}
               </p>
             </div>
@@ -276,22 +313,29 @@ function WhatVeloHandles() {
 
 function SecurityRoadmap() {
   return (
-    <section className="relative border-t border-white/[0.06] bg-[#0d0d0f]">
-      <div className="mx-auto max-w-5xl px-6 py-24 sm:px-10 sm:py-28">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
-            On the roadmap
-          </p>
-          <h2 className="mt-6 text-balance text-4xl font-extrabold leading-[1.05] tracking-[-0.03em] text-white sm:text-5xl md:text-6xl">
-            What I don&apos;t do{" "}
-            <span className="text-primary">yet.</span>
-          </h2>
-          <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-white/60 sm:text-lg">
-            Standards-level security work that is on the build queue. I&apos;m
-            shipping these in order before public launch.
-          </p>
-        </div>
-        <RoadmapList items={securityRoadmap} className="mt-12" />
+    <section className="border-t border-[#2A2A2A] bg-[#0A0A0A] py-24">
+      <div className="mx-auto max-w-5xl px-6">
+        <p className="mb-4 font-mono text-xs uppercase tracking-widest text-[#555]">
+          On the roadmap
+        </p>
+        <h2
+          style={{ fontSize: "clamp(2rem, 5vw, 4rem)" }}
+          className="mb-6 max-w-2xl font-display font-black leading-[0.9] tracking-[-0.035em] text-white"
+        >
+          What I don&apos;t do{" "}
+          <span className="text-[#4F7EF7]">yet.</span>
+        </h2>
+        <p className="mb-12 max-w-xl text-lg leading-relaxed text-[#A0A0A0]">
+          Standards-level security work that is on the build queue. I&apos;m
+          shipping these in order before public launch.
+        </p>
+        <RoadmapList items={securityRoadmap} />
+        <p className="mt-10 max-w-2xl text-sm leading-relaxed text-[#A0A0A0]">
+          Data hosting, payments, and authentication are handled by Vercel,
+          Neon, Stripe, and a dedicated authentication provider — each of
+          which maintain their own SOC 2 certifications and security
+          programs.
+        </p>
       </div>
     </section>
   );
@@ -299,19 +343,22 @@ function SecurityRoadmap() {
 
 function SecurityHero() {
   return (
-    <section className="relative isolate overflow-hidden bg-[#0d0d0f]">
-      <div className="relative mx-auto max-w-7xl px-6 pb-24 pt-24 text-center sm:px-10 sm:pb-36 sm:pt-32">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
+    <section className="bg-[#0A0A0A] px-6 pb-20 pt-32 text-center sm:pt-40">
+      <div className="mx-auto max-w-5xl">
+        <p className="mb-6 font-mono text-xs uppercase tracking-[0.2em] text-[#555]">
           Security
         </p>
-        <h1 className="mx-auto mt-8 max-w-5xl text-balance text-6xl font-extrabold leading-[0.95] tracking-[-0.04em] text-white sm:text-7xl md:text-8xl">
+        <h1
+          style={{ fontSize: "clamp(2.5rem, 6vw, 5rem)" }}
+          className="mx-auto max-w-5xl text-balance font-display font-black leading-[0.9] tracking-[-0.04em] text-white"
+        >
           How I store, protect, and delete your{" "}
-          <span className="text-primary">data.</span>
+          <span className="text-[#4F7EF7]">data.</span>
         </h1>
-        <p className="mx-auto mt-10 max-w-2xl text-base leading-relaxed text-white/60 sm:text-lg">
-          Velo handles contracts, invoices, and client records. Here is exactly
-          how that data is stored, transmitted, accessed, and deleted, plain
-          English.
+        <p className="mx-auto mt-9 max-w-2xl text-lg leading-relaxed text-[#A0A0A0]">
+          Velo handles contracts, invoices, and client records. Here is
+          exactly how that data is stored, transmitted, accessed, and
+          deleted, in plain English.
         </p>
       </div>
     </section>

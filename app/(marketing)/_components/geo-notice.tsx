@@ -4,13 +4,10 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Globe } from "lucide-react";
-import { cn, focusRing } from "@/lib/utils";
 import { EASE_OUT } from "../_lib/shared";
 
 const GEO_NOTICE_KEY = "velo-geo-notice-dismissed";
 
-// Compliance gate. Velo's privacy posture is AU-scoped, so non-AU visitors
-// see a one-time notice before they sign up.
 export function GeoNotice({ ready }: { ready: boolean }) {
   const prefersReduced = useReducedMotion();
   const [show, setShow] = useState(false);
@@ -20,13 +17,12 @@ export function GeoNotice({ ready }: { ready: boolean }) {
     try {
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone ?? "";
       const inAustralia = tz.startsWith("Australia/");
-      const dismissed =
-        window.localStorage.getItem(GEO_NOTICE_KEY) === "1";
+      const dismissed = window.localStorage.getItem(GEO_NOTICE_KEY) === "1";
       if (!inAustralia && !dismissed) {
         setShow(true);
       }
     } catch {
-      // Silently skip
+      // ignore
     }
   }, [ready]);
 
@@ -63,7 +59,7 @@ export function GeoNotice({ ready }: { ready: boolean }) {
             type="button"
             aria-label="Dismiss notice"
             onClick={dismiss}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
           />
           <motion.div
             role="dialog"
@@ -83,18 +79,20 @@ export function GeoNotice({ ready }: { ready: boolean }) {
                 ? { duration: 0 }
                 : { duration: 0.25, ease: EASE_OUT }
             }
-            className="relative w-full max-w-md rounded-2xl border border-white/10 bg-[#111111] p-6 shadow-2xl sm:p-8"
+            className="relative w-full max-w-md rounded-xl border border-[#2A2A2A] bg-[#111] p-6 shadow-2xl sm:p-8"
           >
-            <div className="flex items-center gap-3">
-              <Globe aria-hidden className="h-5 w-5 shrink-0 text-primary" />
+            <div className="flex items-center gap-3 border-b border-[#2A2A2A] pb-4">
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#2A2A2A] bg-[#1A1A1A] text-[#4F7EF7]">
+                <Globe aria-hidden className="h-4 w-4" strokeWidth={2} />
+              </span>
               <h2
                 id="geo-notice-title"
-                className="text-base font-medium tracking-tight text-white"
+                className="font-display text-base font-bold tracking-tight text-white"
               >
                 Heads up: Velo only follows Australian privacy law
               </h2>
             </div>
-            <p className="mt-4 text-sm leading-relaxed text-white/65">
+            <p className="mt-4 text-sm leading-relaxed text-[#A0A0A0]">
               Velo&apos;s privacy practices are scoped to Australia. If you
               sign up from outside Australia, your data may not be handled in
               line with your local privacy laws (e.g. GDPR, CCPA). Please read
@@ -103,20 +101,14 @@ export function GeoNotice({ ready }: { ready: boolean }) {
             <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <Link
                 href="/privacy"
-                className={cn(
-                  "inline-flex h-9 items-center justify-center rounded-md border border-white/15 bg-white/[0.04] px-4 text-sm font-medium text-white transition-colors hover:bg-white/[0.08]",
-                  focusRing,
-                )}
+                className="inline-flex items-center justify-center rounded-lg border border-[#2A2A2A] px-4 py-2 text-sm font-medium text-[#A0A0A0] transition-all hover:border-[#444] hover:text-white"
               >
                 Read Privacy Policy
               </Link>
               <button
                 type="button"
                 onClick={dismiss}
-                className={cn(
-                  "inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-white transition-colors hover:bg-primary/90",
-                  focusRing,
-                )}
+                className="inline-flex items-center justify-center rounded-lg bg-[#4F7EF7] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#3B6AE8]"
               >
                 I understand
               </button>

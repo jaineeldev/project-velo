@@ -3,56 +3,38 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { cn, focusRing } from "@/lib/utils";
-import { navLinks } from "../_lib/data";
-import { Wordmark } from "./wordmark";
 
-// Static dark navigation. Sticks to the top with a hairline border. No
-// transition between transparent and solid because every marketing page has
-// a dark hero, so the nav blends into the section above the fold and floats
-// over light content below.
+const navLinks = [
+  { label: "Home", href: "/" },
+  { label: "Features", href: "/features" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "Security", href: "/security" },
+  { label: "About", href: "/about" },
+  { label: "For clients", href: "/clients" },
+];
+
 export function MarketingNav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
-  // Close mobile sheet on route change.
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-white/[0.06] bg-[#0d0d0f]">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 sm:px-10">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/"
-            aria-label="Velo home"
-            className={cn("rounded-sm", focusRing)}
-          >
-            <Wordmark />
-          </Link>
-          <Link
-            href="/about"
-            aria-label="Velo is in early beta, read more on the about page"
-            className={cn(
-              "hidden items-center gap-1.5 rounded-full border border-emerald-400/25 bg-emerald-500/[0.08] px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-300 transition-colors hover:bg-emerald-500/[0.12] sm:inline-flex",
-              focusRing,
-            )}
-          >
-            <span
-              aria-hidden
-              className="relative flex h-1.5 w-1.5"
-            >
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            </span>
-            Early beta
-          </Link>
-        </div>
+    <header className="fixed top-0 left-0 right-0 z-50 h-14 w-full border-b border-[#2A2A2A] bg-[#0A0A0A]/90 backdrop-blur-sm">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
+        <Link
+          href="/"
+          aria-label="Velo home"
+          className="font-display text-lg font-black tracking-tight text-white"
+        >
+          Velo
+        </Link>
 
         <nav
           aria-label="Primary"
-          className="hidden items-center gap-1 sm:flex"
+          className="hidden items-center gap-8 md:flex"
         >
           {navLinks.map((link) => {
             const active =
@@ -63,13 +45,11 @@ export function MarketingNav() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={cn(
-                  "rounded-md px-3 py-1.5 text-sm transition-colors",
+                className={`text-sm font-medium transition-colors ${
                   active
-                    ? "text-white"
-                    : "text-white/60 hover:text-white",
-                  focusRing,
-                )}
+                    ? "text-[#4F7EF7]"
+                    : "text-[#A0A0A0] hover:text-white"
+                }`}
               >
                 {link.label}
               </Link>
@@ -77,13 +57,13 @@ export function MarketingNav() {
           })}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <span className="hidden md:inline-block rounded-md border border-[#2A2A2A] bg-[#1A1A1A] px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-[#555]">
+            Early beta
+          </span>
           <Link
             href="/waitlist"
-            className={cn(
-              "hidden items-center justify-center rounded-full bg-primary px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-primary/90 sm:inline-flex",
-              focusRing,
-            )}
+            className="hidden md:inline-flex items-center justify-center rounded-lg bg-[#4F7EF7] px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-[#3B6AE8]"
           >
             Join waitlist
           </Link>
@@ -92,10 +72,7 @@ export function MarketingNav() {
             onClick={() => setOpen((o) => !o)}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
-            className={cn(
-              "inline-flex h-9 w-9 items-center justify-center rounded-md text-white/70 hover:text-white sm:hidden",
-              focusRing,
-            )}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[#2A2A2A] bg-[#111] text-[#A0A0A0] transition-colors hover:border-[#444] hover:text-white md:hidden"
           >
             <span className="sr-only">Menu</span>
             <svg
@@ -103,8 +80,8 @@ export function MarketingNav() {
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="1.75"
-              className="h-5 w-5"
+              strokeWidth="2"
+              className="h-4 w-4"
             >
               {open ? (
                 <path d="M6 6l12 12M6 18L18 6" strokeLinecap="round" />
@@ -119,7 +96,7 @@ export function MarketingNav() {
       {open ? (
         <nav
           aria-label="Mobile"
-          className="border-t border-white/[0.06] bg-[#0d0d0f] sm:hidden"
+          className="border-t border-[#2A2A2A] bg-[#0A0A0A] md:hidden"
         >
           <div className="mx-auto max-w-7xl px-6 py-4">
             <ul className="flex flex-col gap-1">
@@ -132,26 +109,21 @@ export function MarketingNav() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className={cn(
-                        "block rounded-md px-3 py-2 text-base transition-colors",
+                      className={`block rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                         active
-                          ? "text-white"
-                          : "text-white/65 hover:text-white",
-                        focusRing,
-                      )}
+                          ? "bg-[#1A1A1A] text-[#4F7EF7]"
+                          : "text-[#A0A0A0] hover:bg-[#111] hover:text-white"
+                      }`}
                     >
                       {link.label}
                     </Link>
                   </li>
                 );
               })}
-              <li className="pt-2">
+              <li className="pt-3">
                 <Link
                   href="/waitlist"
-                  className={cn(
-                    "inline-flex w-full items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90",
-                    focusRing,
-                  )}
+                  className="inline-flex w-full items-center justify-center rounded-lg bg-[#4F7EF7] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#3B6AE8]"
                 >
                   Join waitlist
                 </Link>

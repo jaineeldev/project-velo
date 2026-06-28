@@ -1,13 +1,14 @@
 import type { CSSProperties } from "react";
 
-// Marketing-wide design tokens. Locks colour-scheme to dark and pins the
-// primary to blue 600 (#2563eb) so light sections inherit the same accent.
+// Marketing-wide design tokens. Pins the primary accent to the precision-craft
+// blue (#4F7EF7) and forces dark colour-scheme so native form controls and
+// scrollbars match the surrounding surface.
 export const marketingTheme: CSSProperties = {
-  "--primary": "221 83% 53%",
+  "--primary": "221 91% 64%",
   "--primary-foreground": "0 0% 100%",
-  "--ring": "221 83% 53%",
+  "--ring": "221 91% 64%",
   colorScheme: "dark",
 } as CSSProperties;
 
 // Single easing curve shared across every marketing animation.
-export const EASE_OUT = [0.22, 1, 0.36, 1] as const;
+export const EASE_OUT = [0.16, 1, 0.3, 1] as const;

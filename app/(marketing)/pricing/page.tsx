@@ -7,7 +7,7 @@ import { FinalCTA } from "../_components/final-cta";
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "Simple, transparent pricing. 14-day free trial, no credit card required. Four plans from AU$9/mo. Built for freelance developers and dev agencies.",
+    "Simple, transparent pricing. Four plans from AU$9/mo. Built for freelance developers and dev agencies. Currently waitlist-only; public beta coming.",
 };
 
 export default function PricingPage() {
@@ -20,11 +20,11 @@ export default function PricingPage() {
       <FinalCTA
         heading={
           <>
-            Still deciding? Start the{" "}
-            <span className="text-[#4F7EF7]">trial.</span>
+            Pick a plan when{" "}
+            <span className="text-[#4F7EF7]">sign-up opens.</span>
           </>
         }
-        body="14 days, every feature, no credit card. Cancel by closing the tab."
+        body="Velo is pre-beta. Join the waitlist and I'll email you when public sign-up is ready."
         subtle="If a plan doesn't fit, email me. It's just me building this, and I read every message."
         secondaryCta={{ label: "Email me", href: "mailto:jaineelk.dev@gmail.com" }}
       />
@@ -47,8 +47,8 @@ function PricingHero() {
           <span className="text-[#4F7EF7]">pricing.</span>
         </h1>
         <p className="mx-auto mt-10 max-w-2xl text-lg leading-relaxed text-[#A0A0A0]">
-          14-day free trial · 2 projects · No credit card required. Pick a
-          plan when you&apos;re ready. I never auto-charge.
+          Velo is pre-beta and waitlist-only for now. These are the plans
+          public sign-up will open with. I never auto-charge.
         </p>
         <p className="mt-4 font-mono text-xs uppercase tracking-widest text-[#555]">
           All prices in AUD · GST included where applicable

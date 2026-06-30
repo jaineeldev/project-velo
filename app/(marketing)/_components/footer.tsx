@@ -49,9 +49,9 @@ export function Footer() {
           <p className="flex items-center gap-2 font-mono text-xs text-[#555]">
             <span
               aria-hidden
-              className="inline-block h-1.5 w-1.5 rounded-full bg-[#22C55E]"
+              className="inline-block h-1.5 w-1.5 rounded-full bg-[#F59E0B]"
             />
-            All systems operational
+            In development
           </p>
         </div>
       </div>
@@ -92,14 +92,14 @@ function FooterCol({
                       ? "noopener noreferrer"
                       : undefined
                   }
-                  className="text-sm text-[#A0A0A0] transition-colors hover:text-white"
+                  className="relative inline-block text-sm text-[#A0A0A0] transition-colors hover:text-white after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0 after:bg-current after:transition-[width] after:duration-300 after:ease-out hover:after:w-full"
                 >
                   {link.label}
                 </a>
               ) : (
                 <Link
                   href={link.href}
-                  className="text-sm text-[#A0A0A0] transition-colors hover:text-white"
+                  className="relative inline-block text-sm text-[#A0A0A0] transition-colors hover:text-white after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0 after:bg-current after:transition-[width] after:duration-300 after:ease-out hover:after:w-full"
                 >
                   {link.label}
                 </Link>

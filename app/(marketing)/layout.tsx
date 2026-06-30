@@ -5,6 +5,7 @@ import { marketingTheme } from "./_lib/shared";
 import { MarketingNav } from "./_components/marketing-nav";
 import { Footer } from "./_components/footer";
 import { MarketingChrome } from "./_components/marketing-chrome";
+import { MarketingTransition } from "./_components/marketing-transition";
 import { ScrollToTop } from "@/components/scroll-to-top";
 import "./_lib/marketing.css";
 
@@ -27,7 +28,7 @@ export default function MarketingLayout({
       <MarketingChrome />
       <MarketingNav />
       <main id="main-content" tabIndex={-1} className="focus:outline-none">
-        {children}
+        <MarketingTransition>{children}</MarketingTransition>
       </main>
       <Footer />
       <ScrollToTop />

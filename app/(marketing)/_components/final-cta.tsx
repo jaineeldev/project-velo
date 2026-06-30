@@ -40,9 +40,10 @@ export function FinalCTA({
         <span className="text-[#4F7EF7]">proposal?</span>
       </>
     );
-  const resolvedBody = body ?? "14-day free trial. No credit card required.";
+  const resolvedBody =
+    body ?? "Waitlist only for now. I'll email when public beta opens.";
   const resolvedSubtle =
-    subtle ?? "Early beta. Things will break. Send feedback when they do.";
+    subtle ?? "In development. Things will break. Send feedback when they do.";
   const resolvedPrimary = primaryCta ?? {
     label: "Join the waitlist",
     href: "/waitlist",
@@ -77,14 +78,14 @@ export function FinalCTA({
         <div className="mt-10 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
           <Link
             href={resolvedPrimary.href}
-            className="inline-flex items-center justify-center rounded-xl bg-[#4F7EF7] px-8 py-3.5 text-base font-bold text-white transition-colors hover:bg-[#3B6AE8]"
+            className="inline-flex items-center justify-center rounded-xl bg-[#4F7EF7] px-8 py-3.5 text-base font-bold text-white transition-all duration-200 hover:bg-[#3B6AE8] motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98]"
           >
             {resolvedPrimary.label}
           </Link>
           {secondaryCta ? (
             <Link
               href={secondaryCta.href}
-              className="inline-flex items-center justify-center rounded-xl border border-[#2A2A2A] px-8 py-3.5 text-base font-medium text-[#A0A0A0] transition-all hover:border-[#444] hover:text-white"
+              className="inline-flex items-center justify-center rounded-xl border border-[#2A2A2A] px-8 py-3.5 text-base font-medium text-[#A0A0A0] transition-all duration-200 hover:border-[#444] hover:text-white motion-safe:hover:-translate-y-0.5"
             >
               {secondaryCta.label}
             </Link>

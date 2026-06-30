@@ -101,14 +101,14 @@ export function GeoNotice({ ready }: { ready: boolean }) {
             <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <Link
                 href="/privacy"
-                className="inline-flex items-center justify-center rounded-lg border border-[#2A2A2A] px-4 py-2 text-sm font-medium text-[#A0A0A0] transition-all hover:border-[#444] hover:text-white"
+                className="inline-flex items-center justify-center rounded-lg border border-[#2A2A2A] px-4 py-2 text-sm font-medium text-[#A0A0A0] transition-all duration-200 hover:border-[#444] hover:text-white motion-safe:hover:-translate-y-0.5"
               >
                 Read Privacy Policy
               </Link>
               <button
                 type="button"
                 onClick={dismiss}
-                className="inline-flex items-center justify-center rounded-lg bg-[#4F7EF7] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#3B6AE8]"
+                className="inline-flex items-center justify-center rounded-lg bg-[#4F7EF7] px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#3B6AE8] motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98]"
               >
                 I understand
               </button>

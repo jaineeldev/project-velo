@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Check, FileText, FolderKanban, Receipt, Shield } from "lucide-react";
+import { Check, FileText, FolderKanban, Receipt } from "lucide-react";
 import { StructuredData } from "../_components/structured-data";
 import { FinalCTA } from "../_components/final-cta";
 import { RoadmapList } from "../_components/roadmap-list";
@@ -9,8 +9,6 @@ const atAGlance: string[] = [
   "Encrypted at rest",
   "Hosted in Australia",
   "30-day account deletion",
-  "Stripe-handled payments",
-  "No card details stored",
 ];
 
 const dataInScope = [
@@ -26,8 +24,8 @@ const dataInScope = [
   },
   {
     icon: Receipt,
-    label: "Invoices & payments",
-    detail: "Issued invoices, paid status. Never card numbers.",
+    label: "Invoices",
+    detail: "Issued invoices, totals, payment status.",
   },
 ];
 
@@ -41,7 +39,7 @@ const securityRoadmap = [
 export const metadata: Metadata = {
   title: "Security",
   description:
-    "How Velo handles your data: client data ownership, cryptographic share tokens, encryption in transit and at rest, Australian hosting, Stripe-handled payments, and account deletion within 30 days.",
+    "How Velo handles your data: client data ownership, cryptographic share tokens, encryption in transit and at rest, Australian hosting, and account deletion within 30 days.",
 };
 
 type Section = {
@@ -122,14 +120,14 @@ const sections: Section[] = [
           between your browser and the servers is encrypted. At rest, your
           records live in{" "}
           <span className="font-semibold text-white">
-            an encrypted serverless database
+            a fully cloud-based, serverless PostgreSQL database
           </span>{" "}
           in Australia with disk-level encryption.
         </p>
         <p>
           The application itself runs on{" "}
           <span className="font-semibold text-white">
-            a serverless hosting platform
+            a globally distributed edge platform
           </span>
           , fronted by a dedicated authentication provider. Session tokens are
           HttpOnly cookies, scoped to the Velo domain, with the standard set
@@ -140,34 +138,6 @@ const sections: Section[] = [
   },
   {
     number: "04",
-    title: "Payments",
-    body: (
-      <>
-        <div className="flex items-start gap-4 rounded-xl border border-[#2A2A2A] bg-[#111] p-6">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#2A2A2A] bg-[#1A1A1A] text-[#4F7EF7]">
-            <Shield aria-hidden className="h-5 w-5" strokeWidth={2} />
-          </span>
-          <p className="text-base font-semibold leading-snug text-white">
-            Velo never stores card or bank details. Stripe handles all payment
-            processing end-to-end.
-          </p>
-        </div>
-        <p>
-          Clients pay invoices by card through{" "}
-          <span className="font-semibold text-white">Stripe Checkout</span>{" "}
-          directly on the share link. Card numbers go from the client&apos;s
-          browser straight to Stripe. Velo only ever sees the resulting
-          status (paid, refunded, disputed).
-        </p>
-        <p>
-          For clients who prefer bank transfer, your invoice PDF still
-          includes your bank details as a fallback.
-        </p>
-      </>
-    ),
-  },
-  {
-    number: "05",
     title: "Account deletion",
     body: (
       <>
@@ -178,16 +148,11 @@ const sections: Section[] = [
           provider, and all associated data is permanently removed within 30
           days. I don&apos;t hold a shadow copy.
         </p>
-        <p>
-          If you&apos;d rather pause than delete, every plan has a free trial
-          that pauses your workspace without losing any data. Pick up where
-          you left off whenever you come back.
-        </p>
       </>
     ),
   },
   {
-    number: "06",
+    number: "05",
     title: "Reporting an issue",
     body: (
       <>
@@ -332,8 +297,8 @@ function SecurityRoadmap() {
         <RoadmapList items={securityRoadmap} />
         <p className="mt-10 max-w-2xl text-sm leading-relaxed text-[#A0A0A0]">
           Data hosting, payments, and authentication are handled by Vercel,
-          Neon, Stripe, and a dedicated authentication provider — each of
-          which maintain their own SOC 2 certifications and security
+          Neon, Stripe, and a dedicated authentication provider. Each of
+          which maintains their own SOC 2 certifications and security
           programs.
         </p>
       </div>

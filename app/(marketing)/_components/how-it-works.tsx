@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { EASE_OUT } from "../_lib/shared";
+import { useReveal } from "./reveal";
 
 type Status =
   | "draft"
@@ -105,18 +105,10 @@ const SCROLL_STEP = 276;
 
 export function HowItWorks() {
   const prefersReduced = useReducedMotion();
+  const reveal = useReveal();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-
-  const reveal = (delay = 0) => ({
-    initial: prefersReduced ? false : { opacity: 0, y: 16 },
-    whileInView: { opacity: 1, y: 0 },
-    viewport: { once: true, margin: "-80px" },
-    transition: prefersReduced
-      ? { duration: 0 }
-      : { duration: 0.5, ease: EASE_OUT, delay },
-  });
 
   const updateScrollState = useCallback(() => {
     const el = scrollRef.current;
@@ -173,9 +165,11 @@ export function HowItWorks() {
             className="max-w-xl text-lg leading-relaxed text-[#A0A0A0]"
           >
             Follow the{" "}
-            <span className="text-white">Northstar Website Redesign</span> —{" "}
-            <span className="font-mono text-[#4F7EF7]">A$8,400</span> — from
-            first proposal to final payment.
+            <span className="text-white">Northstar Website Redesign</span>{" "}
+            <span className="font-mono text-[#555]">·</span>{" "}
+            <span className="font-mono text-[#4F7EF7]">A$8,400</span>{" "}
+            <span className="font-mono text-[#555]">·</span> from first proposal
+            to final payment.
           </motion.p>
 
           <motion.div
@@ -206,15 +200,18 @@ export function HowItWorks() {
         <motion.div {...reveal(0.18)} className="relative">
           <div
             ref={scrollRef}
-            className="workflow-scroll -mx-6 overflow-x-auto scroll-smooth px-6"
+            role="region"
+            aria-label="Project workflow stages"
+            tabIndex={0}
+            className="workflow-scroll -mx-6 overflow-x-auto scroll-smooth px-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#4F7EF7] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0A0A]"
           >
             <div className="flex gap-4">
               {stages.map((stage) => (
                 <article
                   key={stage.number}
-                  className={`min-w-[260px] rounded-xl bg-[#111] p-6 transition-all ${
+                  className={`min-w-[260px] rounded-xl bg-[#111] p-6 transition-all duration-300 motion-safe:hover:-translate-y-1 ${
                     stage.active
-                      ? "border-2 border-[#4F7EF7] active-pulse"
+                      ? "border-2 border-[#4F7EF7]"
                       : "border border-[#2A2A2A] hover:border-[#444] hover:bg-[#151515]"
                   }`}
                 >
@@ -273,23 +270,6 @@ export function HowItWorks() {
         }
         :global(.workflow-scroll)::-webkit-scrollbar {
           display: none;
-        }
-        :global(.active-pulse) {
-          animation: workflow-card-pulse 2s ease-in-out infinite;
-        }
-        @keyframes workflow-card-pulse {
-          0%,
-          100% {
-            box-shadow: 0 0 0 0 rgba(79, 126, 247, 0);
-          }
-          50% {
-            box-shadow: 0 0 0 6px rgba(79, 126, 247, 0.18);
-          }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          :global(.active-pulse) {
-            animation: none;
-          }
         }
       `}</style>
     </section>

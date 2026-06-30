@@ -1,19 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
-import { EASE_OUT } from "../_lib/shared";
+import { motion } from "framer-motion";
+import { useReveal } from "./reveal";
 
 export function HomeFinalCta() {
-  const prefersReduced = useReducedMotion();
-  const reveal = (delay = 0) => ({
-    initial: prefersReduced ? false : { opacity: 0, y: 16 },
-    whileInView: { opacity: 1, y: 0 },
-    viewport: { once: true, margin: "-80px" },
-    transition: prefersReduced
-      ? { duration: 0 }
-      : { duration: 0.5, ease: EASE_OUT, delay },
-  });
+  const reveal = useReveal();
 
   return (
     <section className="border-t border-[#2A2A2A] bg-[#0A0A0A] py-32 text-center">
@@ -37,7 +29,7 @@ export function HomeFinalCta() {
         <motion.div {...reveal(0.15)}>
           <Link
             href="/waitlist"
-            className="inline-flex items-center justify-center rounded-xl bg-[#4F7EF7] px-10 py-4 text-lg font-bold text-white transition-colors hover:bg-[#3B6AE8]"
+            className="inline-flex items-center justify-center rounded-xl bg-[#4F7EF7] px-10 py-4 text-lg font-bold text-white transition-all duration-200 hover:bg-[#3B6AE8] motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98]"
           >
             Join the waitlist
           </Link>

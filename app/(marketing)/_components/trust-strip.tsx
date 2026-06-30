@@ -1,10 +1,10 @@
-import { CreditCard, Receipt, Shield, Zap, type LucideIcon } from "lucide-react";
+import { MapPin, Receipt, Shield, Zap, type LucideIcon } from "lucide-react";
 
 const items: { icon: LucideIcon; label: string }[] = [
   { icon: Shield, label: "Secure client accounts" },
   { icon: Zap, label: "Automated workflow" },
   { icon: Receipt, label: "GST ready invoicing" },
-  { icon: CreditCard, label: "Stripe payments" },
+  { icon: MapPin, label: "Hosted in Australia" },
 ];
 
 export function TrustStrip() {

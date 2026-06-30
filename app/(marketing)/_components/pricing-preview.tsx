@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
-import { EASE_OUT } from "../_lib/shared";
+import { motion } from "framer-motion";
+import { useReveal } from "./reveal";
 
 type Plan = {
   name: string;
@@ -38,15 +38,7 @@ const plans: Plan[] = [
 ];
 
 export function PricingPreview() {
-  const prefersReduced = useReducedMotion();
-  const reveal = (delay = 0) => ({
-    initial: prefersReduced ? false : { opacity: 0, y: 16 },
-    whileInView: { opacity: 1, y: 0 },
-    viewport: { once: true, margin: "-80px" },
-    transition: prefersReduced
-      ? { duration: 0 }
-      : { duration: 0.5, ease: EASE_OUT, delay },
-  });
+  const reveal = useReveal();
 
   return (
     <section className="border-t border-[#2A2A2A] bg-[#0A0A0A] py-24">
@@ -72,7 +64,7 @@ export function PricingPreview() {
             <motion.article
               key={plan.name}
               {...reveal(0.1 + i * 0.05)}
-              className={`relative flex flex-col rounded-xl p-8 transition-all ${
+              className={`relative flex flex-col rounded-xl p-8 transition-all duration-300 motion-safe:hover:-translate-y-1 ${
                 plan.highlighted
                   ? "border-2 border-[#4F7EF7] bg-[#111]"
                   : "border border-[#2A2A2A] bg-[#111] hover:border-[#444] hover:bg-[#151515]"
@@ -100,7 +92,7 @@ export function PricingPreview() {
 
               <Link
                 href="/waitlist"
-                className={`mt-auto inline-flex w-full items-center justify-center rounded-lg py-3 text-sm font-bold transition-all ${
+                className={`mt-auto inline-flex w-full items-center justify-center rounded-lg py-3 text-sm font-bold transition-all duration-200 motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98] ${
                   plan.highlighted
                     ? "bg-[#4F7EF7] text-white hover:bg-[#3B6AE8]"
                     : "border border-[#2A2A2A] text-[#A0A0A0] hover:border-[#444] hover:text-white"
@@ -116,14 +108,20 @@ export function PricingPreview() {
           {...reveal(0.28)}
           className="mt-6 text-center font-mono text-xs text-[#555]"
         >
-          Scale plan also available for growing agencies — see full pricing →
+          Scale plan also available for growing agencies. See full pricing →
         </motion.p>
         <motion.div {...reveal(0.32)}>
           <Link
             href="/pricing"
-            className="mt-4 block text-center font-mono text-sm text-[#555] transition-colors hover:text-[#A0A0A0]"
+            className="group mt-4 inline-flex w-full items-center justify-center gap-1 text-center font-mono text-sm text-[#555] transition-colors duration-200 hover:text-[#A0A0A0]"
           >
-            See full pricing and features →
+            See full pricing and features
+            <span
+              aria-hidden
+              className="inline-block transition-transform duration-200 motion-safe:group-hover:translate-x-0.5"
+            >
+              →
+            </span>
           </Link>
         </motion.div>
       </div>

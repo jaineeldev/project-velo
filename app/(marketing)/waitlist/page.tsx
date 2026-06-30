@@ -142,7 +142,7 @@ function EmailExpectations() {
           {emailExpectations.map(({ icon: Icon, title, detail }) => (
             <div
               key={title}
-              className="rounded-xl border border-[#2A2A2A] bg-[#111] p-6 transition-all hover:border-[#444] hover:bg-[#151515]"
+              className="rounded-xl border border-[#2A2A2A] bg-[#111] p-6 transition-all duration-300 hover:border-[#444] hover:bg-[#151515] motion-safe:hover:-translate-y-1"
             >
               <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#2A2A2A] bg-[#1A1A1A] text-[#4F7EF7]">
                 <Icon aria-hidden className="h-4 w-4" strokeWidth={2} />

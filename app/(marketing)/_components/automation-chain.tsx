@@ -1,8 +1,8 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
-import { EASE_OUT } from "../_lib/shared";
+import { useReveal } from "./reveal";
 
 const steps: { name: string; detail: string }[] = [
   {
@@ -28,15 +28,7 @@ const steps: { name: string; detail: string }[] = [
 ];
 
 export function AutomationChain() {
-  const prefersReduced = useReducedMotion();
-  const reveal = (delay = 0) => ({
-    initial: prefersReduced ? false : { opacity: 0, y: 16 },
-    whileInView: { opacity: 1, y: 0 },
-    viewport: { once: true, margin: "-80px" },
-    transition: prefersReduced
-      ? { duration: 0 }
-      : { duration: 0.5, ease: EASE_OUT, delay },
-  });
+  const reveal = useReveal();
 
   return (
     <section className="border-t border-[#2A2A2A] bg-[#111] py-24">

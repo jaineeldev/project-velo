@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { Check } from "lucide-react";
-import { EASE_OUT } from "../_lib/shared";
+import { useReveal } from "./reveal";
 import { plans, trialFeatures } from "../_lib/data";
 
 type BillingPeriod = "monthly" | "annual";
@@ -14,17 +14,8 @@ export function PricingSection({
 }: {
   showHeader?: boolean;
 }) {
-  const prefersReduced = useReducedMotion();
+  const reveal = useReveal();
   const [billing, setBilling] = useState<BillingPeriod>("monthly");
-
-  const reveal = (delay = 0) => ({
-    initial: prefersReduced ? false : { opacity: 0, y: 16 },
-    whileInView: { opacity: 1, y: 0 },
-    viewport: { once: true, margin: "-80px" },
-    transition: prefersReduced
-      ? { duration: 0 }
-      : { duration: 0.5, ease: EASE_OUT, delay },
-  });
 
   return (
     <section
@@ -107,7 +98,7 @@ export function PricingSection({
                 className="relative h-full"
               >
                 <div
-                  className={`relative flex h-full flex-col rounded-xl p-7 transition-all ${
+                  className={`relative flex h-full flex-col rounded-xl p-7 transition-all duration-300 motion-safe:hover:-translate-y-1 ${
                     plan.highlighted
                       ? "border-2 border-[#4F7EF7] bg-[#111]"
                       : "border border-[#2A2A2A] bg-[#111] hover:border-[#444] hover:bg-[#151515]"
@@ -206,21 +197,21 @@ export function PricingSection({
           className="relative mx-auto mt-16 max-w-3xl rounded-xl border border-dashed border-[#333] bg-[#111] p-7 sm:p-8"
         >
           <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#1A1A1A] border border-[#2A2A2A] px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-widest text-[#A0A0A0]">
-            Try free first
+            Early access
           </span>
           <div className="grid gap-5 text-left sm:grid-cols-[1fr_auto] sm:items-center sm:gap-8">
             <div>
               <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                 <h3 className="text-2xl font-bold tracking-tight text-white">
-                  Free trial
+                  Waitlist
                 </h3>
                 <span className="font-mono text-xs font-bold uppercase tracking-widest text-[#555]">
-                  AU$0 · 14 days · no credit card
+                  AU$0 · Free during early beta
                 </span>
               </div>
               <p className="mt-2 text-sm text-[#A0A0A0]">
-                After 14 days your account pauses until you pick a plan. I
-                never auto-charge.
+                Velo is pre-beta. Waitlist users get free access during the
+                early-beta period. I&apos;ll email when public sign-up opens.
               </p>
               <ul className="mt-5 grid gap-x-6 gap-y-1.5 sm:grid-cols-2">
                 {trialFeatures.map((feature) => (
@@ -248,7 +239,7 @@ export function PricingSection({
             <div className="sm:shrink-0">
               <Link
                 href="/waitlist"
-                className="inline-flex w-full items-center justify-center rounded-xl border border-[#2A2A2A] px-6 py-3 text-sm font-bold text-[#A0A0A0] transition-all hover:border-[#444] hover:text-white sm:w-auto"
+                className="inline-flex w-full items-center justify-center rounded-xl border border-[#2A2A2A] px-6 py-3 text-sm font-bold text-[#A0A0A0] transition-all duration-200 hover:border-[#444] hover:text-white motion-safe:hover:-translate-y-0.5 sm:w-auto"
               >
                 Join the waitlist
               </Link>
@@ -283,8 +274,8 @@ function PlanCta({
   highlighted?: boolean;
 }) {
   const className = highlighted
-    ? "inline-flex w-full items-center justify-center rounded-lg bg-[#4F7EF7] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-[#3B6AE8]"
-    : "inline-flex w-full items-center justify-center rounded-lg border border-[#2A2A2A] px-6 py-3 text-sm font-bold text-[#A0A0A0] transition-all hover:border-[#444] hover:text-white";
+    ? "inline-flex w-full items-center justify-center rounded-lg bg-[#4F7EF7] px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-[#3B6AE8] motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98]"
+    : "inline-flex w-full items-center justify-center rounded-lg border border-[#2A2A2A] px-6 py-3 text-sm font-bold text-[#A0A0A0] transition-all duration-200 hover:border-[#444] hover:text-white motion-safe:hover:-translate-y-0.5";
   const isExternal = href.startsWith("mailto:") || href.startsWith("http");
   return isExternal ? (
     <a href={href} className={className}>

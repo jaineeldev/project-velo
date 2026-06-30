@@ -45,10 +45,10 @@ export function MarketingNav() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`text-sm font-medium transition-colors ${
+                className={`relative text-sm font-medium transition-colors after:absolute after:-bottom-1 after:left-0 after:h-px after:bg-current after:transition-[width] after:duration-300 after:ease-out ${
                   active
-                    ? "text-[#4F7EF7]"
-                    : "text-[#A0A0A0] hover:text-white"
+                    ? "text-[#4F7EF7] after:w-full"
+                    : "text-[#A0A0A0] after:w-0 hover:text-white hover:after:w-full"
                 }`}
               >
                 {link.label}
@@ -58,12 +58,12 @@ export function MarketingNav() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <span className="hidden md:inline-block rounded-md border border-[#2A2A2A] bg-[#1A1A1A] px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-[#555]">
-            Early beta
+          <span className="hidden md:inline-block rounded-md border border-[#F59E0B]/30 bg-[#F59E0B]/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-[#F59E0B]">
+            In development
           </span>
           <Link
             href="/waitlist"
-            className="hidden md:inline-flex items-center justify-center rounded-lg bg-[#4F7EF7] px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-[#3B6AE8]"
+            className="hidden md:inline-flex items-center justify-center rounded-lg bg-[#4F7EF7] px-4 py-1.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#3B6AE8] motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98]"
           >
             Join waitlist
           </Link>
@@ -109,10 +109,10 @@ export function MarketingNav() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className={`block rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                      className={`block rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 ${
                         active
                           ? "bg-[#1A1A1A] text-[#4F7EF7]"
-                          : "text-[#A0A0A0] hover:bg-[#111] hover:text-white"
+                          : "text-[#A0A0A0] hover:bg-[#111] hover:text-white motion-safe:hover:translate-x-0.5"
                       }`}
                     >
                       {link.label}
@@ -123,7 +123,7 @@ export function MarketingNav() {
               <li className="pt-3">
                 <Link
                   href="/waitlist"
-                  className="inline-flex w-full items-center justify-center rounded-lg bg-[#4F7EF7] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#3B6AE8]"
+                  className="inline-flex w-full items-center justify-center rounded-lg bg-[#4F7EF7] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#3B6AE8] motion-safe:active:scale-[0.98]"
                 >
                   Join waitlist
                 </Link>

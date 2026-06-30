@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
-import { EASE_OUT } from "../_lib/shared";
+import { motion } from "framer-motion";
+import { useReveal } from "./reveal";
 
 const outcomes: { n: string; statement: string; detail: string }[] = [
   {
@@ -26,20 +26,12 @@ const outcomes: { n: string; statement: string; detail: string }[] = [
     n: "04",
     statement: "Know exactly what needs your attention.",
     detail:
-      "Needs attention, waiting on client, payment outstanding — surfaced automatically.",
+      "Needs attention, waiting on client, payment outstanding. Surfaced automatically.",
   },
 ];
 
 export function ProductAreas() {
-  const prefersReduced = useReducedMotion();
-  const reveal = (delay = 0) => ({
-    initial: prefersReduced ? false : { opacity: 0, y: 16 },
-    whileInView: { opacity: 1, y: 0 },
-    viewport: { once: true, margin: "-80px" },
-    transition: prefersReduced
-      ? { duration: 0 }
-      : { duration: 0.5, ease: EASE_OUT, delay },
-  });
+  const reveal = useReveal();
 
   return (
     <section className="border-t border-[#2A2A2A] bg-[#0A0A0A] py-24">

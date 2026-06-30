@@ -43,7 +43,7 @@ export default function FeaturesPage() {
             <span className="text-[#4F7EF7]">browser.</span>
           </>
         }
-        body="14-day free trial. No credit card required."
+        body="Waitlist only for now. I'll email you when public beta opens."
         secondaryCta={{ label: "See pricing", href: "/pricing" }}
       />
     </>

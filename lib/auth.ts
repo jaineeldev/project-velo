@@ -3,15 +3,18 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { betterAuth } from "better-auth";
 import { magicLink, twoFactor } from "better-auth/plugins";
+import { dash } from "@better-auth/infra";
 import { Pool } from "@neondatabase/serverless";
-
-if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is not set");
-if (!process.env.BETTER_AUTH_SECRET) throw new Error("BETTER_AUTH_SECRET is not set");
 
 // Better Auth needs a pg-compatible Pool. `sql` from `lib/db` is the HTTP
 // driver, fine for app queries but not for the pg protocol Better Auth
 // expects. Neon's `Pool` speaks pg over WebSocket, so it drops in here.
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+// DATABASE_URL absence is caught by `lib/db.ts`; BETTER_AUTH_SECRET absence
+// is caught by Better Auth itself at first request. Neither check runs at
+// module load, so `next build`'s page-data collection stays happy.
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL ?? "postgres://build-placeholder",
+});
 
 export const auth = betterAuth({
   database: pool,
@@ -60,6 +63,9 @@ export const auth = betterAuth({
   },
 
   plugins: [
+    dash({
+      apiKey: process.env.BETTER_AUTH_API_KEY,
+    }),
     magicLink({
       sendMagicLink: async ({ email, url }) => {
         console.log(
@@ -168,4 +174,15 @@ export const requireUser = async (): Promise<AppUser> => {
   const user = await getSessionUser();
   if (!user) redirect("/sign-in");
   return user;
+};
+
+// TEMPORARY SHIM — remove in Session 3 once every caller has been migrated to
+// `requireUser()`. Exists only so the app can build during the Clerk → Better
+// Auth cutover; the `clerk_id` field is a stub so type-checks pass. See
+// CLAUDE.md §12.2 Session 3 for the migration path.
+export type LegacyAppUser = AppUser & { clerk_id: string };
+
+export const getOrCreateUser = async (): Promise<LegacyAppUser> => {
+  const user = await requireUser();
+  return { ...user, clerk_id: "" };
 };

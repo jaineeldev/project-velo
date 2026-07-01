@@ -66,7 +66,7 @@ export function DeleteClientButton({
         aria-busy={isPending}
         aria-label={`Delete ${clientName}`}
         className={cn(
-          "rounded text-sm text-neutral-400 transition-colors hover:text-red-600 disabled:opacity-50 dark:text-neutral-600 dark:hover:text-red-400",
+          "rounded text-sm text-muted-foreground transition-colors hover:text-destructive disabled:opacity-50",
           focusRing,
         )}
       >
@@ -76,14 +76,14 @@ export function DeleteClientButton({
       <dialog
         ref={dialogRef}
         onClose={closeDialog}
-        className="w-full max-w-md rounded-lg border border-neutral-200 bg-white p-6 shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900"
+        className="w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-sm"
       >
         {phase === "blocked" ? (
           <>
-            <h2 className="text-base font-medium text-neutral-900 dark:text-neutral-100">
+            <h2 className="text-base font-medium text-foreground">
               Cannot delete client
             </h2>
-            <p className="mt-3 text-sm text-neutral-600 dark:text-neutral-400">
+            <p className="mt-3 text-sm text-muted-foreground">
               {message}
             </p>
             <div className="mt-6 flex justify-end">
@@ -91,7 +91,7 @@ export function DeleteClientButton({
                 type="button"
                 onClick={closeDialog}
                 className={cn(
-                  "rounded-md bg-neutral-900 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200",
+                  "rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90",
                   focusRing,
                 )}
               >
@@ -101,12 +101,12 @@ export function DeleteClientButton({
           </>
         ) : (
           <>
-            <h2 className="text-base font-medium text-neutral-900 dark:text-neutral-100">
+            <h2 className="text-base font-medium text-foreground">
               Delete client?
             </h2>
-            <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+            <p className="mt-1 text-sm text-muted-foreground">
               Are you sure you want to delete{" "}
-              <span className="font-medium text-neutral-900 dark:text-neutral-100">
+              <span className="font-medium text-foreground">
                 {clientName}
               </span>
               ? This cannot be undone.
@@ -116,7 +116,7 @@ export function DeleteClientButton({
               <p
                 role="alert"
                 aria-live="polite"
-                className="mt-3 text-sm text-red-600 dark:text-red-400"
+                className="mt-3 text-sm text-destructive"
               >
                 {message}
               </p>
@@ -128,7 +128,7 @@ export function DeleteClientButton({
                 onClick={closeDialog}
                 disabled={phase === "deleting"}
                 className={cn(
-                  "rounded-md px-3.5 py-2 text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-400 dark:hover:text-neutral-100",
+                  "rounded-md px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50",
                   focusRing,
                 )}
               >
@@ -140,7 +140,7 @@ export function DeleteClientButton({
                 disabled={phase === "deleting"}
                 aria-busy={phase === "deleting"}
                 className={cn(
-                  "rounded-md bg-red-600 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50",
+                  "rounded-md bg-destructive px-3.5 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:opacity-50",
                   focusRing,
                 )}
               >

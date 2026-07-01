@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { useReveal } from "./reveal";
 import { plans, trialFeatures } from "../_lib/data";
+import { focusRing } from "../_lib/shared";
 
 type BillingPeriod = "monthly" | "annual";
 
@@ -239,7 +240,7 @@ export function PricingSection({
             <div className="sm:shrink-0">
               <Link
                 href="/waitlist"
-                className="inline-flex w-full items-center justify-center rounded-xl border border-[#2A2A2A] px-6 py-3 text-sm font-bold text-[#A0A0A0] transition-all duration-200 hover:border-[#444] hover:text-white motion-safe:hover:-translate-y-0.5 sm:w-auto"
+                className={`inline-flex w-full items-center justify-center rounded-xl border border-[#2A2A2A] px-6 py-3 text-sm font-bold text-[#A0A0A0] transition-all duration-200 hover:border-[#444] hover:text-white motion-safe:hover:-translate-y-0.5 sm:w-auto ${focusRing}`}
               >
                 Join the waitlist
               </Link>
@@ -254,7 +255,7 @@ export function PricingSection({
           More features rolling out through 2026. Got something you need?{" "}
           <a
             href="mailto:jaineelk.dev@gmail.com?subject=Velo%20feature%20request"
-            className="font-medium text-[#4F7EF7] hover:text-white"
+            className={`rounded-sm font-medium text-[#4F7EF7] hover:text-white ${focusRing}`}
           >
             Tell me.
           </a>
@@ -274,8 +275,8 @@ function PlanCta({
   highlighted?: boolean;
 }) {
   const className = highlighted
-    ? "inline-flex w-full items-center justify-center rounded-lg bg-[#4F7EF7] px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-[#3B6AE8] motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98]"
-    : "inline-flex w-full items-center justify-center rounded-lg border border-[#2A2A2A] px-6 py-3 text-sm font-bold text-[#A0A0A0] transition-all duration-200 hover:border-[#444] hover:text-white motion-safe:hover:-translate-y-0.5";
+    ? `inline-flex w-full items-center justify-center rounded-lg bg-[#4F7EF7] px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-[#3B6AE8] motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98] ${focusRing}`
+    : `inline-flex w-full items-center justify-center rounded-lg border border-[#2A2A2A] px-6 py-3 text-sm font-bold text-[#A0A0A0] transition-all duration-200 hover:border-[#444] hover:text-white motion-safe:hover:-translate-y-0.5 ${focusRing}`;
   const isExternal = href.startsWith("mailto:") || href.startsWith("http");
   return isExternal ? (
     <a href={href} className={className}>
@@ -303,7 +304,7 @@ function BillingToggleButton({
       role="radio"
       aria-checked={active}
       onClick={onClick}
-      className={`inline-flex items-center rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
+      className={`inline-flex items-center rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${focusRing} ${
         active
           ? "bg-[#1A1A1A] text-white"
           : "text-[#A0A0A0] hover:text-white"

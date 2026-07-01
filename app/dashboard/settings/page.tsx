@@ -23,15 +23,15 @@ export default async function SettingsPage() {
 
   return (
     <div className="max-w-3xl px-10 py-12">
-      <h1 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+      <h1 className="text-2xl font-semibold tracking-tight text-foreground">
         Settings
       </h1>
 
-      <section className="mt-10 border-t border-neutral-200 pt-8 dark:border-neutral-800">
-        <h2 className="text-base font-medium text-neutral-900 dark:text-neutral-100">
+      <section className="mt-10 border-t border-border pt-8">
+        <h2 className="text-base font-medium text-foreground">
           Profile
         </h2>
-        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+        <p className="mt-1 text-sm text-muted-foreground">
           Your photo, name, and email. Editable name and email coming later.
         </p>
         <ProfileUploader
@@ -42,22 +42,22 @@ export default async function SettingsPage() {
         />
       </section>
 
-      <section className="mt-10 border-t border-neutral-200 pt-8 dark:border-neutral-800">
-        <h2 className="text-base font-medium text-neutral-900 dark:text-neutral-100">
+      <section className="mt-10 border-t border-border pt-8">
+        <h2 className="text-base font-medium text-foreground">
           Business profile
         </h2>
-        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+        <p className="mt-1 text-sm text-muted-foreground">
           These details appear on your proposals and invoices, including the
           PDFs you send to clients.
         </p>
         <ProfileForm profile={profile} />
       </section>
 
-      <section className="mt-10 border-t border-neutral-200 pt-8 dark:border-neutral-800">
-        <h2 className="text-base font-medium text-neutral-900 dark:text-neutral-100">
+      <section className="mt-10 border-t border-border pt-8">
+        <h2 className="text-base font-medium text-foreground">
           Appearance
         </h2>
-        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+        <p className="mt-1 text-sm text-muted-foreground">
           Choose how the app looks to you.
         </p>
         <div className="mt-4">
@@ -65,23 +65,23 @@ export default async function SettingsPage() {
         </div>
       </section>
 
-      <section className="mt-10 border-t border-neutral-200 pt-8 dark:border-neutral-800">
-        <h2 className="text-base font-medium text-neutral-900 dark:text-neutral-100">
+      <section className="mt-10 border-t border-border pt-8">
+        <h2 className="text-base font-medium text-foreground">
           Subscription &amp; billing
         </h2>
-        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+        <p className="mt-1 text-sm text-muted-foreground">
           Manage your plan, payment methods, and invoices.
         </p>
-        <div className="mt-4 flex items-start gap-3 rounded-md border border-dashed border-neutral-300 bg-neutral-50 p-4 dark:border-neutral-700 dark:bg-neutral-900/50">
+        <div className="mt-4 flex items-start gap-3 rounded-md border border-dashed border-border bg-muted p-4">
           <CreditCard
             aria-hidden
-            className="mt-0.5 h-4 w-4 shrink-0 text-neutral-500 dark:text-neutral-400"
+            className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
           />
           <div className="text-sm">
-            <p className="font-medium text-neutral-800 dark:text-neutral-200">
+            <p className="font-medium text-foreground">
               Payments are coming soon
             </p>
-            <p className="mt-1 text-neutral-500 dark:text-neutral-400">
+            <p className="mt-1 text-muted-foreground">
               We&apos;re still wiring up payments. Until then, your free trial
               runs until you choose a plan — no card on file, no auto-charge.
             </p>
@@ -89,18 +89,18 @@ export default async function SettingsPage() {
         </div>
       </section>
 
-      <section className="mt-10 border-t border-neutral-200 pt-8 dark:border-neutral-800">
-        <h2 className="text-base font-medium text-neutral-900 dark:text-neutral-100">
+      <section className="mt-10 border-t border-border pt-8">
+        <h2 className="text-base font-medium text-foreground">
           Help &amp; support
         </h2>
-        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+        <p className="mt-1 text-sm text-muted-foreground">
           Found a bug or got feedback? Send it through and we&apos;ll reply to
           you directly.
         </p>
         <Link
           href="/dashboard/support"
           className={cn(
-            "mt-4 inline-flex items-center gap-2 rounded-md border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:hover:bg-neutral-900",
+            "mt-4 inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
             focusRing,
           )}
         >
@@ -109,7 +109,7 @@ export default async function SettingsPage() {
         </Link>
       </section>
 
-      <section className="mt-10 border-t border-neutral-200 pt-8 dark:border-neutral-800">
+      <section className="mt-10 border-t border-border pt-8">
         <h2 className="text-base font-medium text-destructive">
           Danger zone
         </h2>

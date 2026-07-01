@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { focusRing } from "../_lib/shared";
+
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "Features", href: "/features" },
@@ -27,7 +29,7 @@ export function MarketingNav() {
         <Link
           href="/"
           aria-label="Velo home"
-          className="font-display text-lg font-black tracking-tight text-white"
+          className={`font-display text-lg font-black tracking-tight text-white ${focusRing} rounded-sm`}
         >
           Velo
         </Link>
@@ -45,7 +47,7 @@ export function MarketingNav() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`relative text-sm font-medium transition-colors after:absolute after:-bottom-1 after:left-0 after:h-px after:bg-current after:transition-[width] after:duration-300 after:ease-out ${
+                className={`relative rounded-sm text-sm font-medium transition-colors after:absolute after:-bottom-1 after:left-0 after:h-px after:bg-current after:transition-[width] after:duration-300 after:ease-out ${focusRing} ${
                   active
                     ? "text-[#4F7EF7] after:w-full"
                     : "text-[#A0A0A0] after:w-0 hover:text-white hover:after:w-full"
@@ -63,7 +65,7 @@ export function MarketingNav() {
           </span>
           <Link
             href="/waitlist"
-            className="hidden md:inline-flex items-center justify-center rounded-lg bg-[#4F7EF7] px-4 py-1.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#3B6AE8] motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98]"
+            className={`hidden md:inline-flex items-center justify-center rounded-lg bg-[#4F7EF7] px-4 py-1.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#3B6AE8] motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98] ${focusRing}`}
           >
             Join waitlist
           </Link>
@@ -72,7 +74,7 @@ export function MarketingNav() {
             onClick={() => setOpen((o) => !o)}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[#2A2A2A] bg-[#111] text-[#A0A0A0] transition-colors hover:border-[#444] hover:text-white md:hidden"
+            className={`inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[#2A2A2A] bg-[#111] text-[#A0A0A0] transition-colors hover:border-[#444] hover:text-white md:hidden ${focusRing}`}
           >
             <span className="sr-only">Menu</span>
             <svg
@@ -109,7 +111,7 @@ export function MarketingNav() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className={`block rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 ${
+                      className={`block rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 ${focusRing} ${
                         active
                           ? "bg-[#1A1A1A] text-[#4F7EF7]"
                           : "text-[#A0A0A0] hover:bg-[#111] hover:text-white motion-safe:hover:translate-x-0.5"
@@ -123,7 +125,7 @@ export function MarketingNav() {
               <li className="pt-3">
                 <Link
                   href="/waitlist"
-                  className="inline-flex w-full items-center justify-center rounded-lg bg-[#4F7EF7] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#3B6AE8] motion-safe:active:scale-[0.98]"
+                  className={`inline-flex w-full items-center justify-center rounded-lg bg-[#4F7EF7] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#3B6AE8] motion-safe:active:scale-[0.98] ${focusRing}`}
                 >
                   Join waitlist
                 </Link>

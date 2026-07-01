@@ -4,10 +4,10 @@ import { CLIENT_INDUSTRIES } from "@/lib/validation";
 import type { ClientRow } from "@/lib/clients-data";
 
 const inputCls =
-  "w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-300 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder:text-neutral-600 dark:focus:border-neutral-600 dark:focus:ring-neutral-700";
+  "w-full rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring";
 
 const labelCls =
-  "block text-sm font-medium text-neutral-900 dark:text-neutral-100";
+  "block text-sm font-medium text-foreground";
 
 // Shared form fields for the new-client and edit-client dialogs. Pass
 // `client` to pre-fill from an existing row; omit for the create flow.
@@ -63,7 +63,7 @@ export function ClientFormFields({ client }: { client?: ClientRow }) {
           defaultValue={client?.phone ?? ""}
           className={inputCls}
         />
-        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+        <p className="text-xs text-muted-foreground">
           Digits, spaces, and <code>+ - ( ) .</code> only. 7 to 15 digits.
         </p>
       </div>
@@ -133,7 +133,7 @@ export function ClientFormFields({ client }: { client?: ClientRow }) {
           defaultValue={tagsDefault}
           className={inputCls}
         />
-        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+        <p className="text-xs text-muted-foreground">
           Comma-separated. Letters, numbers, spaces, hyphens, and underscores.
           Up to 10 tags.
         </p>

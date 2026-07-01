@@ -30,7 +30,7 @@ export function DeleteTimeEntryButton({ projectId, entryId }: Props) {
       aria-busy={isPending}
       aria-label="Delete time entry"
       className={cn(
-        "rounded text-xs text-neutral-400 transition-colors hover:text-red-600 disabled:opacity-50 dark:text-neutral-600 dark:hover:text-red-400",
+        "rounded text-xs text-muted-foreground transition-colors hover:text-destructive disabled:opacity-50",
         focusRing,
       )}
     >

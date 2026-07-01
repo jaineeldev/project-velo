@@ -22,10 +22,20 @@ const featureRoadmap: { label: string; date?: string }[] = [
   { label: "API and webhooks", date: "2027" },
 ];
 
+const featuresDescription =
+  "Every part of the freelance flow, in one product: proposals, client portal, project tracking, invoicing, PDF export, deliverables, change requests, and a dashboard for everything.";
+
 export const metadata: Metadata = {
   title: "Features",
-  description:
-    "Every part of the freelance flow, in one product: proposals, client portal, project tracking, invoicing, PDF export, deliverables, change requests, and a dashboard for everything.",
+  description: featuresDescription,
+  openGraph: {
+    title: "Features · Velo",
+    description: featuresDescription,
+  },
+  twitter: {
+    title: "Features · Velo",
+    description: featuresDescription,
+  },
 };
 
 export default function FeaturesPage() {

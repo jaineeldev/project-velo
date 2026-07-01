@@ -29,14 +29,14 @@ export function ShareLinkDisplay({
       <input
         readOnly
         value={url}
-        className="w-80 rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-600 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-400"
+        className="w-80 rounded-md border border-input bg-card px-3 py-2 text-sm text-muted-foreground"
       />
       <button
         type="button"
         onClick={handleCopy}
         aria-label={copied ? "Link copied" : "Copy share link"}
         className={cn(
-          "shrink-0 rounded-md border border-neutral-200 px-3.5 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900",
+          "shrink-0 rounded-md border border-input bg-background px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
           focusRing,
         )}
       >

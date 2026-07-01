@@ -51,7 +51,7 @@ export function MilestoneStatusSelect({
         aria-busy={isPending}
         aria-label="Milestone status"
         className={cn(
-          "rounded-md border border-neutral-200 bg-white px-2.5 py-1 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-900",
+          "rounded-md border border-input bg-background px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50",
           focusRing,
         )}
       >
@@ -65,7 +65,7 @@ export function MilestoneStatusSelect({
         <p
           role="alert"
           aria-live="polite"
-          className="text-xs text-red-600 dark:text-red-400"
+          className="text-xs text-destructive"
         >
           {error}
         </p>

@@ -45,7 +45,7 @@ export function SendProposalButton({ proposalId }: { proposalId: string }) {
         disabled={isPending}
         aria-busy={isPending}
         className={cn(
-          "rounded-md bg-neutral-900 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200",
+          "rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50",
           focusRing,
         )}
       >
@@ -61,7 +61,7 @@ export function SendProposalButton({ proposalId }: { proposalId: string }) {
         disabled
         aria-busy
         className={cn(
-          "rounded-md bg-neutral-900 px-3.5 py-2 text-sm font-medium text-white opacity-50 dark:bg-neutral-100 dark:text-neutral-900",
+          "rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground opacity-50",
           focusRing,
         )}
       >
@@ -76,7 +76,7 @@ export function SendProposalButton({ proposalId }: { proposalId: string }) {
         <span
           role="alert"
           aria-live="polite"
-          className="text-sm text-red-600 dark:text-red-400"
+          className="text-sm text-destructive"
         >
           {state.message}
         </span>
@@ -84,7 +84,7 @@ export function SendProposalButton({ proposalId }: { proposalId: string }) {
           type="button"
           onClick={() => setState({ phase: "idle" })}
           className={cn(
-            "rounded text-sm text-neutral-500 underline underline-offset-2 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100",
+            "rounded text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground",
             focusRing,
           )}
         >
@@ -101,14 +101,14 @@ export function SendProposalButton({ proposalId }: { proposalId: string }) {
       <input
         readOnly
         value={url}
-        className="w-80 rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-600 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-400"
+        className="w-80 rounded-md border border-input bg-card px-3 py-2 text-sm text-muted-foreground"
       />
       <button
         type="button"
         onClick={() => handleCopy(state.token)}
         aria-label={copied ? "Link copied" : "Copy share link"}
         className={cn(
-          "shrink-0 rounded-md border border-neutral-200 px-3.5 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900",
+          "shrink-0 rounded-md border border-input bg-background px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
           focusRing,
         )}
       >

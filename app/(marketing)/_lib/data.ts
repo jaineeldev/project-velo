@@ -67,7 +67,7 @@ export const allFeatures: Feature[] = [
     icon: FileText,
     title: "Proposals",
     description:
-      "Professional proposals with line items, GST, and deposit calculation. No more back-and-forth over email — clients get a clean link, you get a clear decision.",
+      "Professional proposals with line items, GST, and deposit calculation. No more back-and-forth over email. Clients get a clean link, you get a clear decision.",
     mockup: "proposals",
   },
   {
@@ -423,13 +423,4 @@ export const team: TeamMember[] = [
     role: "Contributor",
     url: "https://github.com/Rockmancheese",
   },
-];
-
-export const navLinks = [
-  { label: "Home", href: "/" },
-  { label: "About", href: "/about" },
-  { label: "Features", href: "/features" },
-  { label: "For clients", href: "/clients" },
-  { label: "Pricing", href: "/pricing" },
-  { label: "Security", href: "/security" },
 ];

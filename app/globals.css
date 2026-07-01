@@ -13,7 +13,7 @@
     --popover-foreground: 0 0% 7%;
 
     /* Accent — single blue across the system */
-    --primary: 221 83% 53%;        /* #2563eb */
+    --primary: 221 91% 64%;        /* #4F7EF7 */
     --primary-foreground: 0 0% 100%;
 
     /* Neutrals */
@@ -37,7 +37,7 @@
     /* Lines */
     --border: 0 0% 90%;            /* #e5e5e5 */
     --input: 0 0% 90%;
-    --ring: 221 83% 53%;
+    --ring: 221 91% 64%;
 
     --radius: 0.5rem;
   }
@@ -50,7 +50,7 @@
     --popover: 0 0% 7%;
     --popover-foreground: 0 0% 94%;
 
-    --primary: 221 83% 53%;        /* #2563eb — same in both modes */
+    --primary: 221 91% 64%;        /* #4F7EF7 — same in both modes */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 0 0% 7%;
@@ -70,7 +70,7 @@
 
     --border: 0 0% 16%;            /* #2a2a2a */
     --input: 0 0% 16%;
-    --ring: 221 83% 53%;
+    --ring: 221 91% 64%;
   }
 }
 

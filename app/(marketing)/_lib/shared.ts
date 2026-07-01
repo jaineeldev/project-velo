@@ -12,3 +12,6 @@ export const marketingTheme: CSSProperties = {
 
 // Single easing curve shared across every marketing animation.
 export const EASE_OUT = [0.16, 1, 0.3, 1] as const;
+
+export const focusRing =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F7EF7] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0A0A]";

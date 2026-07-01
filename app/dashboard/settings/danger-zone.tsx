@@ -107,7 +107,7 @@ export function DangerZone({ accountEmail, initialBlockers }: Props) {
               value={typed}
               onChange={(e) => setTyped(e.target.value)}
               className={cn(
-                "mt-1 block w-full rounded-md border border-red-300 bg-white px-3 py-1.5 text-sm text-neutral-900 outline-none focus:border-red-500 dark:border-red-800 dark:bg-neutral-900 dark:text-neutral-100",
+                "mt-1 block w-full rounded-md border border-destructive/40 bg-card px-3 py-1.5 text-sm text-foreground outline-none focus:border-destructive",
                 focusRing,
               )}
               placeholder={accountEmail}
@@ -132,7 +132,7 @@ export function DangerZone({ accountEmail, initialBlockers }: Props) {
               disabled={isPending || typed.trim().toLowerCase() !== accountEmail.toLowerCase()}
               aria-busy={isPending}
               className={cn(
-                "rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50",
+                "rounded-md bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:cursor-not-allowed disabled:opacity-50",
                 focusRing,
               )}
             >
@@ -143,7 +143,7 @@ export function DangerZone({ accountEmail, initialBlockers }: Props) {
               onClick={onCancel}
               disabled={isPending}
               className={cn(
-                "rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-sm text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800",
+                "rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
                 focusRing,
               )}
             >

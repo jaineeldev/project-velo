@@ -12,11 +12,22 @@ import {
 } from "lucide-react";
 import { StructuredData } from "../_components/structured-data";
 import { FinalCTA } from "../_components/final-cta";
+import { focusRing } from "../_lib/shared";
+
+const clientsDescription =
+  "What your clients actually see when you send a proposal through Velo. A clean, branded experience: secure links, one-click approval, a free client portal, and clear payment visibility.";
 
 export const metadata: Metadata = {
   title: "For clients",
-  description:
-    "What your clients actually see when you send a proposal through Velo. A clean, branded experience: secure links, one-click approval, a free client portal, and clear payment visibility.",
+  description: clientsDescription,
+  openGraph: {
+    title: "For clients · Velo",
+    description: clientsDescription,
+  },
+  twitter: {
+    title: "For clients · Velo",
+    description: clientsDescription,
+  },
 };
 
 type Section = {
@@ -144,7 +155,7 @@ function ClientsHero() {
         <div className="mt-12 flex items-center justify-center">
           <Link
             href="/waitlist"
-            className="group inline-flex items-center justify-center gap-2 rounded-xl bg-[#4F7EF7] px-8 py-3.5 text-base font-bold text-white transition-all duration-200 hover:bg-[#3B6AE8] motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98]"
+            className={`group inline-flex items-center justify-center gap-2 rounded-xl bg-[#4F7EF7] px-8 py-3.5 text-base font-bold text-white transition-all duration-200 hover:bg-[#3B6AE8] motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98] ${focusRing}`}
           >
             Join the waitlist
             <ArrowRight

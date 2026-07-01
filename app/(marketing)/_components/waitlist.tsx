@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { CheckCircle2, Loader2 } from "lucide-react";
-import { EASE_OUT } from "../_lib/shared";
+import { EASE_OUT, focusRing } from "../_lib/shared";
 import { submitWaitlist } from "@/app/waitlist-action";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -162,7 +162,7 @@ export function Waitlist() {
               <button
                 type="submit"
                 disabled={isPending}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#4F7EF7] px-6 text-sm font-bold text-white transition-all duration-200 hover:bg-[#3B6AE8] disabled:cursor-not-allowed disabled:opacity-60 motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98]"
+                className={`inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#4F7EF7] px-6 text-sm font-bold text-white transition-all duration-200 hover:bg-[#3B6AE8] disabled:cursor-not-allowed disabled:opacity-60 motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98] ${focusRing}`}
               >
                 {isPending ? (
                   <>

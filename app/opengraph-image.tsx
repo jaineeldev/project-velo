@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Velo: Ship code, not spreadsheets.";
+export const alt = "Velo: One place. Every project. Start to paid.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -20,7 +20,7 @@ export default function Image() {
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          backgroundColor: "#f8f8f8",
+          backgroundColor: "#0A0A0A",
         }}
       >
         {/* Wordmark */}
@@ -30,16 +30,16 @@ export default function Image() {
               width: "20px",
               height: "20px",
               borderRadius: "9999px",
-              backgroundColor: "#2563eb",
-              boxShadow: "0 0 0 8px rgba(37, 99, 235, 0.18)",
+              backgroundColor: "#4F7EF7",
+              boxShadow: "0 0 0 8px rgba(79, 126, 247, 0.18)",
             }}
           />
           <div
             style={{
               fontSize: "32px",
-              fontWeight: 600,
+              fontWeight: 700,
               letterSpacing: "-0.02em",
-              color: "#111111",
+              color: "#f0f0f0",
             }}
           >
             Velo
@@ -53,25 +53,29 @@ export default function Image() {
               display: "flex",
               flexDirection: "column",
               fontSize: "96px",
-              fontWeight: 700,
-              letterSpacing: "-0.04em",
-              lineHeight: 1.05,
-              color: "#111111",
+              fontWeight: 800,
+              letterSpacing: "-0.045em",
+              lineHeight: 0.95,
+              color: "#f0f0f0",
             }}
           >
-            <div style={{ display: "flex" }}>Ship code,</div>
-            <div style={{ display: "flex" }}>not spreadsheets.</div>
+            <div style={{ display: "flex" }}>One place.</div>
+            <div style={{ display: "flex" }}>Every project.</div>
+            <div style={{ display: "flex", gap: "24px" }}>
+              <span>Start to</span>
+              <span style={{ color: "#4F7EF7" }}>paid.</span>
+            </div>
           </div>
           <div
             style={{
               display: "flex",
-              fontSize: "30px",
+              fontSize: "28px",
               lineHeight: 1.4,
-              color: "#666666",
+              color: "#A0A0A0",
               maxWidth: "920px",
             }}
           >
-            Proposals, projects, and invoices, built for AU freelance devs.
+            Proposals, projects, and invoicing for AU freelance devs.
           </div>
         </div>
 
@@ -82,7 +86,7 @@ export default function Image() {
             width: "160px",
             height: "8px",
             borderRadius: "4px",
-            backgroundColor: "#2563eb",
+            backgroundColor: "#4F7EF7",
           }}
         />
       </div>

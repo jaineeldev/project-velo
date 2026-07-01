@@ -11,23 +11,23 @@ export default async function NewProposalPage() {
     <div className="px-10 py-12">
       <Link
         href="/dashboard/proposals"
-        className="inline-flex items-center gap-1 text-sm text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         ← Proposals
       </Link>
 
-      <h1 className="mt-4 text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+      <h1 className="mt-4 text-2xl font-semibold tracking-tight text-foreground">
         New proposal
       </h1>
 
       {clients.length === 0 ? (
-        <div className="mt-10 rounded-lg border border-dashed border-neutral-200 px-6 py-16 text-center dark:border-neutral-800">
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+        <div className="mt-10 rounded-lg border border-dashed border-border px-6 py-16 text-center">
+          <p className="text-sm text-muted-foreground">
             You need a client before you can create a proposal.
           </p>
           <Link
             href="/dashboard/clients"
-            className="mt-4 inline-block text-sm font-medium text-neutral-900 underline underline-offset-2 dark:text-neutral-100"
+            className="mt-4 inline-block text-sm font-medium text-foreground underline underline-offset-2"
           >
             Go to Clients →
           </Link>

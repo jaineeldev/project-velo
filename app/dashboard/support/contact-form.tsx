@@ -28,12 +28,12 @@ const placeholderByType: Record<SupportType, string> = {
 };
 
 const inputClass = cn(
-  "w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder-neutral-400 transition-colors focus:border-neutral-400 focus:outline-none disabled:opacity-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-600 dark:focus:border-neutral-600",
+  "w-full rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:border-ring focus:outline-none disabled:opacity-50",
   focusRing,
 );
 
 const labelClass =
-  "block text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400";
+  "block text-xs font-medium uppercase tracking-wider text-muted-foreground";
 
 export function ContactForm({ userEmail }: { userEmail: string }) {
   const [type, setType] = useState<SupportType>("bug");
@@ -122,8 +122,8 @@ export function ContactForm({ userEmail }: { userEmail: string }) {
                 className={cn(
                   "inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors",
                   active
-                    ? "border-neutral-900 bg-neutral-900 text-white dark:border-neutral-100 dark:bg-neutral-100 dark:text-neutral-900"
-                    : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-900",
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground",
                   focusRing,
                 )}
               >
@@ -138,7 +138,7 @@ export function ContactForm({ userEmail }: { userEmail: string }) {
       <div>
         <label htmlFor="support-subject" className={labelClass}>
           Subject{" "}
-          <span className="normal-case tracking-normal text-neutral-400">
+          <span className="normal-case tracking-normal text-muted-foreground">
             (optional)
           </span>
         </label>
@@ -172,15 +172,15 @@ export function ContactForm({ userEmail }: { userEmail: string }) {
       </div>
 
       {error ? (
-        <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+        <p role="alert" className="text-sm text-destructive">
           {error}
         </p>
       ) : null}
 
       <div className="flex flex-col-reverse items-stretch justify-between gap-3 pt-2 sm:flex-row sm:items-center">
-        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+        <p className="text-xs text-muted-foreground">
           We&apos;ll reply to{" "}
-          <span className="font-medium text-neutral-700 dark:text-neutral-300">
+          <span className="font-medium text-foreground">
             {userEmail}
           </span>
           .
@@ -189,7 +189,7 @@ export function ContactForm({ userEmail }: { userEmail: string }) {
           type="submit"
           disabled={isPending}
           className={cn(
-            "inline-flex items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:opacity-60",
+            "inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-60",
             focusRing,
           )}
         >

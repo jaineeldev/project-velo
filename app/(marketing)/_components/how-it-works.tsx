@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useReveal } from "./reveal";
+import { focusRing } from "../_lib/shared";
 
 type Status =
   | "draft"
@@ -181,7 +182,7 @@ export function HowItWorks() {
               aria-label="Scroll workflow left"
               onClick={() => scrollBy(-1)}
               disabled={!canScrollLeft}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#2A2A2A] bg-[#111] text-[#A0A0A0] transition-all hover:border-[#444] hover:bg-[#1A1A1A] hover:text-white disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-[#2A2A2A] disabled:hover:bg-[#111] disabled:hover:text-[#A0A0A0]"
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#2A2A2A] bg-[#111] text-[#A0A0A0] transition-all hover:border-[#444] hover:bg-[#1A1A1A] hover:text-white disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-[#2A2A2A] disabled:hover:bg-[#111] disabled:hover:text-[#A0A0A0] ${focusRing}`}
             >
               <ChevronLeft className="h-4 w-4" strokeWidth={2.5} />
             </button>
@@ -190,7 +191,7 @@ export function HowItWorks() {
               aria-label="Scroll workflow right"
               onClick={() => scrollBy(1)}
               disabled={!canScrollRight}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#2A2A2A] bg-[#111] text-[#A0A0A0] transition-all hover:border-[#444] hover:bg-[#1A1A1A] hover:text-white disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-[#2A2A2A] disabled:hover:bg-[#111] disabled:hover:text-[#A0A0A0]"
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#2A2A2A] bg-[#111] text-[#A0A0A0] transition-all hover:border-[#444] hover:bg-[#1A1A1A] hover:text-white disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-[#2A2A2A] disabled:hover:bg-[#111] disabled:hover:text-[#A0A0A0] ${focusRing}`}
             >
               <ChevronRight className="h-4 w-4" strokeWidth={2.5} />
             </button>

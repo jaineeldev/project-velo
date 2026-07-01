@@ -34,7 +34,7 @@ export function ChangeRequestActions({ projectId, changeRequestId }: Props) {
     <div className="mt-4">
       <label
         htmlFor={`note-${changeRequestId}`}
-        className="block text-xs font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
+        className="block text-xs font-medium uppercase tracking-wider text-muted-foreground"
       >
         Note to client (optional)
       </label>
@@ -47,7 +47,7 @@ export function ChangeRequestActions({ projectId, changeRequestId }: Props) {
         disabled={isPending}
         placeholder="Add a short note explaining your decision…"
         className={cn(
-          "mt-1 w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder-neutral-400 transition-colors focus:border-neutral-400 focus:outline-none disabled:opacity-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-600 dark:focus:border-neutral-600",
+          "mt-1 w-full rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:border-ring focus:outline-none disabled:opacity-50",
           focusRing,
         )}
       />
@@ -58,7 +58,7 @@ export function ChangeRequestActions({ projectId, changeRequestId }: Props) {
           disabled={isPending}
           aria-busy={isPending && pendingDecision === "approved"}
           className={cn(
-            "rounded-md bg-neutral-900 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200",
+            "rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50",
             focusRing,
           )}
         >
@@ -70,7 +70,7 @@ export function ChangeRequestActions({ projectId, changeRequestId }: Props) {
           disabled={isPending}
           aria-busy={isPending && pendingDecision === "rejected"}
           className={cn(
-            "rounded-md border border-neutral-200 px-3.5 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 disabled:opacity-50 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900",
+            "rounded-md border border-input bg-background px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50",
             focusRing,
           )}
         >
@@ -80,7 +80,7 @@ export function ChangeRequestActions({ projectId, changeRequestId }: Props) {
           <span
             role="alert"
             aria-live="polite"
-            className="text-xs text-red-600 dark:text-red-400"
+            className="text-xs text-destructive"
           >
             {error}
           </span>

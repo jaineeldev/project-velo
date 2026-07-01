@@ -3,10 +3,20 @@ import { Code2, MailCheck, Sparkles, type LucideIcon } from "lucide-react";
 import { StructuredData } from "../_components/structured-data";
 import { Waitlist } from "../_components/waitlist";
 
+const waitlistDescription =
+  "Velo is in private build. Join the waitlist and I'll send one email when something material ships. Built for Australian freelance developers and dev agencies.";
+
 export const metadata: Metadata = {
   title: "Join the waitlist",
-  description:
-    "Velo is in private build. Join the waitlist and I'll send one email when something material ships. Built for Australian freelance developers and dev agencies.",
+  description: waitlistDescription,
+  openGraph: {
+    title: "Join the waitlist · Velo",
+    description: waitlistDescription,
+  },
+  twitter: {
+    title: "Join the waitlist · Velo",
+    description: waitlistDescription,
+  },
 };
 
 const audienceBullets: string[] = [

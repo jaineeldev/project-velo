@@ -15,11 +15,11 @@ export default async function SupportPage() {
         <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
           <LifeBuoy aria-hidden className="h-4 w-4" />
         </span>
-        <h1 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
           Help &amp; support
         </h1>
       </div>
-      <p className="mt-3 text-sm text-neutral-500 dark:text-neutral-400">
+      <p className="mt-3 text-sm text-muted-foreground">
         Velo is in early beta — if something breaks or you have feedback, send
         it through here. Every message lands in our inbox and we&apos;ll reply
         within a day or two.
@@ -27,11 +27,11 @@ export default async function SupportPage() {
 
       <ContactForm userEmail={user.email} />
 
-      <div className="mt-12 border-t border-neutral-200 pt-6 text-sm text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
+      <div className="mt-12 border-t border-border pt-6 text-sm text-muted-foreground">
         Prefer your own email client? Reach us directly at{" "}
         <a
           href="mailto:jaineelk.dev@gmail.com"
-          className="font-medium text-neutral-700 underline-offset-2 hover:text-neutral-900 hover:underline dark:text-neutral-300 dark:hover:text-neutral-100"
+          className="font-medium text-foreground underline-offset-2 hover:underline"
         >
           jaineelk.dev@gmail.com
         </a>

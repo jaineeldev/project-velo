@@ -30,12 +30,12 @@ export default async function EditProposalPage({
     <div className="px-10 py-12">
       <Link
         href={`/dashboard/proposals/${params.id}`}
-        className="inline-flex items-center gap-1 text-sm text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         ← Back to proposal
       </Link>
 
-      <h1 className="mt-4 text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+      <h1 className="mt-4 text-2xl font-semibold tracking-tight text-foreground">
         Edit proposal
       </h1>
 

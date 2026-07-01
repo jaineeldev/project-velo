@@ -31,7 +31,7 @@ export function DeleteProposalButton({ proposalId }: { proposalId: string }) {
         onClick={() => setConfirming(true)}
         aria-label="Delete proposal"
         className={cn(
-          "rounded-md border border-red-200 px-3.5 py-1.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950",
+          "rounded-md border border-destructive/30 px-3.5 py-1.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10",
           focusRing,
         )}
       >
@@ -42,7 +42,7 @@ export function DeleteProposalButton({ proposalId }: { proposalId: string }) {
         <p
           role="alert"
           aria-live="polite"
-          className="mt-2 text-sm text-red-600 dark:text-red-400"
+          className="mt-2 text-sm text-destructive"
         >
           {error}
         </p>
@@ -54,13 +54,13 @@ export function DeleteProposalButton({ proposalId }: { proposalId: string }) {
           onClick={() => !isPending && setConfirming(false)}
         >
           <div
-            className="w-full max-w-md rounded-lg border border-neutral-200 bg-white p-6 shadow-lg dark:border-neutral-800 dark:bg-neutral-900"
+            className="w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
+            <h2 className="text-base font-semibold text-foreground">
               Delete this proposal?
             </h2>
-            <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
+            <p className="mt-2 text-sm text-muted-foreground">
               This permanently removes the proposal along with its line items,
               activity history, and any change requests. This cannot be undone.
             </p>
@@ -70,7 +70,7 @@ export function DeleteProposalButton({ proposalId }: { proposalId: string }) {
                 onClick={() => setConfirming(false)}
                 disabled={isPending}
                 className={cn(
-                  "rounded-md border border-neutral-200 px-3.5 py-1.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 disabled:opacity-50 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900",
+                  "rounded-md border border-input bg-background px-3.5 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50",
                   focusRing,
                 )}
               >
@@ -82,7 +82,7 @@ export function DeleteProposalButton({ proposalId }: { proposalId: string }) {
                 disabled={isPending}
                 aria-busy={isPending}
                 className={cn(
-                  "rounded-md bg-red-600 px-3.5 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50",
+                  "rounded-md bg-destructive px-3.5 py-1.5 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:opacity-50",
                   focusRing,
                 )}
               >

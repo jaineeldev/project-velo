@@ -5,11 +5,22 @@ import { stillRoughGroups, team, whatsNextItems } from "../_lib/data";
 import { StructuredData } from "../_components/structured-data";
 import { Reveal } from "../_components/reveal";
 import { Waitlist } from "../_components/waitlist";
+import { focusRing } from "../_lib/shared";
+
+const aboutDescription =
+  "Velo is being built in Brisbane by one dev for other devs. Here's who's behind it, why it exists, and what's still rough about it.";
 
 export const metadata: Metadata = {
   title: "About",
-  description:
-    "Velo is being built in Brisbane by one dev for other devs. Here's who's behind it, why it exists, and what's still rough about it.",
+  description: aboutDescription,
+  openGraph: {
+    title: "About · Velo",
+    description: aboutDescription,
+  },
+  twitter: {
+    title: "About · Velo",
+    description: aboutDescription,
+  },
 };
 
 export default function AboutPage() {
@@ -345,7 +356,7 @@ function CtaToSecurity() {
           </div>
           <Link
             href="/security"
-            className="group inline-flex shrink-0 items-center gap-2 rounded-xl border border-[#2A2A2A] px-7 py-3 text-sm font-bold text-[#A0A0A0] transition-all duration-200 hover:border-[#444] hover:text-white motion-safe:hover:-translate-y-0.5"
+            className={`group inline-flex shrink-0 items-center gap-2 rounded-xl border border-[#2A2A2A] px-7 py-3 text-sm font-bold text-[#A0A0A0] transition-all duration-200 hover:border-[#444] hover:text-white motion-safe:hover:-translate-y-0.5 ${focusRing}`}
           >
             See security
             <ArrowRight

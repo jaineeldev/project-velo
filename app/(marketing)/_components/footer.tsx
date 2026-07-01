@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { focusRing } from "../_lib/shared";
+
 const productLinks = [
   { label: "Features", href: "/features" },
   { label: "For clients", href: "/clients" },
@@ -92,14 +94,14 @@ function FooterCol({
                       ? "noopener noreferrer"
                       : undefined
                   }
-                  className="relative inline-block text-sm text-[#A0A0A0] transition-colors hover:text-white after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0 after:bg-current after:transition-[width] after:duration-300 after:ease-out hover:after:w-full"
+                  className={`relative inline-block rounded-sm text-sm text-[#A0A0A0] transition-colors hover:text-white after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0 after:bg-current after:transition-[width] after:duration-300 after:ease-out hover:after:w-full ${focusRing}`}
                 >
                   {link.label}
                 </a>
               ) : (
                 <Link
                   href={link.href}
-                  className="relative inline-block text-sm text-[#A0A0A0] transition-colors hover:text-white after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0 after:bg-current after:transition-[width] after:duration-300 after:ease-out hover:after:w-full"
+                  className={`relative inline-block rounded-sm text-sm text-[#A0A0A0] transition-colors hover:text-white after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0 after:bg-current after:transition-[width] after:duration-300 after:ease-out hover:after:w-full ${focusRing}`}
                 >
                   {link.label}
                 </Link>

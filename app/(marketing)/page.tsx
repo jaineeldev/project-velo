@@ -9,10 +9,20 @@ import { AutomationChain } from "./_components/automation-chain";
 import { PricingPreview } from "./_components/pricing-preview";
 import { HomeFinalCta } from "./_components/home-final-cta";
 
+const homeDescription =
+  "Create the proposal once. When your client approves it, the project, milestones and deposit invoice are ready automatically. Built for freelance developers and dev studios in Australia.";
+
 export const metadata: Metadata = {
   title: "Velo · Turn approved work into paid projects",
-  description:
-    "Create the proposal once. When your client approves it, the project, milestones and deposit invoice are ready automatically. Built for freelance developers and dev studios in Australia.",
+  description: homeDescription,
+  openGraph: {
+    title: "Velo · Turn approved work into paid projects",
+    description: homeDescription,
+  },
+  twitter: {
+    title: "Velo · Turn approved work into paid projects",
+    description: homeDescription,
+  },
 };
 
 export default function HomePage() {

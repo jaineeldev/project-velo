@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useReveal } from "./reveal";
+import { focusRing } from "../_lib/shared";
 
 type Plan = {
   name: string;
@@ -92,7 +93,7 @@ export function PricingPreview() {
 
               <Link
                 href="/waitlist"
-                className={`mt-auto inline-flex w-full items-center justify-center rounded-lg py-3 text-sm font-bold transition-all duration-200 motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98] ${
+                className={`mt-auto inline-flex w-full items-center justify-center rounded-lg py-3 text-sm font-bold transition-all duration-200 motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98] ${focusRing} ${
                   plan.highlighted
                     ? "bg-[#4F7EF7] text-white hover:bg-[#3B6AE8]"
                     : "border border-[#2A2A2A] text-[#A0A0A0] hover:border-[#444] hover:text-white"
@@ -113,7 +114,7 @@ export function PricingPreview() {
         <motion.div {...reveal(0.32)}>
           <Link
             href="/pricing"
-            className="group mt-4 inline-flex w-full items-center justify-center gap-1 text-center font-mono text-sm text-[#555] transition-colors duration-200 hover:text-[#A0A0A0]"
+            className={`group mt-4 inline-flex w-full items-center justify-center gap-1 rounded-sm text-center font-mono text-sm text-[#555] transition-colors duration-200 hover:text-[#A0A0A0] ${focusRing}`}
           >
             See full pricing and features
             <span

@@ -36,10 +36,20 @@ const securityRoadmap = [
   { label: "Single sign-on (SSO)" },
 ];
 
+const securityDescription =
+  "How Velo handles your data: client data ownership, cryptographic share tokens, encryption in transit and at rest, Australian hosting, and account deletion within 30 days.";
+
 export const metadata: Metadata = {
   title: "Security",
-  description:
-    "How Velo handles your data: client data ownership, cryptographic share tokens, encryption in transit and at rest, Australian hosting, and account deletion within 30 days.",
+  description: securityDescription,
+  openGraph: {
+    title: "Security · Velo",
+    description: securityDescription,
+  },
+  twitter: {
+    title: "Security · Velo",
+    description: securityDescription,
+  },
 };
 
 type Section = {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { EASE_OUT } from "../_lib/shared";
+import { EASE_OUT, focusRing } from "../_lib/shared";
 
 const MARQUEE_ITEMS = [
   "Proposals",
@@ -122,13 +122,13 @@ export function Hero() {
         >
           <Link
             href="/waitlist"
-            className="inline-flex items-center justify-center rounded-xl bg-[#4F7EF7] px-8 py-3.5 text-base font-bold text-white transition-all duration-200 hover:bg-[#3B6AE8] motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98]"
+            className={`inline-flex items-center justify-center rounded-xl bg-[#4F7EF7] px-8 py-3.5 text-base font-bold text-white transition-all duration-200 hover:bg-[#3B6AE8] motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98] ${focusRing}`}
           >
             Join the waitlist
           </Link>
           <Link
             href="#workflow"
-            className="group inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#2A2A2A] px-8 py-3.5 text-base font-medium text-[#A0A0A0] transition-all duration-200 hover:border-[#444] hover:text-white motion-safe:hover:-translate-y-0.5"
+            className={`group inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#2A2A2A] px-8 py-3.5 text-base font-medium text-[#A0A0A0] transition-all duration-200 hover:border-[#444] hover:text-white motion-safe:hover:-translate-y-0.5 ${focusRing}`}
           >
             See how it works
             <span aria-hidden className="inline-block transition-transform duration-200 motion-safe:group-hover:translate-y-0.5">

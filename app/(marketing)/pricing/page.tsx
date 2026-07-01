@@ -4,10 +4,20 @@ import { PricingSection } from "../_components/pricing-section";
 import { FaqSection } from "../_components/faq-section";
 import { FinalCTA } from "../_components/final-cta";
 
+const pricingDescription =
+  "Simple, transparent pricing. Four plans from AU$9/mo. Built for freelance developers and dev agencies. Currently waitlist-only; public beta coming.";
+
 export const metadata: Metadata = {
   title: "Pricing",
-  description:
-    "Simple, transparent pricing. Four plans from AU$9/mo. Built for freelance developers and dev agencies. Currently waitlist-only; public beta coming.",
+  description: pricingDescription,
+  openGraph: {
+    title: "Pricing · Velo",
+    description: pricingDescription,
+  },
+  twitter: {
+    title: "Pricing · Velo",
+    description: pricingDescription,
+  },
 };
 
 export default function PricingPage() {

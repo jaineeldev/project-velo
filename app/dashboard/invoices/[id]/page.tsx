@@ -48,7 +48,7 @@ export default async function InvoiceDetailPage({
       <Link
         href="/dashboard/invoices"
         className={cn(
-          "inline-flex items-center gap-1 rounded text-sm text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100",
+          "inline-flex items-center gap-1 rounded text-sm text-muted-foreground transition-colors hover:text-foreground",
           focusRing,
         )}
       >
@@ -57,10 +57,10 @@ export default async function InvoiceDetailPage({
 
       <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             {invoice.project.title}
           </h1>
-          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+          <p className="mt-1 text-sm text-muted-foreground">
             {invoice.client.name}
             {invoice.client.company_name
               ? ` · ${invoice.client.company_name}`
@@ -76,7 +76,7 @@ export default async function InvoiceDetailPage({
           <a
             href={`/api/invoices/${invoice.id}/pdf`}
             className={cn(
-              "rounded-md border border-neutral-200 px-3.5 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900",
+              "rounded-md border border-input bg-background px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
               focusRing,
             )}
           >
@@ -86,14 +86,14 @@ export default async function InvoiceDetailPage({
       </div>
 
       {/* Agency "From" block */}
-      <section className="mt-8 rounded-lg border border-neutral-200 p-5 dark:border-neutral-800">
-        <p className="text-xs uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+      <section className="mt-8 rounded-lg border border-border p-5">
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">
           From
         </p>
-        <p className="mt-1 text-sm font-medium text-neutral-900 dark:text-neutral-100">
+        <p className="mt-1 text-sm font-medium text-foreground">
           {agencyName}
         </p>
-        <div className="mt-1 flex flex-wrap gap-x-4 text-sm text-neutral-500 dark:text-neutral-400">
+        <div className="mt-1 flex flex-wrap gap-x-4 text-sm text-muted-foreground">
           {agencyAbn && <span>ABN {agencyAbn}</span>}
           {agencyAddress && <span>{agencyAddress}</span>}
           {profile.phone && <span>{profile.phone}</span>}
@@ -102,45 +102,45 @@ export default async function InvoiceDetailPage({
       </section>
 
       {/* Client + project meta */}
-      <section className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-neutral-200 p-5 sm:grid-cols-3 dark:border-neutral-800">
+      <section className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-border p-5 sm:grid-cols-3">
         <div>
-          <p className="text-xs uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">
             Client
           </p>
-          <p className="mt-1 text-sm text-neutral-900 dark:text-neutral-100">
+          <p className="mt-1 text-sm text-foreground">
             {invoice.client.name}
           </p>
           {invoice.client.email && (
-            <p className="mt-0.5 text-sm text-neutral-500 dark:text-neutral-400">
+            <p className="mt-0.5 text-sm text-muted-foreground">
               {invoice.client.email}
             </p>
           )}
           {invoice.client.phone && (
-            <p className="mt-0.5 text-sm text-neutral-500 dark:text-neutral-400">
+            <p className="mt-0.5 text-sm text-muted-foreground">
               {invoice.client.phone}
             </p>
           )}
         </div>
         <div>
-          <p className="text-xs uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">
             Project
           </p>
           <Link
             href={`/dashboard/projects/${invoice.project.id}`}
-            className="mt-1 inline-block text-sm text-neutral-900 underline-offset-2 hover:underline dark:text-neutral-100"
+            className="mt-1 inline-block text-sm text-foreground underline-offset-2 hover:underline"
           >
             {invoice.project.title}
           </Link>
         </div>
         <div>
-          <p className="text-xs uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">
             Issued
           </p>
-          <p className="mt-1 text-sm text-neutral-900 dark:text-neutral-100">
+          <p className="mt-1 text-sm text-foreground">
             {dateLongFmt.format(new Date(invoice.created_at))}
           </p>
           {invoice.due_date && (
-            <p className="mt-0.5 text-sm text-neutral-500 dark:text-neutral-400">
+            <p className="mt-0.5 text-sm text-muted-foreground">
               Due {dateLongFmt.format(new Date(invoice.due_date))}
             </p>
           )}
@@ -149,14 +149,14 @@ export default async function InvoiceDetailPage({
 
       {/* Line items (from the linked proposal) */}
       <div className="mt-10">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Line items
         </h2>
-        <div className="grid grid-cols-[1fr_5rem_8rem_7rem] gap-3 border-b border-neutral-200 pb-2 dark:border-neutral-800">
+        <div className="grid grid-cols-[1fr_5rem_8rem_7rem] gap-3 border-b border-border pb-2">
           {["Description", "Qty", "Unit price", "Total"].map((h) => (
             <span
               key={h}
-              className="text-xs font-medium text-neutral-500 dark:text-neutral-400"
+              className="text-xs font-medium text-muted-foreground"
             >
               {h}
             </span>
@@ -168,18 +168,18 @@ export default async function InvoiceDetailPage({
           return (
             <div
               key={i}
-              className="grid grid-cols-[1fr_5rem_8rem_7rem] gap-3 border-b border-neutral-100 py-3 dark:border-neutral-900"
+              className="grid grid-cols-[1fr_5rem_8rem_7rem] gap-3 border-b border-border py-3"
             >
-              <span className="text-sm text-neutral-900 dark:text-neutral-100">
+              <span className="text-sm text-foreground">
                 {item.description}
               </span>
-              <span className="text-sm text-neutral-500 dark:text-neutral-400">
+              <span className="text-sm text-muted-foreground">
                 {qty}
               </span>
-              <span className="text-sm text-neutral-500 dark:text-neutral-400">
+              <span className="text-sm text-muted-foreground">
                 {currencyFmt.format(price)}
               </span>
-              <span className="text-right text-sm font-medium text-neutral-900 dark:text-neutral-100">
+              <span className="text-right text-sm font-medium text-foreground">
                 {currencyFmt.format(qty * price)}
               </span>
             </div>
@@ -190,24 +190,24 @@ export default async function InvoiceDetailPage({
       {/* Totals — for this invoice only, not the full project value. */}
       <div className="mt-6 flex flex-col items-end gap-2 text-sm">
         <div className="flex w-72 justify-between gap-8">
-          <span className="text-neutral-500 dark:text-neutral-400">
+          <span className="text-muted-foreground">
             {totalLabel} (ex. GST)
           </span>
-          <span className="font-medium text-neutral-900 dark:text-neutral-100">
+          <span className="font-medium text-foreground">
             {currencyFmt.format(invoiceSplit.subtotal)}
           </span>
         </div>
         <div className="flex w-72 justify-between gap-8">
-          <span className="text-neutral-500 dark:text-neutral-400">GST (10%)</span>
-          <span className="font-medium text-neutral-900 dark:text-neutral-100">
+          <span className="text-muted-foreground">GST (10%)</span>
+          <span className="font-medium text-foreground">
             {currencyFmt.format(invoiceSplit.gst)}
           </span>
         </div>
-        <div className="flex w-72 justify-between gap-8 border-t border-neutral-200 pt-2 dark:border-neutral-800">
-          <span className="font-semibold text-neutral-900 dark:text-neutral-100">
+        <div className="flex w-72 justify-between gap-8 border-t border-border pt-2">
+          <span className="font-semibold text-foreground">
             {totalLabel} due now
           </span>
-          <span className="font-semibold text-neutral-900 dark:text-neutral-100">
+          <span className="font-semibold text-foreground">
             {currencyFmt.format(invoiceSplit.total)}
           </span>
         </div>

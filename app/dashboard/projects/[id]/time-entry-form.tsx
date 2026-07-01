@@ -41,7 +41,7 @@ export function TimeEntryForm({ projectId }: { projectId: string }) {
           maxLength={500}
           disabled={isPending}
           className={cn(
-            "w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder-neutral-400 transition-colors focus:border-neutral-400 focus:outline-none disabled:opacity-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-600 dark:focus:border-neutral-600",
+            "w-full rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:border-ring focus:outline-none disabled:opacity-50",
             focusRing,
           )}
         />
@@ -63,7 +63,7 @@ export function TimeEntryForm({ projectId }: { projectId: string }) {
           required
           disabled={isPending}
           className={cn(
-            "w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder-neutral-400 transition-colors focus:border-neutral-400 focus:outline-none disabled:opacity-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder-neutral-600 dark:focus:border-neutral-600",
+            "w-full rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:border-ring focus:outline-none disabled:opacity-50",
             focusRing,
           )}
         />
@@ -73,7 +73,7 @@ export function TimeEntryForm({ projectId }: { projectId: string }) {
         disabled={isPending}
         aria-busy={isPending}
         className={cn(
-          "rounded-md bg-neutral-900 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200",
+          "rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50",
           focusRing,
         )}
       >
@@ -83,7 +83,7 @@ export function TimeEntryForm({ projectId }: { projectId: string }) {
         <p
           role="alert"
           aria-live="polite"
-          className="w-full text-xs text-red-600 dark:text-red-400"
+          className="w-full text-xs text-destructive"
         >
           {error}
         </p>

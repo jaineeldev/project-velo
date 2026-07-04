@@ -1,5 +1,5 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { getSessionUser } from "@/lib/auth";
 import { logSecurityEvent } from "@/lib/security-log";
 
 // ADMIN_USER_IDS is the source of truth for operator access. Middleware
@@ -27,7 +27,8 @@ export function isAdminUserId(userId: string | null | undefined): boolean {
 // route handler. Redirects signed-out users to sign-in and non-admin
 // signed-in users to /dashboard, logging the denied attempt.
 export async function requireAdmin(route: string): Promise<string> {
-  const { userId } = await auth();
+  const user = await getSessionUser();
+  const userId = user?.id ?? null;
   if (!userId) redirect("/sign-in");
   if (!isAdminUserId(userId)) {
     logSecurityEvent({

@@ -1,4 +1,4 @@
-import { neon } from "@neondatabase/serverless";
+import postgres from "postgres";
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -17,11 +17,13 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
-const sql = neon(process.env.DATABASE_URL);
+// { prepare: false } — required against Supabase's Transaction pooler
+// (pgbouncer), same as lib/db.ts. See CLAUDE.md §13.
+const sql = postgres(process.env.DATABASE_URL, { prepare: false });
 
 // Ensure the ledger table exists before reading from it. Safe to run on every
 // invocation — no-op once created.
-await sql.query(`
+await sql.unsafe(`
   CREATE TABLE IF NOT EXISTS migrations (
     filename text PRIMARY KEY,
     applied_at timestamptz NOT NULL DEFAULT now()
@@ -35,9 +37,9 @@ const files = readdirSync(migrationsDir).filter((f) => f.endsWith(".sql")).sort(
 // but the 11 existing migrations were already applied manually. Detect that
 // case (users table exists, ledger empty) and backfill the ledger so we
 // don't try to CREATE TABLE users a second time.
-const appliedRows = await sql.query(`SELECT filename FROM migrations`);
+const appliedRows = await sql.unsafe(`SELECT filename FROM migrations`);
 if (appliedRows.length === 0) {
-  const [{ schema_initialised: usersExists }] = await sql.query(`
+  const [{ schema_initialised: usersExists }] = await sql.unsafe(`
     SELECT EXISTS (
       SELECT FROM information_schema.tables
       WHERE table_schema = 'public' AND table_name = 'users'
@@ -46,7 +48,7 @@ if (appliedRows.length === 0) {
   if (usersExists) {
     console.log("· bootstrapping ledger with already-applied migrations");
     for (const file of files) {
-      await sql.query(
+      await sql.unsafe(
         `INSERT INTO migrations (filename) VALUES ($1) ON CONFLICT DO NOTHING`,
         [file],
       );
@@ -74,12 +76,14 @@ for (const file of files) {
     .filter((s) => s.length > 0);
 
   for (const stmt of statements) {
-    await sql.query(stmt);
+    await sql.unsafe(stmt);
   }
 
-  await sql.query(`INSERT INTO migrations (filename) VALUES ($1)`, [file]);
+  await sql.unsafe(`INSERT INTO migrations (filename) VALUES ($1)`, [file]);
   console.log(`✓ ${file} (${statements.length} statements)`);
   appliedCount++;
 }
 
 console.log(`done — ${appliedCount} applied, ${skippedCount} skipped`);
+
+await sql.end();

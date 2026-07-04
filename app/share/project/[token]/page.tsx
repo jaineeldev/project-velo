@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
-import { auth } from "@clerk/nextjs/server";
+import { getSessionUser } from "@/lib/auth";
 import { ExternalLink } from "lucide-react";
 import { sql } from "@/lib/db";
 import { getClientIp } from "@/lib/rate-limit";
@@ -102,10 +102,10 @@ async function getPortalProject(token: string) {
 
   return {
     project,
-    milestones: milestones as MilestoneRow[],
-    deliverables: deliverables as DeliverableRow[],
-    timeEntries: timeEntries as TimeRow[],
-    invoices: invoices as InvoiceRow[],
+    milestones: milestones as unknown as MilestoneRow[],
+    deliverables: deliverables as unknown as DeliverableRow[],
+    timeEntries: timeEntries as unknown as TimeRow[],
+    invoices: invoices as unknown as InvoiceRow[],
   };
 }
 
@@ -146,14 +146,12 @@ export default async function ShareProjectPage({
   // Back-link destination depends on the viewer's role. Anonymous viewers
   // get no link (the project page is public via share token, so visitors
   // without an account have nowhere to "go back" to).
-  const { userId } = await auth();
+  const sessionUser = await getSessionUser();
+  const userId = sessionUser?.id ?? null;
   let backHref: string | null = null;
   if (userId) {
     const roleRows = await sql`
-      SELECT up.role
-      FROM user_profiles up
-      JOIN users u ON u.id = up.user_id
-      WHERE u.clerk_id = ${userId}
+      SELECT role FROM user_profiles WHERE user_id = ${userId}
     `;
     const role = roleRows[0]?.role;
     backHref =

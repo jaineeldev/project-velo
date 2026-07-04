@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { SignOutButton } from "@clerk/nextjs";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import {
   Gauge,
   Users,
@@ -13,7 +13,7 @@ import {
   ArrowUpRight,
   type LucideIcon,
 } from "lucide-react";
-import { useUser } from "@clerk/nextjs";
+import { useSupabaseUser } from "@/lib/hooks/use-supabase-user";
 import { Avatar } from "@/components/avatar";
 import { cn, focusRing } from "@/lib/utils";
 
@@ -115,10 +115,9 @@ export function AdminSidebar() {
 }
 
 function AdminUserCard() {
-  const { user, isLoaded } = useUser();
-  const name =
-    [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "Operator";
-  const email = user?.primaryEmailAddress?.emailAddress ?? "";
+  const { user, isLoaded } = useSupabaseUser();
+  const name = (user?.user_metadata?.name as string | undefined) || "Operator";
+  const email = user?.email ?? "";
 
   if (!isLoaded || !user) {
     return (

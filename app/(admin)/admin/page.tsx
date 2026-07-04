@@ -95,7 +95,7 @@ export default async function AdminOverviewPage() {
     total: number;
   };
   const lastSignupAt = (lastSignup?.created_at as string | undefined) ?? null;
-  const activity = activityRaw as ActivityRow[];
+  const activity = activityRaw as unknown as ActivityRow[];
 
   type Tile = {
     href: string;

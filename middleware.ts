@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getSessionCookie } from "better-auth/cookies";
+import { updateSession } from "@/lib/supabase/middleware";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { logSecurityEvent } from "@/lib/security-log";
 
@@ -63,11 +63,14 @@ export async function middleware(req: NextRequest) {
     return res;
   }
 
-  // Auth gate. Better Auth stores a session cookie set atomically on sign-in,
-  // so an optimistic cookie check is enough here — the layout/page reruns
-  // `getSessionUser()` for the authoritative DB-backed check.
-  const sessionCookie = getSessionCookie(req);
-  const isAuthed = Boolean(sessionCookie);
+  // Auth gate. `updateSession()` revalidates the Supabase session against
+  // the Auth server (not just a cookie-presence check) and returns the
+  // refreshed response so the browser's cookie stays current. The
+  // layout/page reruns `getSessionUser()` for its own authoritative check —
+  // this is the cheap "signed in at all" redirect before a protected page
+  // even starts rendering.
+  const { response, user } = await updateSession(req);
+  const isAuthed = Boolean(user);
 
   if (isAdminRoute(pathname)) {
     if (!isAuthed) {
@@ -78,9 +81,8 @@ export async function middleware(req: NextRequest) {
     // Real admin allow-list check happens in `lib/admin-auth.requireAdmin()`.
     // Non-admins hit it and get 404'd; the middleware is only the cheap
     // "signed in at all" gate.
-    const res = NextResponse.next();
-    res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
-    return res;
+    response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
+    return response;
   }
 
   if (isAgencyRoute(pathname) || isClientRoute(pathname)) {
@@ -90,11 +92,10 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(url);
     }
     // Role enforcement (agency vs client) is handled inside the layouts, which
-    // already DB-check `user_profiles.role` authoritatively. The Clerk-era JWT
-    // claim path is gone with the auth swap.
+    // already DB-check `user_profiles.role` authoritatively.
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {

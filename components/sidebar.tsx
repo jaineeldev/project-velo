@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { SignOutButton, useUser } from "@clerk/nextjs";
+import { usePathname, useRouter } from "next/navigation";
+import { supabase } from "@/lib/auth-client";
+import { useSupabaseUser } from "@/lib/hooks/use-supabase-user";
 import {
   LayoutDashboard,
   FileText,
@@ -100,11 +101,17 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 function UserCard({ onSignOut }: { onSignOut?: () => void }) {
-  const { user, isLoaded } = useUser();
+  const router = useRouter();
+  const { user, isLoaded } = useSupabaseUser();
 
-  const name =
-    [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "Account";
-  const email = user?.primaryEmailAddress?.emailAddress ?? "";
+  const name = (user?.user_metadata?.name as string | undefined) || "Account";
+  const email = user?.email ?? "";
+
+  async function handleSignOut() {
+    onSignOut?.();
+    await supabase.auth.signOut();
+    router.push("/sign-in");
+  }
 
   return (
     <div className="mt-auto border-t border-border p-3">
@@ -134,20 +141,18 @@ function UserCard({ onSignOut }: { onSignOut?: () => void }) {
         </div>
       </Link>
 
-      <SignOutButton>
-        <button
-          type="button"
-          onClick={onSignOut}
-          aria-label="Sign out"
-          className={cn(
-            "mt-1 flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
-            focusRing,
-          )}
-        >
-          <LogOut aria-hidden className="h-4 w-4 shrink-0" />
-          Sign out
-        </button>
-      </SignOutButton>
+      <button
+        type="button"
+        onClick={handleSignOut}
+        aria-label="Sign out"
+        className={cn(
+          "mt-1 flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
+          focusRing,
+        )}
+      >
+        <LogOut aria-hidden className="h-4 w-4 shrink-0" />
+        Sign out
+      </button>
     </div>
   );
 }

@@ -32,7 +32,7 @@ export async function getClientOptions(userId: string): Promise<ClientOption[]> 
       const rows = await sql`
         SELECT id, name FROM clients WHERE user_id = ${userId} ORDER BY name ASC
       `;
-      return rows as ClientOption[];
+      return rows as unknown as ClientOption[];
     },
     ["client-options", userId],
     { tags: [tag], revalidate: 3600 },
@@ -52,7 +52,7 @@ export async function getClientsList(userId: string): Promise<ClientRow[]> {
         WHERE user_id = ${userId}
         ORDER BY created_at DESC
       `;
-      return rows as ClientRow[];
+      return rows as unknown as ClientRow[];
     },
     ["clients-list", userId],
     { tags: [tag], revalidate: 3600 },

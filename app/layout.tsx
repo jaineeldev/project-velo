@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { ThemeProvider } from "@/components/theme-provider";
-import { ThemedClerkProvider } from "@/components/clerk-provider";
 import "./globals.css";
 
 // Single sans-serif typeface across the marketing surface and the app. Inter
@@ -53,9 +52,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="bg-background font-sans text-foreground antialiased">
-        <ThemeProvider>
-          <ThemedClerkProvider>{children}</ThemedClerkProvider>
-        </ThemeProvider>
+        <ThemeProvider>{children}</ThemeProvider>
         <Analytics />
       </body>
     </html>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { SignOutButton } from "@clerk/nextjs";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import { ShieldOff } from "lucide-react";
 import { getOrCreateUser } from "@/lib/auth";
 import { sql } from "@/lib/db";

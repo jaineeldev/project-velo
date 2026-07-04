@@ -35,7 +35,7 @@ export async function getProjects(): Promise<ProjectListItem[]> {
     WHERE p.user_id = ${user.id}
     ORDER BY p.created_at DESC
   `;
-  return rows as ProjectListItem[];
+  return rows as unknown as ProjectListItem[];
 }
 
 export type ProjectDeliverable = {
@@ -153,7 +153,7 @@ export async function getProject(projectId: string): Promise<ProjectDetail | nul
     `,
   ]);
 
-  const deliverableRows = deliverables as (ProjectDeliverable & {
+  const deliverableRows = deliverables as unknown as (ProjectDeliverable & {
     milestone_id: string;
   })[];
   const deliverablesByMilestone = new Map<string, ProjectDeliverable[]>();
@@ -163,7 +163,7 @@ export async function getProject(projectId: string): Promise<ProjectDetail | nul
     deliverablesByMilestone.set(d.milestone_id, list);
   }
 
-  const milestoneRows = (milestones as Omit<ProjectMilestone, "deliverables">[]).map(
+  const milestoneRows = (milestones as unknown as Omit<ProjectMilestone, "deliverables">[]).map(
     (m) => ({
       ...m,
       deliverables: deliverablesByMilestone.get(m.id) ?? [],
@@ -173,9 +173,9 @@ export async function getProject(projectId: string): Promise<ProjectDetail | nul
     milestoneRows.length > 0 &&
     milestoneRows.every((m) => m.status === "completed");
 
-  const depositInvoice = (invoices as { id: string; type: string; total_amount: string }[])
+  const depositInvoice = (invoices as unknown as { id: string; type: string; total_amount: string }[])
     .find((i) => i.type === "deposit");
-  const finalInvoice = (invoices as { id: string; type: string; total_amount: string }[])
+  const finalInvoice = (invoices as unknown as { id: string; type: string; total_amount: string }[])
     .find((i) => i.type === "final");
 
   const proposalTotal = Number(row.proposal_total_amount);
@@ -197,8 +197,8 @@ export async function getProject(projectId: string): Promise<ProjectDetail | nul
       company_name: (row.client_company_name as string | null) ?? null,
     },
     milestones: milestoneRows,
-    timeEntries: timeEntries as ProjectTimeEntry[],
-    pendingChangeRequests: pendingChangeRequests as PendingChangeRequest[],
+    timeEntries: timeEntries as unknown as ProjectTimeEntry[],
+    pendingChangeRequests: pendingChangeRequests as unknown as PendingChangeRequest[],
     finalInvoice: {
       canGenerate: allCompleted && !finalInvoice && remainingAmount > 0,
       existingId: finalInvoice?.id ?? null,

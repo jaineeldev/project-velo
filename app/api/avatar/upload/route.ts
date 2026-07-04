@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getSessionUser } from "@/lib/auth";
 import { del, issueSignedToken, presignUrl, put } from "@vercel/blob";
 import { sql } from "@/lib/db";
 import { logSecurityEvent } from "@/lib/security-log";
@@ -16,10 +16,11 @@ const ALLOWED_EXTENSIONS: Record<string, "jpg" | "png" | "webp"> = {
 const SIGNED_URL_TTL_MS = 60 * 60 * 1000;
 
 export async function POST(req: Request) {
-  const { userId: clerkUserId } = await auth();
-  if (!clerkUserId) {
+  const caller = await getSessionUser();
+  if (!caller) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const userId = caller.id;
 
   let form: FormData;
   try {
@@ -71,20 +72,12 @@ export async function POST(req: Request) {
     );
   }
 
-  const userRows = await sql`
-    SELECT id FROM users WHERE clerk_id = ${clerkUserId} LIMIT 1
-  `;
-  if (userRows.length === 0) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
-  }
-  const userId = userRows[0].id as string;
-
   const oldRows = await sql`
     SELECT avatar_url FROM user_profiles WHERE user_id = ${userId} LIMIT 1
   `;
   const oldPathname = (oldRows[0]?.avatar_url as string | null | undefined) ?? null;
 
-  const pathname = `avatars/${clerkUserId}/${Date.now()}.${ext}`;
+  const pathname = `avatars/${userId}/${Date.now()}.${ext}`;
 
   let uploaded;
   try {
@@ -159,18 +152,11 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE() {
-  const { userId: clerkUserId } = await auth();
-  if (!clerkUserId) {
+  const caller = await getSessionUser();
+  if (!caller) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-
-  const userRows = await sql`
-    SELECT id FROM users WHERE clerk_id = ${clerkUserId} LIMIT 1
-  `;
-  if (userRows.length === 0) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
-  }
-  const userId = userRows[0].id as string;
+  const userId = caller.id;
 
   const profileRows = await sql`
     SELECT avatar_url FROM user_profiles WHERE user_id = ${userId} LIMIT 1

@@ -33,7 +33,7 @@ export async function getInvoices(): Promise<InvoiceListItem[]> {
     WHERE i.user_id = ${user.id}
     ORDER BY i.created_at DESC
   `;
-  return rows as InvoiceListItem[];
+  return rows as unknown as InvoiceListItem[];
 }
 
 export type InvoiceLineItem = {
@@ -130,7 +130,7 @@ export async function getInvoice(invoiceId: string): Promise<InvoiceDetail | nul
       total_amount: row.proposal_total_amount as string,
       deposit_percentage: row.proposal_deposit_percentage as string,
     },
-    lineItems: lineItems as InvoiceLineItem[],
+    lineItems: lineItems as unknown as InvoiceLineItem[],
   };
 }
 

@@ -82,7 +82,7 @@ export default async function ClientDashboardPage() {
         AND i.status = 'unpaid'
         AND i.total_amount > 0
     `,
-  ])) as [
+  ])) as unknown as [
     ProposalRow[],
     ProjectRow[],
     { owed: string; count: number }[],

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
-import { auth } from "@clerk/nextjs/server";
+import { getSessionUser } from "@/lib/auth";
 import { CheckCircle2, Lock, MessageSquare } from "lucide-react";
 import { sql } from "@/lib/db";
 import { getClientIp } from "@/lib/rate-limit";
@@ -99,15 +99,15 @@ async function getPublicProposal(token: string) {
       WHERE proposal_id = ${proposalId}
       ORDER BY created_at ASC
     `;
-    comments = commentRows as ProposalCommentRow[];
+    comments = commentRows as unknown as ProposalCommentRow[];
   } catch {
     // Table not yet migrated. Render an empty thread.
   }
 
   return {
     ...(rows[0] as PublicProposal),
-    lineItems: items as LineItemRow[],
-    events: events as EventRow[],
+    lineItems: items as unknown as LineItemRow[],
+    events: events as unknown as EventRow[],
     comments,
   };
 }
@@ -120,22 +120,20 @@ async function getPublicProposal(token: string) {
 // themselves.
 async function triggerFirstViewNotification(
   token: string,
-  clerkUserId: string,
+  viewerUserId: string,
 ): Promise<void> {
   try {
     const ownerRows = await sql`
       SELECT p.id, p.user_id, p.title,
-             c.name AS client_name,
-             u.clerk_id AS owner_clerk_id
+             c.name AS client_name
       FROM proposals p
       JOIN clients c ON c.id = p.client_id
-      JOIN users u ON u.id = p.user_id
       WHERE p.share_token = ${token}
         AND p.status <> 'draft'
     `;
     const owner = ownerRows[0];
     if (!owner) return;
-    if (owner.owner_clerk_id === clerkUserId) return;
+    if (owner.user_id === viewerUserId) return;
 
     const proposalId = owner.id as string;
     const inserted = await sql`
@@ -168,7 +166,8 @@ export default async function ShareProposalPage({
 }: {
   params: { token: string };
 }) {
-  const { userId } = await auth();
+  const sessionUser = await getSessionUser();
+  const userId = sessionUser?.id ?? null;
 
   // Account-required gate. Unauthenticated visitors never see proposal
   // content — we don't even hit the DB for them, which avoids leaking
@@ -200,10 +199,7 @@ export default async function ShareProposalPage({
   let viewerRole: "client" | "agency" | null = null;
   if (userId) {
     const roleRows = await sql`
-      SELECT up.role
-      FROM user_profiles up
-      JOIN users u ON u.id = up.user_id
-      WHERE u.clerk_id = ${userId}
+      SELECT role FROM user_profiles WHERE user_id = ${userId}
     `;
     const r = roleRows[0]?.role;
     if (r === "client" || r === "agency") viewerRole = r;
@@ -481,8 +477,7 @@ export default async function ShareProposalPage({
 
 // Account-required gate shown to anonymous visitors. Carries the share
 // token through to sign-up via the ?proposal= query param so the new
-// account lands back on this page after onboarding. The sign-in fallback
-// uses Clerk's redirect_url so returning clients also end up here.
+// account lands back on this page after onboarding.
 function SignUpGate({ token }: { token: string }) {
   const signUpHref = `/sign-up/client?proposal=${token}`;
   const signInHref = `/sign-in?redirect_url=${encodeURIComponent(

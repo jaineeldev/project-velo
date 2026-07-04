@@ -51,7 +51,7 @@ export default async function AdminUsersPage({
     ORDER BY u.created_at DESC
     LIMIT 200
   `;
-  const rows = rowsRaw as UserRow[];
+  const rows = rowsRaw as unknown as UserRow[];
 
   const [agencyCountRow] = await sql`
     SELECT COUNT(*)::int AS count FROM user_profiles WHERE role = 'agency'

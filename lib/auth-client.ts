@@ -1,9 +1,13 @@
-import { createAuthClient } from "better-auth/react";
-import { magicLinkClient, twoFactorClient } from "better-auth/client/plugins";
+import { createClient } from "@/lib/supabase/client";
 
-export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_APP_URL,
-  plugins: [magicLinkClient(), twoFactorClient()],
-});
-
-export const { signIn, signUp, signOut, useSession } = authClient;
+// Single browser-side Supabase client instance, imported by every auth form
+// component. Unlike Better Auth's `authClient` (which assembled a bespoke
+// API surface from plugins - signIn.email, signIn.magicLink, twoFactor.*,
+// requestPasswordReset, etc.), Supabase's client already exposes every auth
+// method directly on `.auth`: `signInWithPassword`, `signUp`,
+// `signInWithOAuth`, `signInWithOtp` (magic link), `resetPasswordForEmail`,
+// `updateUser` (password reset completion + name/email changes), `resend`
+// (re-send verification), and the `.mfa.*` namespace for TOTP enrollment
+// and challenge/verify. Components call `supabase.auth.*` directly rather
+// than through a wrapper.
+export const supabase = createClient();

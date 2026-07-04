@@ -85,20 +85,20 @@ export async function submitProjectChangeRequest(
     client_name: string | null;
   };
 
-  await sql.transaction([
-    sql`
+  await sql.begin(async (sql) => {
+    await sql`
       INSERT INTO change_requests (proposal_id, message)
       VALUES (${project.proposal_id}, ${trimmed})
-    `,
-    sql`
+    `;
+    await sql`
       INSERT INTO proposal_events (proposal_id, event_type, description)
       VALUES (
         ${project.proposal_id},
         'change_request_submitted',
         ${`Client submitted change request: ${trimmed}`}
       )
-    `,
-  ]);
+    `;
+  });
 
   sendOperatorNotification(project.user_id, {
     kind: "change_request_submitted",

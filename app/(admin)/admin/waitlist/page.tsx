@@ -34,7 +34,7 @@ export default async function AdminWaitlistPage() {
       FROM waitlist_signups
     `,
   ]);
-  const rows = rowsRaw as SignupRow[];
+  const rows = rowsRaw as unknown as SignupRow[];
   const counts = countsRow as {
     active: number;
     unsubscribed: number;

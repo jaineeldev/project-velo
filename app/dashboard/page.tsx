@@ -1,4 +1,3 @@
-import { currentUser } from "@clerk/nextjs/server";
 import {
   FolderKanban,
   Receipt,
@@ -18,14 +17,8 @@ import {
 } from "./dashboard-sections";
 
 export default async function DashboardPage() {
-  const [clerk, appUser] = await Promise.all([
-    currentUser(),
-    getOrCreateUser(),
-  ]);
-  const name =
-    clerk?.firstName ||
-    clerk?.emailAddresses[0]?.emailAddress.split("@")[0] ||
-    "there";
+  const appUser = await getOrCreateUser();
+  const name = appUser.name.split(" ")[0] || appUser.email.split("@")[0] || "there";
 
   // Counts + lists run in one parallel batch. The four count queries are
   // intentionally not cached: they're exactly the at-a-glance signals the
@@ -75,7 +68,7 @@ export default async function DashboardPage() {
       GROUP BY pr.id, pr.title, pr.status, pr.created_at, pr.proposal_id, c.name
       ORDER BY pr.created_at DESC
     `,
-  ])) as [
+  ])) as unknown as [
     [{ count: number }],
     [{ count: number }],
     [{ count: number }],

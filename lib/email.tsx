@@ -655,6 +655,152 @@ export async function sendDevEmailDeliveryFailure(
   });
 }
 
+export type SendAuthEmailResult =
+  | { ok: true; id: string }
+  | { ok: false; reason: string };
+
+// Auth-flow transactional emails (Better Auth callbacks in lib/auth.ts). Kept
+// here so every outbound send in the app goes through the same Resend
+// wrapper + structured-logging convention. Per CLAUDE.md §6, logs never
+// include the raw email address, token, or URL — only a redacted address and
+// outcome.
+function logAuthEmailOutcome(
+  event: string,
+  to: string,
+  outcome: "sent" | "failed",
+) {
+  console.log(
+    JSON.stringify({
+      ts: new Date().toISOString(),
+      event,
+      to: redactEmailForLog(to),
+      outcome,
+    }),
+  );
+}
+
+export async function sendAuthVerificationEmail(
+  to: string,
+  url: string,
+): Promise<SendAuthEmailResult> {
+  const resend = getResend();
+  if (!resend) return { ok: false, reason: "RESEND_API_KEY is not configured" };
+
+  const text = [
+    "Confirm your email",
+    "",
+    "Click the link below to verify your email address and finish setting up your Velo account:",
+    url,
+    "",
+    "This link expires shortly — if it's stopped working, sign in again to get a new one.",
+    "",
+    "If you didn't create a Velo account, you can ignore this email.",
+    "",
+    "Velo",
+  ].join("\n");
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_ADDRESS,
+      to,
+      subject: "Verify your email — Velo",
+      text,
+    });
+    if (error) {
+      logAuthEmailOutcome("auth_verify_email", to, "failed");
+      return { ok: false, reason: error.message };
+    }
+    logAuthEmailOutcome("auth_verify_email", to, "sent");
+    return { ok: true, id: data?.id ?? "" };
+  } catch (err) {
+    logAuthEmailOutcome("auth_verify_email", to, "failed");
+    return {
+      ok: false,
+      reason: err instanceof Error ? err.message : "Unknown email error",
+    };
+  }
+}
+
+export async function sendAuthResetPasswordEmail(
+  to: string,
+  url: string,
+): Promise<SendAuthEmailResult> {
+  const resend = getResend();
+  if (!resend) return { ok: false, reason: "RESEND_API_KEY is not configured" };
+
+  const text = [
+    "Reset your password",
+    "",
+    "We got a request to reset the password on your Velo account. Click the link below to choose a new one:",
+    url,
+    "",
+    "This link expires shortly. If you didn't ask to reset your password, you can ignore this email — your password won't change.",
+    "",
+    "Velo",
+  ].join("\n");
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_ADDRESS,
+      to,
+      subject: "Reset your password — Velo",
+      text,
+    });
+    if (error) {
+      logAuthEmailOutcome("auth_reset_password", to, "failed");
+      return { ok: false, reason: error.message };
+    }
+    logAuthEmailOutcome("auth_reset_password", to, "sent");
+    return { ok: true, id: data?.id ?? "" };
+  } catch (err) {
+    logAuthEmailOutcome("auth_reset_password", to, "failed");
+    return {
+      ok: false,
+      reason: err instanceof Error ? err.message : "Unknown email error",
+    };
+  }
+}
+
+export async function sendAuthMagicLinkEmail(
+  to: string,
+  url: string,
+): Promise<SendAuthEmailResult> {
+  const resend = getResend();
+  if (!resend) return { ok: false, reason: "RESEND_API_KEY is not configured" };
+
+  const text = [
+    "Your sign-in link",
+    "",
+    "Click the link below to sign in to Velo. It only works once and expires shortly:",
+    url,
+    "",
+    "If you didn't request this, you can ignore this email — no one can access your account without clicking this exact link.",
+    "",
+    "Velo",
+  ].join("\n");
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_ADDRESS,
+      to,
+      subject: "Your sign-in link — Velo",
+      text,
+    });
+    if (error) {
+      logAuthEmailOutcome("auth_magic_link", to, "failed");
+      return { ok: false, reason: error.message };
+    }
+    logAuthEmailOutcome("auth_magic_link", to, "sent");
+    return { ok: true, id: data?.id ?? "" };
+  } catch (err) {
+    logAuthEmailOutcome("auth_magic_link", to, "failed");
+    return {
+      ok: false,
+      reason: err instanceof Error ? err.message : "Unknown email error",
+    };
+  }
+}
+
 function redactEmailForLog(addr: string): string {
   const at = addr.indexOf("@");
   if (at <= 0) return "(unknown)";

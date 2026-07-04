@@ -93,7 +93,7 @@ export default async function AdminSecurityPage({
     ORDER BY created_at DESC
     LIMIT 200
   `;
-  const rows = rowsRaw as EventRow[];
+  const rows = rowsRaw as unknown as EventRow[];
 
   const eventTypesRaw = await sql`
     SELECT event_type, COUNT(*)::int AS count
@@ -102,7 +102,7 @@ export default async function AdminSecurityPage({
     GROUP BY event_type
     ORDER BY count DESC, event_type ASC
   `;
-  const eventTypes = eventTypesRaw as { event_type: string; count: number }[];
+  const eventTypes = eventTypesRaw as unknown as { event_type: string; count: number }[];
 
   return (
     <div className="px-10 py-10">

@@ -76,8 +76,8 @@ export async function approveProposal(token: string): Promise<void> {
   `;
 
   // Generate the project UUID up-front so the invoice insert can reference it
-  // inside the same atomic batch — Neon's sql.transaction() can't pass values
-  // between queries. The share_token powers the public client portal at
+  // inside the same atomic batch without a round-trip back out of the
+  // transaction. The share_token powers the public client portal at
   // /share/project/[token] — 32 random bytes => 256 bits of entropy.
   const projectId = randomUUID();
   const projectShareToken = randomBytes(32).toString("hex");
@@ -89,30 +89,30 @@ export async function approveProposal(token: string): Promise<void> {
 
   // All writes in a single transaction — partial state on mid-batch failure
   // would otherwise leave a project with no invoice or vice-versa.
-  await sql.transaction([
-    sql`
+  await sql.begin(async (sql) => {
+    await sql`
       INSERT INTO projects (id, proposal_id, client_id, user_id, title, status, share_token)
       VALUES (${projectId}, ${proposalId}, ${p.client_id}, ${p.user_id}, ${p.title}, 'active', ${projectShareToken})
-    `,
-    ...items.map((item) => {
+    `;
+    for (const item of items) {
       const amount = Number(item.quantity) * Number(item.unit_price);
-      return sql`
+      await sql`
         INSERT INTO milestones (proposal_id, title, amount, status, estimated_duration)
         VALUES (${proposalId}, ${item.description}, ${amount}, 'not_started', ${item.estimated_duration})
       `;
-    }),
-    sql`
+    }
+    await sql`
       INSERT INTO invoices (project_id, user_id, client_id, total_amount, gst_amount, status, type)
       VALUES (${projectId}, ${p.user_id}, ${p.client_id}, ${depositTotal}, ${depositGst}, 'unpaid', 'deposit')
-    `,
-    sql`
+    `;
+    await sql`
       UPDATE proposals SET status = 'approved' WHERE id = ${proposalId}
-    `,
-    sql`
+    `;
+    await sql`
       INSERT INTO proposal_events (proposal_id, event_type, description)
       VALUES (${proposalId}, 'approved', 'Proposal approved by client')
-    `,
-  ]);
+    `;
+  });
 
   // Fetch agency + client details once so both the dev-side approval
   // notification and the client-side deposit invoice email can be sent

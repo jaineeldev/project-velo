@@ -2,23 +2,22 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { SignUp } from "@clerk/nextjs";
+import { SignUpForm } from "./sign-up-form";
 import { cn, focusRing } from "@/lib/utils";
 
-// Clerk's <SignUp /> drives the user through sub-paths
-// (/sign-up/verify-email-address, etc.) on the catch-all route, which
-// re-mounts this component each step. We persist the consent in
-// sessionStorage so the user clicks the checkbox once at the start and
-// isn't kicked back to the gate after entering their email. The store is
-// per-tab and clears when the tab closes — appropriate for a consent
-// gesture that should be re-affirmed in a fresh session.
+// The sign-up form re-renders across the email/password and social flows,
+// so we persist the consent in sessionStorage: the user clicks the
+// checkbox once at the start and isn't kicked back to the gate on
+// re-render. The store is per-tab and clears when the tab closes —
+// appropriate for a consent gesture that should be re-affirmed in a fresh
+// session.
 const STORAGE_KEY = "signup-consent";
 
 type Props = {
-  // When set, Clerk redirects here after a successful sign-up instead of
-  // the env default (NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL = /dashboard).
+  // Where Better Auth should land the browser after a *social* sign-up.
   // Used by the client sign-up flow to land on the finalize endpoint that
-  // assigns the 'client' role.
+  // assigns the 'client' role. Forwarded to SignUpForm's
+  // `afterSocialSignUp` prop.
   signUpForceRedirectUrl?: string;
 };
 
@@ -46,16 +45,7 @@ export function ConsentGate({ signUpForceRedirectUrl }: Props) {
   if (proceeded) {
     return (
       <>
-        <SignUp
-          forceRedirectUrl={signUpForceRedirectUrl}
-          appearance={{
-            elements: {
-              card: "!border-neutral-300 dark:!border-neutral-700 [box-shadow:none!important]",
-              cardBox: "[box-shadow:none!important]",
-              rootBox: "[box-shadow:none!important]",
-            },
-          }}
-        />
+        <SignUpForm afterSocialSignUp={signUpForceRedirectUrl} />
         <p className="mt-4 max-w-sm text-center text-sm text-muted-foreground">
           By creating an account you agree to our{" "}
           <Link

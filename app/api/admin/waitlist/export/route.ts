@@ -43,7 +43,7 @@ export async function GET(req: Request) {
           WHERE unsubscribed_at IS NULL
           ORDER BY created_at ASC
         `;
-  const rows = rowsRaw as SignupRow[];
+  const rows = rowsRaw as unknown as SignupRow[];
 
   const header =
     include === "all"

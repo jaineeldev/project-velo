@@ -341,8 +341,8 @@ export async function getProposal(proposalId: string): Promise<ProposalDetail | 
 
   return {
     ...(rows[0] as Omit<ProposalDetail, "lineItems" | "events" | "latestChangeRequest">),
-    lineItems: items as ProposalDetail["lineItems"],
-    events: events as ProposalEvent[],
+    lineItems: items as unknown as ProposalDetail["lineItems"],
+    events: events as unknown as ProposalEvent[],
     latestChangeRequest: (changeRequests[0] as ChangeRequest) ?? null,
   };
 }
@@ -369,7 +369,7 @@ export async function getProposalComments(
       WHERE proposal_id = ${proposalId}
       ORDER BY created_at ASC
     `;
-    return rows as ProposalCommentRow[];
+    return rows as unknown as ProposalCommentRow[];
   } catch {
     return [];
   }

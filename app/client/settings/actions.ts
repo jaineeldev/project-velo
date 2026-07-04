@@ -51,7 +51,7 @@ export async function checkDeletionEligibility(): Promise<DeletionEligibility> {
         AND i.status = 'unpaid'
         AND i.total_amount > 0
     `,
-  ])) as [{ count: number }[], { count: number }[], { count: number }[]];
+  ])) as unknown as [{ count: number }[], { count: number }[], { count: number }[]];
 
   const blockers: DeletionBlocker[] = [];
   if (activeProposals[0].count > 0) {
@@ -118,10 +118,10 @@ export async function deleteClientAccount(
   // stays put — that's the agency's data, not the client's. The clients
   // rows that reference this user's email by string match remain too;
   // they're just contact records the agency keeps.
-  await sql.transaction([
-    sql`DELETE FROM user_profiles WHERE user_id = ${user.id}`,
-    sql`DELETE FROM users WHERE id = ${user.id}`,
-  ]);
+  await sql.begin(async (sql) => {
+    await sql`DELETE FROM user_profiles WHERE user_id = ${user.id}`;
+    await sql`DELETE FROM users WHERE id = ${user.id}`;
+  });
 
   try {
     const clerk = await clerkClient();

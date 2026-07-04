@@ -108,7 +108,7 @@ export async function checkDeletionEligibility(): Promise<DeletionEligibility> {
         AND status = 'unpaid'
         AND total_amount > 0
     `,
-  ])) as [{ count: number }[], { count: number }[], { count: number }[]];
+  ])) as unknown as [{ count: number }[], { count: number }[], { count: number }[]];
 
   const blockers: DeletionBlocker[] = [];
   if (activeProposals[0].count > 0) {
@@ -147,32 +147,35 @@ export async function deleteAccount(emailConfirmation: string): Promise<void> {
   }
 
   // Single atomic batch — partial deletion would leave orphaned rows that
-  // could be re-claimed when the same email signs up again.
-  await sql.transaction([
-    sql`DELETE FROM time_entries WHERE user_id = ${user.id}`,
-    sql`
+  // could be re-claimed when the same email signs up again. postgres.js's
+  // real transaction API is callback-based (sql.begin), not an array of
+  // pre-built queries — each statement below must run on the tx-scoped `sql`
+  // passed into the callback, not the module-level `sql` import.
+  await sql.begin(async (sql) => {
+    await sql`DELETE FROM time_entries WHERE user_id = ${user.id}`;
+    await sql`
       DELETE FROM change_requests
       WHERE proposal_id IN (SELECT id FROM proposals WHERE user_id = ${user.id})
-    `,
-    sql`
+    `;
+    await sql`
       DELETE FROM proposal_events
       WHERE proposal_id IN (SELECT id FROM proposals WHERE user_id = ${user.id})
-    `,
-    sql`
+    `;
+    await sql`
       DELETE FROM line_items
       WHERE proposal_id IN (SELECT id FROM proposals WHERE user_id = ${user.id})
-    `,
-    sql`
+    `;
+    await sql`
       DELETE FROM milestones
       WHERE proposal_id IN (SELECT id FROM proposals WHERE user_id = ${user.id})
-    `,
-    sql`DELETE FROM invoices WHERE user_id = ${user.id}`,
-    sql`DELETE FROM projects WHERE user_id = ${user.id}`,
-    sql`DELETE FROM proposals WHERE user_id = ${user.id}`,
-    sql`DELETE FROM clients WHERE user_id = ${user.id}`,
-    sql`DELETE FROM user_profiles WHERE user_id = ${user.id}`,
-    sql`DELETE FROM users WHERE id = ${user.id}`,
-  ]);
+    `;
+    await sql`DELETE FROM invoices WHERE user_id = ${user.id}`;
+    await sql`DELETE FROM projects WHERE user_id = ${user.id}`;
+    await sql`DELETE FROM proposals WHERE user_id = ${user.id}`;
+    await sql`DELETE FROM clients WHERE user_id = ${user.id}`;
+    await sql`DELETE FROM user_profiles WHERE user_id = ${user.id}`;
+    await sql`DELETE FROM users WHERE id = ${user.id}`;
+  });
 
   // DB is authoritative — if Clerk delete fails, the orphaned Clerk account
   // can't sign back in to a missing user row. Log and continue.

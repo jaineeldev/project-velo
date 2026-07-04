@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useClerk } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/auth-client";
 import { AlertTriangle } from "lucide-react";
 import { cn, focusRing } from "@/lib/utils";
 import {
@@ -22,7 +23,7 @@ const BLOCKER_LABEL: Record<DeletionBlocker["kind"], (n: number) => string> = {
 };
 
 export function DangerZone({ accountEmail, initialBlockers }: Props) {
-  const { signOut } = useClerk();
+  const router = useRouter();
   const [confirming, setConfirming] = useState(false);
   const [typed, setTyped] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +48,8 @@ export function DangerZone({ accountEmail, initialBlockers }: Props) {
         );
         return;
       }
-      await signOut({ redirectUrl: "/sign-in" });
+      await supabase.auth.signOut();
+      router.push("/sign-in");
     });
   }
 

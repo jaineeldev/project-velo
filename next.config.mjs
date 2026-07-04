@@ -9,7 +9,11 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://clerk-telemetry.com https://api.resend.com https://*.neon.tech wss://*.neon.tech",
+  // https://*.supabase.co covers both the Auth API (signup/signin/etc, hit
+  // directly from the browser via supabase-js) and the Postgres/Storage REST
+  // endpoints, even though the app's own DB queries go server-side through
+  // postgres.js rather than the browser - Session 13 migration.
+  "connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://clerk-telemetry.com https://api.resend.com https://*.neon.tech wss://*.neon.tech https://*.supabase.co wss://*.supabase.co",
   "frame-src 'self' https://*.clerk.accounts.dev https://challenges.cloudflare.com",
   "frame-ancestors 'none'",
   "form-action 'self'",

@@ -86,7 +86,7 @@ export default async function AdminUserDetailPage({
     WHERE u.clerk_id = ${clerkId}
     LIMIT 1
   `;
-  const userRows = userRaw as UserDetail[];
+  const userRows = userRaw as unknown as UserDetail[];
 
   if (userRows.length === 0) notFound();
   const user = userRows[0];
@@ -117,7 +117,7 @@ export default async function AdminUserDetailPage({
       LIMIT 15
     `,
   ]);
-  const recentEvents = recentEventsRaw as EventRow[];
+  const recentEvents = recentEventsRaw as unknown as EventRow[];
 
   // Client side: proposals shared with this email. Only run for client
   // users (and only used in the client-side render branch).

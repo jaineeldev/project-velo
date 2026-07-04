@@ -1,156 +1,7 @@
 import { cache } from "react";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { betterAuth } from "better-auth";
-import { magicLink, twoFactor } from "better-auth/plugins";
-import { dash } from "@better-auth/infra";
-import { Pool } from "@neondatabase/serverless";
-
-// Better Auth needs a pg-compatible Pool. `sql` from `lib/db` is the HTTP
-// driver, fine for app queries but not for the pg protocol Better Auth
-// expects. Neon's `Pool` speaks pg over WebSocket, so it drops in here.
-// DATABASE_URL absence is caught by `lib/db.ts`; BETTER_AUTH_SECRET absence
-// is caught by Better Auth itself at first request. Neither check runs at
-// module load, so `next build`'s page-data collection stays happy.
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL ?? "postgres://build-placeholder",
-});
-
-export const auth = betterAuth({
-  database: pool,
-  secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: process.env.BETTER_AUTH_URL,
-
-  emailAndPassword: {
-    enabled: true,
-    requireEmailVerification: true,
-    minPasswordLength: 10,
-    sendResetPassword: async ({ user, url }) => {
-      console.log(
-        JSON.stringify({
-          ts: new Date().toISOString(),
-          event: "auth_reset_password_stub",
-          to: user.email,
-          url,
-        }),
-      );
-    },
-  },
-  emailVerification: {
-    sendOnSignUp: true,
-    autoSignInAfterVerification: true,
-    sendVerificationEmail: async ({ user, url }) => {
-      console.log(
-        JSON.stringify({
-          ts: new Date().toISOString(),
-          event: "auth_verify_email_stub",
-          to: user.email,
-          url,
-        }),
-      );
-    },
-  },
-
-  socialProviders: {
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID ?? "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
-    },
-    github: {
-      clientId: process.env.GITHUB_CLIENT_ID ?? "",
-      clientSecret: process.env.GITHUB_CLIENT_SECRET ?? "",
-    },
-  },
-
-  plugins: [
-    dash({
-      apiKey: process.env.BETTER_AUTH_API_KEY,
-    }),
-    magicLink({
-      sendMagicLink: async ({ email, url }) => {
-        console.log(
-          JSON.stringify({
-            ts: new Date().toISOString(),
-            event: "auth_magic_link_stub",
-            to: email,
-            url,
-          }),
-        );
-      },
-    }),
-    twoFactor({
-      schema: {
-        user: {
-          fields: {
-            twoFactorEnabled: "two_factor_enabled",
-          },
-        },
-        twoFactor: {
-          modelName: "two_factor",
-          fields: {
-            userId: "user_id",
-            backupCodes: "backup_codes",
-            failedVerificationCount: "failed_verification_count",
-            lockedUntil: "locked_until",
-          },
-        },
-      },
-    }),
-  ],
-
-  user: {
-    modelName: "users",
-    fields: {
-      emailVerified: "email_verified",
-      createdAt: "created_at",
-      updatedAt: "updated_at",
-    },
-  },
-  session: {
-    modelName: "session",
-    fields: {
-      userId: "user_id",
-      expiresAt: "expires_at",
-      ipAddress: "ip_address",
-      userAgent: "user_agent",
-      createdAt: "created_at",
-      updatedAt: "updated_at",
-    },
-    cookieCache: {
-      enabled: true,
-      maxAge: 300,
-    },
-  },
-  account: {
-    modelName: "account",
-    fields: {
-      accountId: "account_id",
-      providerId: "provider_id",
-      userId: "user_id",
-      accessToken: "access_token",
-      refreshToken: "refresh_token",
-      idToken: "id_token",
-      accessTokenExpiresAt: "access_token_expires_at",
-      refreshTokenExpiresAt: "refresh_token_expires_at",
-      createdAt: "created_at",
-      updatedAt: "updated_at",
-    },
-  },
-  verification: {
-    modelName: "verification",
-    fields: {
-      expiresAt: "expires_at",
-      createdAt: "created_at",
-      updatedAt: "updated_at",
-    },
-  },
-
-  advanced: {
-    database: {
-      generateId: () => crypto.randomUUID(),
-    },
-  },
-});
+import { createClient } from "@/lib/supabase/server";
+import { sql } from "@/lib/db";
 
 export type AppUser = {
   id: string;
@@ -160,26 +11,83 @@ export type AppUser = {
 
 // Dedupe within a single render tree — a dashboard request typically hits
 // this from the layout, the page, and any server action helpers.
+//
+// `supabase.auth.getUser()` (not `getSession()`) is used deliberately: it
+// re-validates the JWT against the Supabase Auth server on every call
+// instead of trusting whatever's sitting in the cookie, which matters
+// server-side since the cookie itself isn't a trusted source of truth.
+//
+// public.users.id is always identical to auth.users.id — there's no
+// separate mapping table. Every other table's user_id FK points at
+// public.users.id, so the first time we see a given Supabase identity we
+// create the matching row; every request after that is a plain SELECT.
 export const getSessionUser = cache(async (): Promise<AppUser | null> => {
-  const session = await auth.api.getSession({ headers: headers() });
-  if (!session) return null;
-  return {
-    id: session.user.id,
-    email: session.user.email,
-    name: session.user.name ?? "",
-  };
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  // MFA enforcement. A password/social sign-in on an account with a
+  // verified TOTP factor produces a session at `aal1` with `nextLevel`
+  // reporting `aal2` until the two-factor challenge is completed. Treat
+  // that as "not fully signed in" — otherwise a visitor who has the right
+  // password but hasn't passed the second factor would sail straight
+  // through to protected pages. `requireUser()` below re-checks the raw
+  // session to route this case to the two-factor challenge instead of the
+  // generic sign-in page.
+  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aal && aal.nextLevel === "aal2" && aal.currentLevel !== "aal2") {
+    return null;
+  }
+
+  const existing = await sql`
+    SELECT id, email, name FROM users WHERE id = ${user.id} LIMIT 1
+  `;
+  if (existing.length > 0) {
+    return existing[0] as unknown as AppUser;
+  }
+
+  const email = user.email ?? "";
+  const name =
+    (user.user_metadata?.name as string | undefined) ??
+    (user.user_metadata?.full_name as string | undefined) ??
+    "";
+  const emailVerified = user.email_confirmed_at != null;
+
+  // ON CONFLICT guards a race between two concurrent first-requests (e.g. two
+  // tabs) — whichever loses just reads back the row the winner inserted.
+  const inserted = await sql`
+    INSERT INTO users (id, email, name, email_verified)
+    VALUES (${user.id}, ${email}, ${name}, ${emailVerified})
+    ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email
+    RETURNING id, email, name
+  `;
+  return inserted[0] as unknown as AppUser;
 });
 
 export const requireUser = async (): Promise<AppUser> => {
   const user = await getSessionUser();
-  if (!user) redirect("/sign-in");
-  return user;
+  if (user) return user;
+
+  // getSessionUser() returns null both for "no session" and for "signed in
+  // but the MFA challenge isn't complete yet" — distinguish them here so the
+  // second case lands on the challenge form instead of back at square one.
+  const supabase = await createClient();
+  const {
+    data: { user: rawUser },
+  } = await supabase.auth.getUser();
+  if (rawUser) redirect("/sign-in/two-factor");
+  redirect("/sign-in");
 };
 
-// TEMPORARY SHIM — remove in Session 3 once every caller has been migrated to
-// `requireUser()`. Exists only so the app can build during the Clerk → Better
-// Auth cutover; the `clerk_id` field is a stub so type-checks pass. See
-// CLAUDE.md §12.2 Session 3 for the migration path.
+// TEMPORARY SHIM — kept only so the ~30 existing call sites (Session D scope,
+// see CLAUDE.md §13.2) keep compiling and working during the cutover.
+// `clerk_id` is a stub; any consumer that still reaches into it to call the
+// Clerk SDK directly (account-deletion, name-change) is already non-functional
+// today regardless of this shim, since Clerk isn't the live auth provider —
+// Session E rewires those call sites onto `supabase.auth.admin.*`. Session D
+// removes this shim in favor of calling `requireUser()` directly everywhere.
 export type LegacyAppUser = AppUser & { clerk_id: string };
 
 export const getOrCreateUser = async (): Promise<LegacyAppUser> => {

@@ -23,7 +23,10 @@ export type SecurityEventType =
   | "admin_export"
   | "admin_account_suspended"
   | "admin_account_unsuspended"
-  | "notification_failed";
+  | "notification_failed"
+  | "auth_email_bridge_denied"
+  | "auth_email_type_unhandled"
+  | "auth_email_send_failed";
 
 export type SecurityOutcome = "success" | "failure" | "denied";
 

@@ -67,6 +67,25 @@ export default async function SettingsPage() {
 
       <section className="mt-10 border-t border-border pt-8">
         <h2 className="text-base font-medium text-foreground">
+          Security
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Two-factor authentication and sign-in protection.
+        </p>
+        <Link
+          href="/dashboard/settings/security"
+          className={cn(
+            "mt-4 inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
+            focusRing,
+          )}
+        >
+          Manage security
+          <ArrowRight aria-hidden className="h-4 w-4" />
+        </Link>
+      </section>
+
+      <section className="mt-10 border-t border-border pt-8">
+        <h2 className="text-base font-medium text-foreground">
           Subscription &amp; billing
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">

@@ -126,16 +126,16 @@ export default async function DashboardPage() {
 
       <section className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map(({ label, value, icon: Icon }) => (
-          <Card key={label} className="shadow-md">
+          <Card key={label} interactive>
             <CardContent className="flex items-center gap-4 p-5">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-inset ring-primary/15">
                 <Icon aria-hidden className="h-6 w-6 text-primary" />
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                <p className="font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                   {label}
                 </p>
-                <p className="mt-1 text-4xl font-bold tracking-tight text-foreground">
+                <p className="mt-1 font-mono text-4xl font-semibold tabular-nums tracking-tight text-foreground">
                   {value}
                 </p>
               </div>

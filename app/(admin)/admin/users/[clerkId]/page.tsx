@@ -217,7 +217,7 @@ export default async function AdminUserDetailPage({
 
       {isAgency ? (
         <section className="mt-10">
-          <h2 className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+          <h2 className="font-mono text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Activity totals
           </h2>
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -231,10 +231,10 @@ export default async function AdminUserDetailPage({
 
       {isAgency ? (
         <section className="mt-10">
-          <h2 className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+          <h2 className="font-mono text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Recent proposal events
           </h2>
-          <div className="mt-3 overflow-hidden rounded-lg border border-border bg-card">
+          <div className="mt-3 overflow-hidden rounded-xl border border-border bg-card">
             {recentEvents.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-3 px-6 py-12 text-center">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/60">
@@ -275,10 +275,10 @@ export default async function AdminUserDetailPage({
 
       {isClient ? (
         <section className="mt-10">
-          <h2 className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+          <h2 className="font-mono text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Proposals shared with this client
           </h2>
-          <div className="mt-3 overflow-hidden rounded-lg border border-border bg-card">
+          <div className="mt-3 overflow-hidden rounded-xl border border-border bg-card">
             {clientProposals.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-3 px-6 py-12 text-center">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/60">
@@ -351,11 +351,11 @@ function Field({
   return (
     <div
       className={cn(
-        "rounded-lg border border-border bg-card px-4 py-3",
+        "rounded-xl border border-border bg-card px-4 py-3",
         span === 2 ? "lg:col-span-2" : "",
       )}
     >
-      <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
         {label}
       </div>
       <div
@@ -373,8 +373,8 @@ function Field({
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-lg border border-border bg-card px-4 py-3">
-      <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+    <div className="rounded-xl border border-border bg-card px-4 py-3">
+      <div className="font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
         {label}
       </div>
       <div className="mt-1 font-mono text-2xl font-semibold tabular-nums text-foreground">

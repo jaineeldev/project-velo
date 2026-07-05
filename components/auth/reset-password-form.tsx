@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/lib/auth-client";
-import { cn, focusRing } from "@/lib/utils";
 import {
   authCardCls,
   authInputCls,
   authLabelCls,
   authPrimaryButtonCls,
 } from "./shared";
+import { AuthHeader } from "./chrome";
 
 // Unlike Better Auth (which handed this page a `?token=` to submit alongside
 // the new password), Supabase's recovery flow already exchanged the emailed
@@ -46,18 +46,12 @@ export function ResetPasswordForm() {
   if (!hasSession) {
     return (
       <div className={authCardCls}>
-        <div>
-          <h1 className="text-lg font-semibold tracking-tight text-foreground">
-            Link expired
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            That reset link is invalid or has expired. Request a new one to continue.
-          </p>
-        </div>
-        <Link
-          href="/forgot-password"
-          className={cn(authPrimaryButtonCls, focusRing)}
-        >
+        <AuthHeader
+          eyebrow="Reset password"
+          title="Link expired"
+          description="That reset link is invalid or has expired. Request a new one to continue."
+        />
+        <Link href="/forgot-password" className={authPrimaryButtonCls}>
           Request a new link
         </Link>
       </div>
@@ -67,15 +61,12 @@ export function ResetPasswordForm() {
   if (done) {
     return (
       <div className={authCardCls}>
-        <div>
-          <h1 className="text-lg font-semibold tracking-tight text-foreground">
-            Password updated
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Your password has been reset. Sign in with your new password.
-          </p>
-        </div>
-        <Link href="/sign-in" className={cn(authPrimaryButtonCls, focusRing)}>
+        <AuthHeader
+          eyebrow="All set"
+          title="Password updated"
+          description="Your password has been reset. Sign in with your new password."
+        />
+        <Link href="/sign-in" className={authPrimaryButtonCls}>
           Go to sign in
         </Link>
       </div>
@@ -107,14 +98,11 @@ export function ResetPasswordForm() {
 
   return (
     <div className={authCardCls}>
-      <div>
-        <h1 className="text-lg font-semibold tracking-tight text-foreground">
-          Set a new password
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Choose a new password for your account.
-        </p>
-      </div>
+      <AuthHeader
+        eyebrow="New password"
+        title="Set a new password"
+        description="Choose a new password for your account."
+      />
 
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         <div className="space-y-1.5">
@@ -160,7 +148,7 @@ export function ResetPasswordForm() {
         <button
           type="submit"
           disabled={busy}
-          className={cn(authPrimaryButtonCls, focusRing)}
+          className={authPrimaryButtonCls}
         >
           {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
           Reset password

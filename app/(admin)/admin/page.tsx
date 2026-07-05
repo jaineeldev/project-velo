@@ -191,7 +191,7 @@ export default async function AdminOverviewPage() {
       <section className="mt-10">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h2 className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+            <h2 className="font-mono text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               Recent activity
             </h2>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -200,7 +200,7 @@ export default async function AdminOverviewPage() {
           </div>
         </div>
 
-        <div className="mt-3 overflow-hidden rounded-lg border border-border bg-card">
+        <div className="mt-3 overflow-hidden rounded-xl border border-border bg-card">
           {activity.length === 0 ? (
             <EmptyState
               icon={Activity}
@@ -259,17 +259,17 @@ function TileCard({ tile }: { tile: {
     <Link
       href={href}
       className={cn(
-        "group flex flex-col gap-4 rounded-lg border border-border bg-card p-5 transition-colors hover:border-foreground/20 hover:bg-accent/40",
+        "group flex flex-col gap-4 rounded-xl border border-border bg-card p-5 transition-all duration-200 hover:border-foreground/20 hover:bg-accent/40 motion-safe:hover:-translate-y-1",
         focusRing,
       )}
     >
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <span className="font-mono text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
           {label}
         </span>
         <Icon
           aria-hidden
-          className="h-4 w-4 text-muted-foreground group-hover:text-foreground"
+          className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-foreground"
         />
       </div>
       <div>

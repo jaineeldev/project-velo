@@ -2,8 +2,8 @@ import Link from "next/link";
 import { FileText } from "lucide-react";
 import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
-import { cn, focusRing } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
+import { buttonVariants } from "@/components/ui/button";
 import { ProposalsList, type ProposalListRow } from "./proposals-list";
 
 export default async function ProposalsPage() {
@@ -25,17 +25,14 @@ export default async function ProposalsPage() {
         </h1>
         <Link
           href="/dashboard/proposals/new"
-          className={cn(
-            "rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90",
-            focusRing,
-          )}
+          className={buttonVariants({ variant: "primary" })}
         >
           New proposal
         </Link>
       </header>
 
       {proposals.length === 0 ? (
-        <Card className="mt-10 border-dashed shadow-none">
+        <Card className="mt-10 border-dashed">
           <CardContent className="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
               <FileText aria-hidden className="h-5 w-5 text-primary" />

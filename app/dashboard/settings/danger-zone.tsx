@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/auth-client";
 import { AlertTriangle } from "lucide-react";
 import { cn, focusRing } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 import { deleteAccount, type DeletionBlocker } from "./actions";
 
 const BLOCKER_LABEL: Record<DeletionBlocker["kind"], (n: number) => string> = {
@@ -51,7 +52,7 @@ export function DangerZone({ accountEmail, initialBlockers }: Props) {
   }
 
   return (
-    <div className="mt-4 rounded-lg border border-red-300 bg-red-50/40 p-5 dark:border-red-900 dark:bg-red-950/20">
+    <div className="mt-4 rounded-xl border border-red-300 bg-red-50/40 p-5 dark:border-red-900 dark:bg-red-950/20">
       <p className="text-sm font-medium text-red-900 dark:text-red-200">
         Delete account
       </p>
@@ -90,7 +91,7 @@ export function DangerZone({ accountEmail, initialBlockers }: Props) {
           onClick={() => setConfirming(true)}
           aria-label="Delete account"
           className={cn(
-            "mt-4 rounded-md border border-red-400 bg-white px-3 py-1.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-100 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-950/60",
+            "mt-4 inline-flex h-9 items-center justify-center rounded-md border border-red-400 bg-white px-3.5 text-sm font-medium text-red-700 transition-all duration-200 hover:bg-red-100 motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98] dark:border-red-800 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-950/60",
             focusRing,
           )}
         >
@@ -133,10 +134,7 @@ export function DangerZone({ accountEmail, initialBlockers }: Props) {
               onClick={onConfirm}
               disabled={isPending || typed.trim().toLowerCase() !== accountEmail.toLowerCase()}
               aria-busy={isPending}
-              className={cn(
-                "rounded-md bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:cursor-not-allowed disabled:opacity-50",
-                focusRing,
-              )}
+              className={buttonVariants({ variant: "destructive" })}
             >
               {isPending ? "Deleting…" : "Permanently delete"}
             </button>
@@ -144,10 +142,7 @@ export function DangerZone({ accountEmail, initialBlockers }: Props) {
               type="button"
               onClick={onCancel}
               disabled={isPending}
-              className={cn(
-                "rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
-                focusRing,
-              )}
+              className={buttonVariants({ variant: "secondary" })}
             >
               Cancel
             </button>

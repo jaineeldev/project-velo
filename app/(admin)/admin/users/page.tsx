@@ -123,7 +123,7 @@ export default async function AdminUsersPage({
         ) : null}
       </form>
 
-      <div className="mt-5 overflow-hidden rounded-lg border border-border bg-card">
+      <div className="mt-5 overflow-hidden rounded-xl border border-border bg-card">
         {rows.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/60">

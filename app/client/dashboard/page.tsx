@@ -118,13 +118,13 @@ export default async function ClientDashboardPage() {
       </p>
 
       {owedCount > 0 && (
-        <div className="mt-8 flex items-center justify-between gap-4 rounded-lg border border-amber-200 bg-amber-50 px-5 py-4 dark:border-amber-900/60 dark:bg-amber-950/30">
+        <div className="mt-8 flex items-center justify-between gap-4 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 dark:border-amber-900/60 dark:bg-amber-950/30">
           <div className="flex items-center gap-3">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
               <Wallet aria-hidden className="h-4 w-4" />
             </span>
             <div>
-              <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">
+              <p className="font-mono text-sm font-semibold tabular-nums text-amber-900 dark:text-amber-100">
                 {currencyFmt.format(owed)} outstanding
               </p>
               <p className="text-xs text-amber-800/80 dark:text-amber-200/80">
@@ -147,7 +147,7 @@ export default async function ClientDashboardPage() {
 
 function CombinedEmptyState() {
   return (
-    <div className="mt-12 rounded-lg border border-dashed border-border bg-card p-12 text-center">
+    <div className="mt-12 rounded-xl border border-dashed border-border bg-card p-12 text-center">
       <p className="text-sm font-medium text-foreground">Nothing here yet.</p>
       <p className="mt-1.5 text-sm text-muted-foreground">
         You&apos;ll see proposals and projects here once an agency shares them

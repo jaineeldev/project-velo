@@ -4,7 +4,8 @@ import { useState } from "react";
 import Image from "next/image";
 import { Loader2, ShieldCheck } from "lucide-react";
 import { supabase } from "@/lib/auth-client";
-import { cn, focusRing } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 
 // Supabase's `mfa.enroll()` returns the QR code as a ready-to-render SVG
 // data URI (`data.totp.qr_code`) — no client-side QR generation library
@@ -21,14 +22,9 @@ type Step =
 const inputCls =
   "h-10 w-full max-w-xs rounded-md border border-input bg-card px-3 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-60";
 
-const primaryBtnCls =
-  "inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60";
-
-const secondaryBtnCls =
-  "inline-flex h-10 items-center justify-center gap-2 rounded-md border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60";
-
-const destructiveBtnCls =
-  "inline-flex h-10 items-center justify-center gap-2 rounded-md bg-destructive px-4 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:cursor-not-allowed disabled:opacity-60";
+const primaryBtnCls = buttonVariants({ variant: "primary" });
+const secondaryBtnCls = buttonVariants({ variant: "secondary" });
+const destructiveBtnCls = buttonVariants({ variant: "destructive" });
 
 type Props = {
   initialEnabled: boolean;
@@ -118,7 +114,7 @@ export function TwoFactorSettings({ initialEnabled, initialFactorId }: Props) {
 
   if (step.kind === "verify") {
     return (
-      <div className="mt-4 space-y-4 rounded-lg border border-border bg-card p-5">
+      <div className="mt-4 space-y-4 rounded-xl border border-border bg-card p-5">
         <div>
           <p className="text-sm font-medium text-foreground">Scan this QR code</p>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -162,7 +158,7 @@ export function TwoFactorSettings({ initialEnabled, initialFactorId }: Props) {
             <button
               type="submit"
               disabled={busy}
-              className={cn(primaryBtnCls, focusRing)}
+              className={primaryBtnCls}
             >
               {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
               Confirm & enable
@@ -171,7 +167,7 @@ export function TwoFactorSettings({ initialEnabled, initialFactorId }: Props) {
               type="button"
               onClick={cancelEnroll}
               disabled={busy}
-              className={cn(secondaryBtnCls, focusRing)}
+              className={secondaryBtnCls}
             >
               Cancel
             </button>
@@ -182,7 +178,7 @@ export function TwoFactorSettings({ initialEnabled, initialFactorId }: Props) {
   }
 
   return (
-    <div className="mt-4 flex items-center justify-between gap-4 rounded-lg border border-border bg-card p-5">
+    <div className="mt-4 flex items-center justify-between gap-4 rounded-xl border border-border bg-card p-5">
       <div className="flex items-start gap-3">
         <ShieldCheck
           aria-hidden
@@ -208,7 +204,7 @@ export function TwoFactorSettings({ initialEnabled, initialFactorId }: Props) {
         type="button"
         onClick={() => (enabled ? handleDisable() : startEnroll())}
         disabled={busy}
-        className={cn(enabled ? destructiveBtnCls : primaryBtnCls, "shrink-0", focusRing)}
+        className={cn(enabled ? destructiveBtnCls : primaryBtnCls, "shrink-0")}
       >
         {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
         {enabled ? "Disable" : "Enable"}

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { ShieldOff, ShieldCheck } from "lucide-react";
 import { cn, focusRing } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 import { suspendUser, unsuspendUser } from "./actions";
 
 type Props = {
@@ -46,7 +47,7 @@ export function SuspendButtons({ clerkId, isSuspended }: Props) {
           onClick={runUnsuspend}
           disabled={pending}
           className={cn(
-            "inline-flex items-center gap-2 rounded-md border border-success/40 bg-success/10 px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-success/15 disabled:opacity-60",
+            "inline-flex h-9 items-center justify-center gap-2 rounded-md border border-success/40 bg-success/10 px-3.5 text-sm font-medium text-foreground transition-all duration-200 hover:bg-success/15 motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98] disabled:opacity-60",
             focusRing,
           )}
         >
@@ -68,10 +69,7 @@ export function SuspendButtons({ clerkId, isSuspended }: Props) {
             type="button"
             onClick={() => setConfirming(false)}
             disabled={pending}
-            className={cn(
-              "rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
-              focusRing,
-            )}
+            className={buttonVariants({ variant: "ghost" })}
           >
             Cancel
           </button>
@@ -80,7 +78,7 @@ export function SuspendButtons({ clerkId, isSuspended }: Props) {
             onClick={runSuspend}
             disabled={pending}
             className={cn(
-              "inline-flex items-center gap-2 rounded-md border border-destructive/40 bg-destructive/15 px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-destructive/25 disabled:opacity-60",
+              "inline-flex h-9 items-center justify-center gap-2 rounded-md border border-destructive/40 bg-destructive/15 px-3.5 text-sm font-medium text-foreground transition-all duration-200 hover:bg-destructive/25 motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98] disabled:opacity-60",
               focusRing,
             )}
           >
@@ -100,10 +98,7 @@ export function SuspendButtons({ clerkId, isSuspended }: Props) {
       <button
         type="button"
         onClick={() => setConfirming(true)}
-        className={cn(
-          "inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent/60",
-          focusRing,
-        )}
+        className={buttonVariants({ variant: "secondary" })}
       >
         <ShieldOff aria-hidden className="h-4 w-4" />
         Suspend account

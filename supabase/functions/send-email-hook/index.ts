@@ -57,14 +57,21 @@ Deno.serve(async (req) => {
   }
 
   const { user, email_data } = data;
-  const { token_hash, redirect_to, email_action_type, site_url } = email_data;
+  const { token_hash, redirect_to, email_action_type } = email_data;
 
   // Standard Supabase GoTrue verify link: hitting this validates the
   // token_hash, then redirects to `redirect_to` with a `?code=` param that
   // app/auth/callback/route.ts exchanges for a real session via
   // exchangeCodeForSession(). `redirect_to` itself is set per-flow by the
   // auth components (e.g. `${origin}/auth/callback?next=/reset-password`).
-  const confirmationUrl = `${site_url}/auth/v1/verify?token=${token_hash}&type=${email_action_type}&redirect_to=${encodeURIComponent(redirect_to)}`;
+  //
+  // Deliberately built from SUPABASE_URL (auto-injected into every Edge
+  // Function), not email_data.site_url: site_url already comes back as
+  // `${SUPABASE_URL}/auth/v1`, so appending "/auth/v1/verify" to it produced
+  // a doubled "/auth/v1/auth/v1/verify" path that Kong doesn't recognize as
+  // the no-auth verify route, causing "No API key found in request".
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
+  const confirmationUrl = `${supabaseUrl}/auth/v1/verify?token=${token_hash}&type=${email_action_type}&redirect_to=${encodeURIComponent(redirect_to)}`;
 
   try {
     const res = await fetch(bridgeUrl, {

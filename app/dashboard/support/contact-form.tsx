@@ -10,6 +10,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cn, focusRing } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 import { submitSupport } from "./actions";
 
 type SupportType = "bug" | "feedback" | "help";
@@ -74,7 +75,7 @@ export function ContactForm({ userEmail }: { userEmail: string }) {
     return (
       <div
         role="status"
-        className="mt-6 rounded-lg border border-emerald-200 bg-emerald-50/50 p-5 dark:border-emerald-900 dark:bg-emerald-950/20"
+        className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50/50 p-5 dark:border-emerald-900 dark:bg-emerald-950/20"
       >
         <div className="flex items-start gap-3">
           <CheckCircle2
@@ -188,10 +189,7 @@ export function ContactForm({ userEmail }: { userEmail: string }) {
         <button
           type="submit"
           disabled={isPending}
-          className={cn(
-            "inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-60",
-            focusRing,
-          )}
+          className={buttonVariants({ variant: "primary" })}
         >
           <Send aria-hidden className="h-4 w-4" />
           {isPending ? "Sending…" : "Send message"}

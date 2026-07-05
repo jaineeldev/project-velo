@@ -83,7 +83,7 @@ export function SharePaymentStatusBanner({ variant, amount }: Props) {
   return (
     <div
       role="status"
-      className="mb-8 flex items-start gap-3 rounded-lg border border-border bg-card px-4 py-3"
+      className="mb-8 flex items-start gap-3 rounded-xl border border-border bg-card px-4 py-3"
     >
       <XCircle
         aria-hidden

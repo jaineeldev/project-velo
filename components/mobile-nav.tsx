@@ -51,15 +51,9 @@ export function MobileNav({ className }: { className?: string }) {
         </SheetContent>
       </Sheet>
 
-      <div className="flex items-center gap-2">
-        <span
-          aria-hidden
-          className="h-2 w-2 rounded-full bg-primary shadow-[0_0_0_3px_hsl(var(--primary)/0.18)]"
-        />
-        <span className="text-sm font-semibold tracking-tight text-foreground">
-          Velo
-        </span>
-      </div>
+      <span className="font-display text-lg font-black tracking-tight text-foreground">
+        Velo
+      </span>
     </div>
   );
 }

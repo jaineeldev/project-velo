@@ -64,15 +64,9 @@ export default function PrivacyPage() {
           <Link
             href="/"
             aria-label="Velo home"
-            className={cn("flex items-center gap-2.5 rounded", focusRing)}
+            className={cn("rounded-sm font-display text-lg font-black tracking-tight text-foreground", focusRing)}
           >
-            <span
-              aria-hidden
-              className="h-2 w-2 rounded-full bg-primary shadow-[0_0_0_3px_hsl(var(--primary)/0.18)]"
-            />
-            <span className="text-sm font-semibold tracking-tight text-foreground">
-              Velo
-            </span>
+            Velo
           </Link>
           <Link
             href="/"

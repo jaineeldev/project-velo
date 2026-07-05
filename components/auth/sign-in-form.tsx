@@ -10,10 +10,12 @@ import {
   authCardCls,
   authInputCls,
   authLabelCls,
+  authLinkButtonCls,
   authPrimaryButtonCls,
   authSecondaryButtonCls,
   looksLikeEmail,
 } from "./shared";
+import { AuthDivider, AuthHeader } from "./chrome";
 
 // Supabase's browser client (via @supabase/ssr's createBrowserClient) persists
 // the session in both localStorage and cookies by default, so there's no
@@ -122,23 +124,24 @@ export function SignInForm({ initialError }: Props) {
   if (mode === "magic-link" && magicLinkSent) {
     return (
       <div className={authCardCls}>
-        <div>
-          <h1 className="text-lg font-semibold tracking-tight text-foreground">
-            Check your inbox
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            We sent a sign-in link to{" "}
-            <span className="text-foreground">{email.trim()}</span>. Click it
-            to continue - it only works once.
-          </p>
-        </div>
+        <AuthHeader
+          eyebrow="Check your inbox"
+          title="Link sent"
+          description={
+            <>
+              We sent a sign-in link to{" "}
+              <span className="text-foreground">{email.trim()}</span>. Click it
+              to continue &mdash; it only works once.
+            </>
+          }
+        />
         <button
           type="button"
           onClick={() => {
             setMagicLinkSent(false);
             setMode("password");
           }}
-          className={cn(authSecondaryButtonCls, focusRing)}
+          className={authSecondaryButtonCls}
         >
           Back to sign in
         </button>
@@ -148,21 +151,18 @@ export function SignInForm({ initialError }: Props) {
 
   return (
     <div className={authCardCls}>
-      <div>
-        <h1 className="text-lg font-semibold tracking-tight text-foreground">
-          Sign in
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Welcome back. Sign in to manage your clients and projects.
-        </p>
-      </div>
+      <AuthHeader
+        eyebrow="Sign in"
+        title="Welcome back"
+        description="Pick up where you left off with your clients and projects."
+      />
 
       <div className="space-y-3">
         <button
           type="button"
           disabled={busy !== null}
           onClick={() => handleSocial("google")}
-          className={cn(authSecondaryButtonCls, focusRing)}
+          className={authSecondaryButtonCls}
         >
           {busy === "google" && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
           Continue with Google
@@ -171,18 +171,14 @@ export function SignInForm({ initialError }: Props) {
           type="button"
           disabled={busy !== null}
           onClick={() => handleSocial("github")}
-          className={cn(authSecondaryButtonCls, focusRing)}
+          className={authSecondaryButtonCls}
         >
           {busy === "github" && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
           Continue with GitHub
         </button>
       </div>
 
-      <div className="flex items-center gap-3" aria-hidden>
-        <div className="h-px flex-1 bg-border" />
-        <span className="text-xs uppercase tracking-wide text-muted-foreground">or</span>
-        <div className="h-px flex-1 bg-border" />
-      </div>
+      <AuthDivider />
 
       {mode === "password" ? (
         <form onSubmit={handlePasswordSubmit} noValidate className="space-y-4">
@@ -209,9 +205,12 @@ export function SignInForm({ initialError }: Props) {
               </label>
               <Link
                 href="/forgot-password"
-                className={cn("rounded text-xs text-primary hover:underline", focusRing)}
+                className={cn(
+                  "rounded-sm text-xs font-medium text-primary hover:underline",
+                  focusRing,
+                )}
               >
-                Forgot password?
+                Forgot?
               </Link>
             </div>
             <input
@@ -235,7 +234,7 @@ export function SignInForm({ initialError }: Props) {
           <button
             type="submit"
             disabled={busy !== null}
-            className={cn(authPrimaryButtonCls, focusRing)}
+            className={authPrimaryButtonCls}
           >
             {busy === "password" && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
             Sign in
@@ -247,10 +246,7 @@ export function SignInForm({ initialError }: Props) {
               setError(null);
               setMode("magic-link");
             }}
-            className={cn(
-              "w-full rounded text-center text-sm text-primary hover:underline",
-              focusRing,
-            )}
+            className={authLinkButtonCls}
           >
             Email me a sign-in link instead
           </button>
@@ -283,7 +279,7 @@ export function SignInForm({ initialError }: Props) {
           <button
             type="submit"
             disabled={busy !== null}
-            className={cn(authPrimaryButtonCls, focusRing)}
+            className={authPrimaryButtonCls}
           >
             {busy === "magic-link" && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
             Send sign-in link
@@ -295,10 +291,7 @@ export function SignInForm({ initialError }: Props) {
               setError(null);
               setMode("password");
             }}
-            className={cn(
-              "w-full rounded text-center text-sm text-primary hover:underline",
-              focusRing,
-            )}
+            className={authLinkButtonCls}
           >
             Use a password instead
           </button>
@@ -307,7 +300,13 @@ export function SignInForm({ initialError }: Props) {
 
       <p className="text-center text-xs text-muted-foreground">
         Don&apos;t have an account?{" "}
-        <Link href="/sign-up" className={cn("rounded text-primary hover:underline", focusRing)}>
+        <Link
+          href="/sign-up"
+          className={cn(
+            "rounded-sm font-medium text-primary hover:underline",
+            focusRing,
+          )}
+        >
           Sign up
         </Link>
       </p>

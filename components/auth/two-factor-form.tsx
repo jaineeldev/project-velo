@@ -11,6 +11,7 @@ import {
   authLabelCls,
   authPrimaryButtonCls,
 } from "./shared";
+import { AuthHeader } from "./chrome";
 
 // Reached when lib/auth.ts's requireUser() detects a session sitting at
 // aal1 with a verified TOTP factor still pending (see sign-in-form.tsx's
@@ -60,14 +61,11 @@ export function TwoFactorForm() {
 
   return (
     <div className={authCardCls}>
-      <div>
-        <h1 className="text-lg font-semibold tracking-tight text-foreground">
-          Two-factor verification
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Enter the 6-digit code from your authenticator app.
-        </p>
-      </div>
+      <AuthHeader
+        eyebrow="Two-factor"
+        title="Verify it's you"
+        description="Enter the 6-digit code from your authenticator app."
+      />
 
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         <div className="space-y-1.5">
@@ -82,9 +80,13 @@ export function TwoFactorForm() {
             autoComplete="one-time-code"
             autoFocus
             required
+            maxLength={6}
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            className={authInputCls}
+            className={cn(
+              authInputCls,
+              "text-center font-mono text-lg tracking-[0.3em] tabular-nums",
+            )}
           />
         </div>
 
@@ -97,7 +99,7 @@ export function TwoFactorForm() {
         <button
           type="submit"
           disabled={busy}
-          className={cn(authPrimaryButtonCls, focusRing)}
+          className={authPrimaryButtonCls}
         >
           {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
           Verify
@@ -105,7 +107,13 @@ export function TwoFactorForm() {
       </form>
 
       <p className="text-center text-xs text-muted-foreground">
-        <Link href="/sign-in" className={cn("rounded text-primary hover:underline", focusRing)}>
+        <Link
+          href="/sign-in"
+          className={cn(
+            "rounded-sm font-medium text-primary hover:underline",
+            focusRing,
+          )}
+        >
           Back to sign in
         </Link>
       </p>

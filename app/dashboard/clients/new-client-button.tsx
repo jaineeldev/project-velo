@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { cn, focusRing } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 import { createClient } from "./actions";
 import { ClientFormFields } from "./client-form-fields";
 
@@ -37,10 +37,7 @@ export function NewClientButton() {
       <button
         type="button"
         onClick={open}
-        className={cn(
-          "rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90",
-          focusRing,
-        )}
+        className={buttonVariants({ variant: "primary" })}
       >
         New client
       </button>
@@ -48,7 +45,7 @@ export function NewClientButton() {
       <dialog
         ref={dialogRef}
         onClose={() => setError(null)}
-        className="w-full max-w-lg rounded-lg border border-border bg-card p-6 shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-sm"
+        className="w-full max-w-lg rounded-xl border border-border bg-card p-6 shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-sm"
       >
         <h2 className="text-base font-medium text-foreground">
           New client
@@ -74,10 +71,7 @@ export function NewClientButton() {
             <button
               type="button"
               onClick={close}
-              className={cn(
-                "rounded-md px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
-                focusRing,
-              )}
+              className={buttonVariants({ variant: "ghost" })}
             >
               Cancel
             </button>
@@ -85,10 +79,7 @@ export function NewClientButton() {
               type="submit"
               disabled={isPending}
               aria-busy={isPending}
-              className={cn(
-                "rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50",
-                focusRing,
-              )}
+              className={buttonVariants({ variant: "primary" })}
             >
               {isPending ? "Saving…" : "Save client"}
             </button>

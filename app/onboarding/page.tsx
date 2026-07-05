@@ -34,15 +34,9 @@ export default async function OnboardingPage() {
     <main className="flex min-h-screen flex-col bg-background">
       <header className="border-b border-border">
         <div className="mx-auto flex max-w-3xl items-center px-6 py-4">
-          <div className="flex items-center gap-2.5">
-            <span
-              aria-hidden
-              className="h-2 w-2 rounded-full bg-primary shadow-[0_0_0_3px_hsl(var(--primary)/0.18)]"
-            />
-            <span className="text-sm font-semibold tracking-tight text-foreground">
-              Velo
-            </span>
-          </div>
+          <span className="font-display text-lg font-black tracking-tight text-foreground">
+            Velo
+          </span>
         </div>
       </header>
 

@@ -36,12 +36,8 @@ export function ClientSidebarContent({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex h-14 items-center gap-2.5 border-b border-border px-5">
-        <span
-          aria-hidden
-          className="h-2 w-2 rounded-full bg-primary shadow-[0_0_0_3px_hsl(var(--primary)/0.18)]"
-        />
-        <span className="text-sm font-semibold tracking-tight text-foreground">
+      <div className="flex h-14 items-center border-b border-border px-5">
+        <span className="font-display text-lg font-black tracking-tight text-foreground">
           Velo
         </span>
       </div>

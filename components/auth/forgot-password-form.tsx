@@ -10,8 +10,10 @@ import {
   authInputCls,
   authLabelCls,
   authPrimaryButtonCls,
+  authSecondaryButtonCls,
   looksLikeEmail,
 } from "./shared";
+import { AuthHeader } from "./chrome";
 
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
@@ -45,22 +47,18 @@ export function ForgotPasswordForm() {
   if (sent) {
     return (
       <div className={authCardCls}>
-        <div>
-          <h1 className="text-lg font-semibold tracking-tight text-foreground">
-            Check your inbox
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            If an account exists for <span className="text-foreground">{email.trim()}</span>,
-            we&apos;ve sent a link to reset your password.
-          </p>
-        </div>
-        <Link
-          href="/sign-in"
-          className={cn(
-            "inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted",
-            focusRing,
-          )}
-        >
+        <AuthHeader
+          eyebrow="Check your inbox"
+          title="Reset link sent"
+          description={
+            <>
+              If an account exists for{" "}
+              <span className="text-foreground">{email.trim()}</span>, we&apos;ve
+              sent a link to reset your password.
+            </>
+          }
+        />
+        <Link href="/sign-in" className={authSecondaryButtonCls}>
           Back to sign in
         </Link>
       </div>
@@ -69,14 +67,11 @@ export function ForgotPasswordForm() {
 
   return (
     <div className={authCardCls}>
-      <div>
-        <h1 className="text-lg font-semibold tracking-tight text-foreground">
-          Reset your password
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Enter your email and we&apos;ll send you a link to reset it.
-        </p>
-      </div>
+      <AuthHeader
+        eyebrow="Reset password"
+        title="Forgot your password?"
+        description="Enter your email and we'll send you a link to reset it."
+      />
 
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         <div className="space-y-1.5">
@@ -105,7 +100,7 @@ export function ForgotPasswordForm() {
         <button
           type="submit"
           disabled={busy}
-          className={cn(authPrimaryButtonCls, focusRing)}
+          className={authPrimaryButtonCls}
         >
           {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
           Send reset link
@@ -113,7 +108,13 @@ export function ForgotPasswordForm() {
       </form>
 
       <p className="text-center text-xs text-muted-foreground">
-        <Link href="/sign-in" className={cn("rounded text-primary hover:underline", focusRing)}>
+        <Link
+          href="/sign-in"
+          className={cn(
+            "rounded-sm font-medium text-primary hover:underline",
+            focusRing,
+          )}
+        >
           Back to sign in
         </Link>
       </p>

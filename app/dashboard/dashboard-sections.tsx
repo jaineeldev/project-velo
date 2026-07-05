@@ -137,10 +137,10 @@ export function DashboardSections({ items }: { items: DashboardItem[] }) {
 function NeedsAttentionSection({ items }: { items: DashboardItem[] }) {
   return (
     <section>
-      <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+      <h2 className="mb-4 font-mono text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
         Needs attention
       </h2>
-      <ul className="overflow-hidden rounded-lg border border-border bg-card">
+      <ul className="overflow-hidden rounded-xl border border-border bg-card">
         {items.map((item) => (
           <li
             key={`${item.kind}-${item.row.id}`}
@@ -163,13 +163,13 @@ function AllWorkSection({
 }) {
   return (
     <section>
-      <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+      <h2 className="mb-4 font-mono text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
         All work
       </h2>
       {items.length === 0 ? (
         <NoMatches onClear={onClear} />
       ) : (
-        <ul className="overflow-hidden rounded-lg border border-border bg-card">
+        <ul className="overflow-hidden rounded-xl border border-border bg-card">
           {items.map((item) => (
             <li
               key={`${item.kind}-${item.row.id}`}

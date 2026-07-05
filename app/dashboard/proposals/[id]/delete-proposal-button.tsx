@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { cn, focusRing } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 import { deleteProposal } from "../actions";
 
 export function DeleteProposalButton({ proposalId }: { proposalId: string }) {
@@ -31,7 +32,7 @@ export function DeleteProposalButton({ proposalId }: { proposalId: string }) {
         onClick={() => setConfirming(true)}
         aria-label="Delete proposal"
         className={cn(
-          "rounded-md border border-destructive/30 px-3.5 py-1.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10",
+          "inline-flex h-9 items-center justify-center rounded-md border border-destructive/30 px-3.5 text-sm font-medium text-destructive transition-all duration-200 hover:bg-destructive/10 motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98]",
           focusRing,
         )}
       >
@@ -54,7 +55,7 @@ export function DeleteProposalButton({ proposalId }: { proposalId: string }) {
           onClick={() => !isPending && setConfirming(false)}
         >
           <div
-            className="w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-lg"
+            className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-base font-semibold text-foreground">
@@ -69,10 +70,7 @@ export function DeleteProposalButton({ proposalId }: { proposalId: string }) {
                 type="button"
                 onClick={() => setConfirming(false)}
                 disabled={isPending}
-                className={cn(
-                  "rounded-md border border-input bg-background px-3.5 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50",
-                  focusRing,
-                )}
+                className={buttonVariants({ variant: "secondary" })}
               >
                 Cancel
               </button>
@@ -81,10 +79,7 @@ export function DeleteProposalButton({ proposalId }: { proposalId: string }) {
                 onClick={handleDelete}
                 disabled={isPending}
                 aria-busy={isPending}
-                className={cn(
-                  "rounded-md bg-destructive px-3.5 py-1.5 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:opacity-50",
-                  focusRing,
-                )}
+                className={buttonVariants({ variant: "destructive" })}
               >
                 {isPending ? "Deleting…" : "Delete"}
               </button>

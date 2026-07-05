@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { cn, focusRing } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 import { addTimeEntry } from "../actions";
 
 export function TimeEntryForm({ projectId }: { projectId: string }) {
@@ -72,10 +73,7 @@ export function TimeEntryForm({ projectId }: { projectId: string }) {
         type="submit"
         disabled={isPending}
         aria-busy={isPending}
-        className={cn(
-          "rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50",
-          focusRing,
-        )}
+        className={buttonVariants({ variant: "primary" })}
       >
         {isPending ? "Adding…" : "Add entry"}
       </button>

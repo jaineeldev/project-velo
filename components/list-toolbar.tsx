@@ -100,7 +100,7 @@ export function ListToolbar({
 // underlying list isn't empty but the current filter excludes everything.
 export function NoMatches({ onClear }: { onClear: () => void }) {
   return (
-    <div className="mt-6 rounded-lg border border-dashed border-border bg-card px-6 py-12 text-center">
+    <div className="mt-6 rounded-xl border border-dashed border-border bg-card px-6 py-12 text-center">
       <p className="text-sm font-medium text-foreground">No matches</p>
       <p className="mt-1.5 text-sm text-muted-foreground">
         Nothing matches the current search or filters.

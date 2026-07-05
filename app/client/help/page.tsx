@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Mail, FileText, ShieldCheck } from "lucide-react";
 import { cn, focusRing } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 
 export default function ClientHelpPage() {
   return (
@@ -34,10 +35,7 @@ export default function ClientHelpPage() {
         </p>
         <a
           href="mailto:jaineelk.dev@gmail.com"
-          className={cn(
-            "mt-4 inline-flex items-center gap-2 rounded-md border border-border bg-card px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent",
-            focusRing,
-          )}
+          className={cn(buttonVariants({ variant: "secondary" }), "mt-4")}
         >
           <Mail aria-hidden className="h-4 w-4" />
           jaineelk.dev@gmail.com
@@ -53,7 +51,7 @@ export default function ClientHelpPage() {
             <Link
               href="/privacy"
               className={cn(
-                "group flex items-start gap-3 rounded-md border border-border bg-card px-4 py-3 transition-colors hover:bg-accent",
+                "group flex items-start gap-3 rounded-xl border border-border bg-card px-4 py-3 transition-all duration-200 hover:border-foreground/20 hover:bg-accent motion-safe:hover:-translate-y-0.5",
                 focusRing,
               )}
             >
@@ -75,7 +73,7 @@ export default function ClientHelpPage() {
             <Link
               href="/terms"
               className={cn(
-                "group flex items-start gap-3 rounded-md border border-border bg-card px-4 py-3 transition-colors hover:bg-accent",
+                "group flex items-start gap-3 rounded-xl border border-border bg-card px-4 py-3 transition-all duration-200 hover:border-foreground/20 hover:bg-accent motion-safe:hover:-translate-y-0.5",
                 focusRing,
               )}
             >

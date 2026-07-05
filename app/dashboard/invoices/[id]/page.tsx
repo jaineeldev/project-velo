@@ -10,6 +10,7 @@ import {
 } from "@/lib/user-profile";
 import { currencyFmt, dateLongFmt, splitGst } from "@/lib/format";
 import { cn, focusRing } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 
 export default async function InvoiceDetailPage({
@@ -75,10 +76,7 @@ export default async function InvoiceDetailPage({
           )}
           <a
             href={`/api/invoices/${invoice.id}/pdf`}
-            className={cn(
-              "rounded-md border border-input bg-background px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
-              focusRing,
-            )}
+            className={buttonVariants({ variant: "secondary" })}
           >
             Download PDF
           </a>
@@ -86,8 +84,8 @@ export default async function InvoiceDetailPage({
       </div>
 
       {/* Agency "From" block */}
-      <section className="mt-8 rounded-lg border border-border p-5">
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+      <section className="mt-8 rounded-xl border border-border p-5">
+        <p className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
           From
         </p>
         <p className="mt-1 text-sm font-medium text-foreground">
@@ -102,9 +100,9 @@ export default async function InvoiceDetailPage({
       </section>
 
       {/* Client + project meta */}
-      <section className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-border p-5 sm:grid-cols-3">
+      <section className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-border p-5 sm:grid-cols-3">
         <div>
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+          <p className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
             Client
           </p>
           <p className="mt-1 text-sm text-foreground">
@@ -122,7 +120,7 @@ export default async function InvoiceDetailPage({
           )}
         </div>
         <div>
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+          <p className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
             Project
           </p>
           <Link
@@ -133,7 +131,7 @@ export default async function InvoiceDetailPage({
           </Link>
         </div>
         <div>
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+          <p className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
             Issued
           </p>
           <p className="mt-1 text-sm text-foreground">

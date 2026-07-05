@@ -53,7 +53,7 @@ export default async function ProjectDetailPage({
       </div>
 
       {/* Client portal share link */}
-      <section className="mt-8 rounded-lg border border-border bg-card p-5">
+      <section className="mt-8 rounded-xl border border-border bg-card p-5">
         <p className="text-sm font-medium text-foreground">Client portal</p>
         <p className="mt-1 mb-3 text-sm text-muted-foreground">
           Send this link to your client so they can track milestones, hours
@@ -72,7 +72,7 @@ export default async function ProjectDetailPage({
             {project.pendingChangeRequests.map((cr) => (
               <li
                 key={cr.id}
-                className="rounded-lg border border-warning/30 bg-warning/10 p-5"
+                className="rounded-xl border border-warning/30 bg-warning/10 p-5"
               >
                 <div className="flex items-baseline justify-between gap-4">
                   <p className="text-xs font-medium uppercase tracking-wider text-warning">
@@ -96,7 +96,7 @@ export default async function ProjectDetailPage({
       )}
 
       {/* Client details */}
-      <section className="mt-8 grid grid-cols-1 gap-3 rounded-lg border border-border bg-card p-5 sm:grid-cols-3">
+      <section className="mt-8 grid grid-cols-1 gap-3 rounded-xl border border-border bg-card p-5 sm:grid-cols-3">
         <div>
           <p className="text-xs uppercase tracking-wider text-muted-foreground">
             Client
@@ -172,7 +172,7 @@ export default async function ProjectDetailPage({
       {/* Final invoice */}
       {(project.finalInvoice.canGenerate ||
         project.finalInvoice.existingId) && (
-        <section className="mt-10 rounded-lg border border-border bg-card p-5">
+        <section className="mt-10 rounded-xl border border-border bg-card p-5">
           {project.finalInvoice.existingId ? (
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>

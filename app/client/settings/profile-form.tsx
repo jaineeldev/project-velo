@@ -5,6 +5,7 @@ import { useUser } from "@clerk/nextjs";
 import type { EmailAddressResource } from "@clerk/types";
 import { Check, Mail, Pencil, X } from "lucide-react";
 import { cn, focusRing } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 import { updateName } from "./actions";
 
 export function ProfileForm() {
@@ -128,10 +129,7 @@ function NameRow({
               type="button"
               onClick={onSave}
               disabled={isPending || !first.trim()}
-              className={cn(
-                "rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50",
-                focusRing,
-              )}
+              className={buttonVariants({ variant: "primary" })}
             >
               {isPending ? "Saving..." : "Save"}
             </button>
@@ -139,10 +137,7 @@ function NameRow({
               type="button"
               onClick={onCancel}
               disabled={isPending}
-              className={cn(
-                "rounded-md border border-border bg-card px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-accent",
-                focusRing,
-              )}
+              className={buttonVariants({ variant: "secondary" })}
             >
               Cancel
             </button>
@@ -304,10 +299,7 @@ function EmailRow({ user }: { user: NonNullable<ReturnType<typeof useUser>["user
               type="button"
               onClick={startChange}
               disabled={isWorking || !newEmail.trim()}
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50",
-                focusRing,
-              )}
+              className={buttonVariants({ variant: "primary" })}
             >
               <Mail aria-hidden className="h-3.5 w-3.5" />
               {isWorking ? "Sending code..." : "Send code"}
@@ -316,10 +308,7 @@ function EmailRow({ user }: { user: NonNullable<ReturnType<typeof useUser>["user
               type="button"
               onClick={cancelChange}
               disabled={isWorking}
-              className={cn(
-                "rounded-md border border-border bg-card px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-accent",
-                focusRing,
-              )}
+              className={buttonVariants({ variant: "secondary" })}
             >
               Cancel
             </button>
@@ -363,10 +352,7 @@ function EmailRow({ user }: { user: NonNullable<ReturnType<typeof useUser>["user
               type="button"
               onClick={confirmCode}
               disabled={isWorking || code.length < 6}
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50",
-                focusRing,
-              )}
+              className={buttonVariants({ variant: "primary" })}
             >
               <Check aria-hidden className="h-3.5 w-3.5" />
               {isWorking ? "Verifying..." : "Confirm"}
@@ -375,10 +361,7 @@ function EmailRow({ user }: { user: NonNullable<ReturnType<typeof useUser>["user
               type="button"
               onClick={cancelChange}
               disabled={isWorking}
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-accent",
-                focusRing,
-              )}
+              className={buttonVariants({ variant: "secondary" })}
             >
               <X aria-hidden className="h-3.5 w-3.5" />
               Cancel
@@ -404,8 +387,8 @@ function FieldRow({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-md border border-border bg-card p-4">
-      <p className="text-xs uppercase tracking-wider text-muted-foreground">
+    <div className="rounded-xl border border-border bg-card p-4">
+      <p className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
         {label}
       </p>
       <div className="mt-2">{children}</div>

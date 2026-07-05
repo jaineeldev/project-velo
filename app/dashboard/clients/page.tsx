@@ -17,7 +17,7 @@ export default async function ClientsPage() {
       </header>
 
       {clients.length === 0 ? (
-        <div className="mt-10 rounded-lg border border-dashed border-border px-6 py-16 text-center">
+        <div className="mt-10 rounded-xl border border-dashed border-border px-6 py-16 text-center">
           <p className="text-sm text-muted-foreground">
             No clients yet. Add your first client to get started.
           </p>

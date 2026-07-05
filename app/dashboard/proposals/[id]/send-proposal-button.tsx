@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { cn, focusRing } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 import { sendProposal } from "../actions";
 
 type State =
@@ -44,10 +45,7 @@ export function SendProposalButton({ proposalId }: { proposalId: string }) {
         onClick={handleSend}
         disabled={isPending}
         aria-busy={isPending}
-        className={cn(
-          "rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50",
-          focusRing,
-        )}
+        className={buttonVariants({ variant: "primary" })}
       >
         Send to client
       </button>
@@ -60,10 +58,7 @@ export function SendProposalButton({ proposalId }: { proposalId: string }) {
         type="button"
         disabled
         aria-busy
-        className={cn(
-          "rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground opacity-50",
-          focusRing,
-        )}
+        className={buttonVariants({ variant: "primary" })}
       >
         Sending…
       </button>
@@ -107,10 +102,7 @@ export function SendProposalButton({ proposalId }: { proposalId: string }) {
         type="button"
         onClick={() => handleCopy(state.token)}
         aria-label={copied ? "Link copied" : "Copy share link"}
-        className={cn(
-          "shrink-0 rounded-md border border-input bg-background px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
-          focusRing,
-        )}
+        className={cn(buttonVariants({ variant: "secondary" }), "shrink-0")}
       >
         {copied ? "Copied!" : "Copy link"}
       </button>

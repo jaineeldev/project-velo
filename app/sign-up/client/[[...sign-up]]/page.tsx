@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { AuthLayout } from "@/components/auth-layout";
-import { ConsentGate } from "@/components/auth/consent-gate";
+import { SignUpForm } from "@/components/auth/sign-up-form";
 import { sql } from "@/lib/db";
 
 // Share-token-aware sign-up entry point. Reached from a proposal share
@@ -38,9 +38,7 @@ export default async function ClientSignUpPage({
 
   return (
     <AuthLayout>
-      <div className="flex w-full flex-col items-center">
-        <ConsentGate signUpForceRedirectUrl={finalizeUrl} />
-      </div>
+      <SignUpForm afterSocialSignUp={finalizeUrl} />
     </AuthLayout>
   );
 }

@@ -38,15 +38,11 @@ export function AdminSidebar() {
   return (
     <aside className="hidden h-screen w-60 shrink-0 flex-col border-r border-border bg-card md:flex">
       <div className="mb-2 flex h-14 items-center justify-between border-b border-white/10 px-5 pb-4">
-        <div className="flex items-center gap-2.5">
-          <span
-            aria-hidden
-            className="h-2 w-2 rounded-full bg-primary"
-          />
-          <span className="text-sm font-semibold tracking-tight text-foreground">
+        <div className="flex items-baseline gap-2.5">
+          <span className="font-display text-lg font-black tracking-tight text-foreground">
             Velo
           </span>
-          <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <span className="font-mono text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
             Ops
           </span>
         </div>

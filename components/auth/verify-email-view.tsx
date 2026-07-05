@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import { supabase } from "@/lib/auth-client";
 import { cn, focusRing } from "@/lib/utils";
 import { authCardCls, authPrimaryButtonCls } from "./shared";
+import { AuthHeader } from "./chrome";
 
 type Props = {
   email?: string;
@@ -41,29 +42,28 @@ export function VerifyEmailView({ email }: Props) {
 
   return (
     <div className={authCardCls}>
-      <div>
-        <h1 className="text-lg font-semibold tracking-tight text-foreground">
-          Confirm your email
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {email ? (
+      <AuthHeader
+        eyebrow="Check your inbox"
+        title="Confirm your email"
+        description={
+          email ? (
             <>
               We sent a verification link to{" "}
-              <span className="text-foreground">{email}</span>. Click it to activate
-              your account.
+              <span className="text-foreground">{email}</span>. Click it to
+              activate your account.
             </>
           ) : (
             "We sent a verification link to your email. Click it to activate your account."
-          )}
-        </p>
-      </div>
+          )
+        }
+      />
 
       {email && (
         <button
           type="button"
           onClick={handleResend}
           disabled={busy || resent}
-          className={cn(authPrimaryButtonCls, focusRing)}
+          className={authPrimaryButtonCls}
         >
           {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
           {resent ? "Email sent" : "Resend email"}
@@ -77,7 +77,13 @@ export function VerifyEmailView({ email }: Props) {
       )}
 
       <p className="text-center text-xs text-muted-foreground">
-        <Link href="/sign-in" className={cn("rounded text-primary hover:underline", focusRing)}>
+        <Link
+          href="/sign-in"
+          className={cn(
+            "rounded-sm font-medium text-primary hover:underline",
+            focusRing,
+          )}
+        >
           Back to sign in
         </Link>
       </p>

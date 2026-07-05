@@ -1,12 +1,10 @@
 import { AuthLayout } from "@/components/auth-layout";
-import { ConsentGate } from "@/components/auth/consent-gate";
+import { SignUpForm } from "@/components/auth/sign-up-form";
 
 export default function SignUpPage() {
   return (
     <AuthLayout>
-      <div className="flex w-full flex-col items-center">
-        <ConsentGate signUpForceRedirectUrl="/signing-up" />
-      </div>
+      <SignUpForm />
     </AuthLayout>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { cn, focusRing } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 import { checkClientDeletable, deleteClient } from "./actions";
 
 type Phase = "idle" | "checking" | "blocked" | "confirming" | "deleting";
@@ -76,7 +77,7 @@ export function DeleteClientButton({
       <dialog
         ref={dialogRef}
         onClose={closeDialog}
-        className="w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-sm"
+        className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-sm"
       >
         {phase === "blocked" ? (
           <>
@@ -90,10 +91,7 @@ export function DeleteClientButton({
               <button
                 type="button"
                 onClick={closeDialog}
-                className={cn(
-                  "rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90",
-                  focusRing,
-                )}
+                className={buttonVariants({ variant: "primary" })}
               >
                 Close
               </button>
@@ -127,10 +125,7 @@ export function DeleteClientButton({
                 type="button"
                 onClick={closeDialog}
                 disabled={phase === "deleting"}
-                className={cn(
-                  "rounded-md px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50",
-                  focusRing,
-                )}
+                className={buttonVariants({ variant: "ghost" })}
               >
                 Cancel
               </button>
@@ -139,10 +134,7 @@ export function DeleteClientButton({
                 onClick={handleConfirm}
                 disabled={phase === "deleting"}
                 aria-busy={phase === "deleting"}
-                className={cn(
-                  "rounded-md bg-destructive px-3.5 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:opacity-50",
-                  focusRing,
-                )}
+                className={buttonVariants({ variant: "destructive" })}
               >
                 {phase === "deleting" ? "Deleting…" : "Delete client"}
               </button>

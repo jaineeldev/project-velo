@@ -101,7 +101,7 @@ export default async function ProposalDetailPage({
       </div>
 
       {/* Agency "From" block */}
-      <section className="mt-6 rounded-lg border border-border bg-card p-5">
+      <section className="mt-6 rounded-xl border border-border bg-card p-5">
         <p className="text-xs uppercase tracking-wider text-muted-foreground">
           From
         </p>
@@ -123,7 +123,7 @@ export default async function ProposalDetailPage({
       )}
 
       {proposal.status === "changes_requested" && proposal.latestChangeRequest && (
-        <section className="mt-8 rounded-lg border border-warning/30 bg-warning/10 p-5">
+        <section className="mt-8 rounded-xl border border-warning/30 bg-warning/10 p-5">
           <div className="flex items-baseline justify-between gap-4">
             <h2 className="text-sm font-semibold text-warning">
               Client requested changes

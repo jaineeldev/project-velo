@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { cn, focusRing } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 import { generateFinalInvoice } from "../actions";
 
 type Props = {
@@ -39,10 +39,7 @@ export function GenerateFinalInvoiceButton({ projectId, remainingAmount }: Props
         onClick={handleClick}
         disabled={isPending}
         aria-busy={isPending}
-        className={cn(
-          "rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50",
-          focusRing,
-        )}
+        className={buttonVariants({ variant: "primary" })}
       >
         {isPending
           ? "Generating…"

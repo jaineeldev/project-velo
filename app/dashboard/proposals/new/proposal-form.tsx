@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { currencyFmt, GST_RATE } from "@/lib/format";
 import { cn, focusRing } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 import { LINE_ITEM_DURATIONS, type LineItemDuration } from "@/lib/validation";
 import { createProposal, updateProposal } from "../actions";
 
@@ -407,10 +408,7 @@ export function ProposalForm({
       <div className="flex justify-end gap-3">
         <a
           href={cancelHref}
-          className={cn(
-            "rounded-md px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
-            focusRing,
-          )}
+          className={buttonVariants({ variant: "ghost" })}
         >
           Cancel
         </a>
@@ -418,10 +416,7 @@ export function ProposalForm({
           type="submit"
           disabled={isPending}
           aria-busy={isPending}
-          className={cn(
-            "rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50",
-            focusRing,
-          )}
+          className={buttonVariants({ variant: "primary" })}
         >
           {isPending ? "Saving…" : proposalId ? "Save changes" : "Save proposal"}
         </button>

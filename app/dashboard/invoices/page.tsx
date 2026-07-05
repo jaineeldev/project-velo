@@ -15,7 +15,7 @@ export default async function InvoicesPage() {
       </header>
 
       {invoices.length === 0 ? (
-        <Card className="mt-10 border-dashed shadow-none">
+        <Card className="mt-10 border-dashed">
           <CardContent className="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
               <Receipt aria-hidden className="h-5 w-5 text-primary" />

@@ -31,6 +31,7 @@ type EmailExpectation = {
   detail: string;
 };
 
+
 const emailExpectations: EmailExpectation[] = [
   {
     icon: MailCheck,

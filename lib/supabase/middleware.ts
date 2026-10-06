@@ -44,9 +44,29 @@ export async function updateSession(
   // requireUser()/getSessionUser() do the same re-validation again
   // server-side, but the middleware gate needs its own check to redirect
   // before a protected page even starts rendering.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  //
+  // Capped at AUTH_TIMEOUT_MS: if Supabase is unreachable (e.g. the project
+  // was paused), getUser() retries until Vercel kills the middleware at 25s
+  // and every route 504s, public pages included. On timeout we treat the
+  // visitor as signed out, so protected routes redirect to /sign-in and
+  // public pages still render.
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const user = await Promise.race([
+    supabase.auth
+      .getUser()
+      .then(({ data }) => data.user)
+      .catch(() => null),
+    new Promise<null>((resolve) => {
+      timer = setTimeout(() => {
+        console.error(
+          `[middleware] supabase.auth.getUser() exceeded ${AUTH_TIMEOUT_MS}ms; treating request as signed out`,
+        );
+        resolve(null);
+      }, AUTH_TIMEOUT_MS);
+    }),
+  ]).finally(() => clearTimeout(timer));
 
   return { response: supabaseResponse, user };
 }
+
+const AUTH_TIMEOUT_MS = 3_000;

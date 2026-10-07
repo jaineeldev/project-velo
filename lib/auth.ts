@@ -7,6 +7,10 @@ export type AppUser = {
   id: string;
   email: string;
   name: string;
+  // An operator has suspended this account (user_profiles.suspended_at).
+  // requireUser() turns these users away; getSessionUser() still returns
+  // them so public pages can tell who's looking.
+  suspended: boolean;
 };
 
 // Dedupe within a single render tree — a dashboard request typically hits
@@ -42,7 +46,11 @@ export const getSessionUser = cache(async (): Promise<AppUser | null> => {
   }
 
   const existing = await sql`
-    SELECT id, email, name FROM users WHERE id = ${user.id} LIMIT 1
+    SELECT u.id, u.email, u.name, (up.suspended_at IS NOT NULL) AS suspended
+    FROM users u
+    LEFT JOIN user_profiles up ON up.user_id = u.id
+    WHERE u.id = ${user.id}
+    LIMIT 1
   `;
   if (existing.length > 0) {
     return existing[0] as unknown as AppUser;
@@ -61,14 +69,21 @@ export const getSessionUser = cache(async (): Promise<AppUser | null> => {
     INSERT INTO users (id, email, name, email_verified)
     VALUES (${user.id}, ${email}, ${name}, ${emailVerified})
     ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email
-    RETURNING id, email, name
+    RETURNING id, email, name, false AS suspended
   `;
   return inserted[0] as unknown as AppUser;
 });
 
+// Every server action and protected route handler goes through here, so
+// this is where suspension is enforced. The layouts' own redirect only
+// covers page loads; without this check a suspended account could still
+// call actions directly (send proposals, post comments, and so on).
 export const requireUser = async (): Promise<AppUser> => {
   const user = await getSessionUser();
-  if (user) return user;
+  if (user) {
+    if (user.suspended) redirect("/suspended");
+    return user;
+  }
 
   // getSessionUser() returns null both for "no session" and for "signed in
   // but the MFA challenge isn't complete yet" — distinguish them here so the

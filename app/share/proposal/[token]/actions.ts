@@ -89,7 +89,18 @@ export async function approveProposal(token: string): Promise<void> {
 
   // All writes in a single transaction — partial state on mid-batch failure
   // would otherwise leave a project with no invoice or vice-versa.
-  await sql.begin(async (sql) => {
+  const approved = await sql.begin(async (sql) => {
+    // Claim the proposal before creating anything. Two approvals racing
+    // (double-click, two tabs) both pass the checks above; this UPDATE's row
+    // lock makes the second wait, and once the first commits it matches zero
+    // rows, so only one transaction ever creates the project and invoice.
+    const claimed = await sql`
+      UPDATE proposals SET status = 'approved'
+      WHERE id = ${proposalId} AND status = 'sent'
+      RETURNING id
+    `;
+    if (claimed.length === 0) return false;
+
     await sql`
       INSERT INTO projects (id, proposal_id, client_id, user_id, title, status, share_token)
       VALUES (${projectId}, ${proposalId}, ${p.client_id}, ${p.user_id}, ${p.title}, 'active', ${projectShareToken})
@@ -106,13 +117,14 @@ export async function approveProposal(token: string): Promise<void> {
       VALUES (${projectId}, ${p.user_id}, ${p.client_id}, ${depositTotal}, ${depositGst}, 'unpaid', 'deposit')
     `;
     await sql`
-      UPDATE proposals SET status = 'approved' WHERE id = ${proposalId}
-    `;
-    await sql`
       INSERT INTO proposal_events (proposal_id, event_type, description)
       VALUES (${proposalId}, 'approved', 'Proposal approved by client')
     `;
+    return true;
   });
+  if (!approved) {
+    throw new Error("This proposal has already been approved.");
+  }
 
   // Fetch agency + client details once so both the dev-side approval
   // notification and the client-side deposit invoice email can be sent
@@ -214,23 +226,34 @@ export async function submitChangeRequest(
 
   const proposalId = rows[0].id as string;
 
-  await sql`
-    INSERT INTO change_requests (proposal_id, message)
-    VALUES (${proposalId}, ${trimmed})
-  `;
+  const requested = await sql.begin(async (sql) => {
+    // Same claim as approveProposal: only a proposal still in 'sent' can
+    // move to changes_requested, so a change request racing an approval
+    // can't overwrite it once the approval has committed.
+    const claimed = await sql`
+      UPDATE proposals SET status = 'changes_requested'
+      WHERE id = ${proposalId} AND status = 'sent'
+      RETURNING id
+    `;
+    if (claimed.length === 0) return false;
 
-  await sql`
-    UPDATE proposals SET status = 'changes_requested' WHERE id = ${proposalId}
-  `;
-
-  await sql`
-    INSERT INTO proposal_events (proposal_id, event_type, description)
-    VALUES (
-      ${proposalId},
-      'changes_requested',
-      ${`Client requested changes: ${trimmed}`}
-    )
-  `;
+    await sql`
+      INSERT INTO change_requests (proposal_id, message)
+      VALUES (${proposalId}, ${trimmed})
+    `;
+    await sql`
+      INSERT INTO proposal_events (proposal_id, event_type, description)
+      VALUES (
+        ${proposalId},
+        'changes_requested',
+        ${`Client requested changes: ${trimmed}`}
+      )
+    `;
+    return true;
+  });
+  if (!requested) {
+    throw new Error("This link is no longer valid.");
+  }
 
   // Operator notification: fire-and-forget. Resolves the agency user and
   // their notifications_enabled flag inside the helper.

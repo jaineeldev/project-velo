@@ -7,7 +7,7 @@ import { getClientIp } from "@/lib/rate-limit";
 import { logSecurityEvent } from "@/lib/security-log";
 import { getAppBaseUrl } from "@/lib/email";
 import { sendOperatorNotification } from "@/lib/notifications";
-import { getStripe } from "@/lib/stripe";
+import { getStripe, isStripeConfigured } from "@/lib/stripe";
 
 const TOKEN_RE = /^[0-9a-f]{64}$/;
 const INVOICE_ID_RE = /^[0-9a-f-]{36}$/;
@@ -124,6 +124,11 @@ export async function createInvoiceCheckoutSession(
   token: string,
   invoiceId: string,
 ): Promise<{ url: string }> {
+  // The page hides the Pay button in this case; this covers a stale tab or
+  // a hand-crafted request.
+  if (!isStripeConfigured()) {
+    throw new Error("Card payments aren't available yet.");
+  }
   if (!TOKEN_RE.test(token)) {
     logSecurityEvent({
       event: "invalid_share_token",

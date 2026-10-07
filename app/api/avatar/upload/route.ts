@@ -17,7 +17,7 @@ const SIGNED_URL_TTL_MS = 60 * 60 * 1000;
 
 export async function POST(req: Request) {
   const caller = await getSessionUser();
-  if (!caller) {
+  if (!caller || caller.suspended) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const userId = caller.id;
@@ -153,7 +153,7 @@ export async function POST(req: Request) {
 
 export async function DELETE() {
   const caller = await getSessionUser();
-  if (!caller) {
+  if (!caller || caller.suspended) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const userId = caller.id;

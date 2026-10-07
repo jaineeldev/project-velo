@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { ShieldOff } from "lucide-react";
-import { getOrCreateUser } from "@/lib/auth";
+import { getSessionUser } from "@/lib/auth";
 import { sql } from "@/lib/db";
 import { cn, focusRing } from "@/lib/utils";
 
@@ -14,7 +14,10 @@ export const dynamic = "force-dynamic";
 // don't get stuck on a stale tab.
 
 export default async function SuspendedPage() {
-  const user = await getOrCreateUser();
+  // getSessionUser, not requireUser: requireUser sends suspended accounts
+  // here, so using it on this page would loop.
+  const user = await getSessionUser();
+  if (!user) redirect("/sign-in");
 
   const rows = await sql`
     SELECT suspended_at, role

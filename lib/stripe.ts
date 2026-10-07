@@ -8,6 +8,15 @@ import Stripe from "stripe";
 
 let _stripe: Stripe | null = null;
 
+// Card payments stay switched off until a secret key is configured, so the
+// share page never shows a Pay button that can only error. Before adding a
+// live key: Checkout Sessions are created on the platform account, so every
+// payment lands in Velo's own Stripe balance rather than the agency's. That
+// needs Stripe Connect (payments routed to each agency's account) first.
+export function isStripeConfigured(): boolean {
+  return Boolean(process.env.STRIPE_SECRET_KEY);
+}
+
 export function getStripe(): Stripe {
   if (_stripe) return _stripe;
   const key = process.env.STRIPE_SECRET_KEY;

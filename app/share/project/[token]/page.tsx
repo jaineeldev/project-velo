@@ -11,6 +11,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { ShareBackLink } from "@/components/share-back-link";
 import { SharePaymentButton } from "@/components/share-payment-button";
 import { SharePaymentStatusBanner } from "@/components/share-payment-status-banner";
+import { isStripeConfigured } from "@/lib/stripe";
 import { ChangeRequestForm } from "./change-request-form";
 
 // Public portal must always reflect the current milestone/invoice state —
@@ -120,6 +121,8 @@ export default async function ShareProjectPage({
   if (!data) notFound();
 
   const { project, milestones, deliverables, timeEntries, invoices } = data;
+
+  const paymentsEnabled = isStripeConfigured();
 
   // Banner state after Stripe redirects back. `paid` carries the invoice id
   // so we can verify it actually belongs to this share token and show the
@@ -302,7 +305,10 @@ export default async function ShareProjectPage({
                 const isVoided = amount <= 0;
                 const isConfirming = inv.id === paidInvoiceId;
                 const isPayable =
-                  inv.status === "unpaid" && !isVoided && !isConfirming;
+                  paymentsEnabled &&
+                  inv.status === "unpaid" &&
+                  !isVoided &&
+                  !isConfirming;
                 const payLabel =
                   inv.type === "deposit" ? "Pay deposit" : "Pay invoice";
                 return (

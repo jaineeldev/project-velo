@@ -32,10 +32,10 @@ export default async function ClientSettingsPage() {
       <section className="mt-10 border-t border-border pt-8">
         <h2 className="text-base font-medium text-foreground">Profile</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Your photo, name, and email. Editable name and email coming later.
+          Your photo, name, and email.
         </p>
         <ProfileUploader
-          userId={user.clerk_id}
+          userId={user.id}
           name={user.name}
           email={user.email}
           initialHasAvatar={hasAvatar}
@@ -45,10 +45,10 @@ export default async function ClientSettingsPage() {
       <section className="mt-10 border-t border-border pt-8">
         <h2 className="text-base font-medium text-foreground">Account</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Changing your name or email also updates the contact details every
-          agency working with you sees on their end.
+          Changing your name also updates the contact details every agency
+          working with you sees on their end.
         </p>
-        <ProfileForm />
+        <ProfileForm name={user.name ?? ""} email={user.email} />
       </section>
 
       <section className="mt-10 border-t border-border pt-8">

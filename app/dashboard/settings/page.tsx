@@ -35,7 +35,7 @@ export default async function SettingsPage() {
           Your photo, name, and email. Editable name and email coming later.
         </p>
         <ProfileUploader
-          userId={user.clerk_id}
+          userId={user.id}
           name={user.name}
           email={user.email}
           initialHasAvatar={hasAvatar}

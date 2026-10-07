@@ -5,16 +5,16 @@
 // design pass settles.
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://*.clerk.com https://challenges.cloudflare.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
   // https://*.supabase.co covers both the Auth API (signup/signin/etc, hit
   // directly from the browser via supabase-js) and the Postgres/Storage REST
   // endpoints, even though the app's own DB queries go server-side through
-  // postgres.js rather than the browser - Session 13 migration.
-  "connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://clerk-telemetry.com https://api.resend.com https://*.neon.tech wss://*.neon.tech https://*.supabase.co wss://*.supabase.co",
-  "frame-src 'self' https://*.clerk.accounts.dev https://challenges.cloudflare.com",
+  // postgres.js rather than the browser.
+  "connect-src 'self' https://api.resend.com https://*.supabase.co wss://*.supabase.co",
+  "frame-src 'self'",
   "frame-ancestors 'none'",
   "form-action 'self'",
   "base-uri 'self'",

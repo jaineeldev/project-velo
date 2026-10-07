@@ -85,7 +85,7 @@ export default function PrivacyPage() {
           <TableOfContents sections={sections} />
           <article className="prose prose-neutral max-w-none dark:prose-invert lg:min-w-0 lg:flex-1">
           <h1>Privacy Policy</h1>
-          <p className="text-sm text-muted-foreground">Last updated May 17, 2026</p>
+          <p className="text-sm text-muted-foreground">Last updated October 7, 2026</p>
 
           <p>
             This Privacy Notice for Jaineel Khatri (doing business as <strong>Velo</strong>)
@@ -326,19 +326,19 @@ export default function PrivacyPage() {
             <p>The third parties we may share personal information with are as follows:</p>
             <ul>
               <li>
-                <strong>Allow users to connect to their third-party accounts:</strong> GitHub
-                account
+                <strong>Allow users to connect to their third-party accounts:</strong> Google and
+                GitHub accounts
               </li>
               <li>
                 <strong>Communicate and chat with users:</strong> Resend
               </li>
               <li>
-                <strong>Functionality and infrastructure optimisation:</strong> Neon (PostgreSQL
-                database)
+                <strong>Functionality and infrastructure optimisation:</strong> Supabase
+                (PostgreSQL database)
               </li>
               <li>
-                <strong>User account registration and authentication:</strong> GitHub OAuth and
-                Clerk
+                <strong>User account registration and authentication:</strong> Google OAuth,
+                GitHub OAuth, and Supabase Auth
               </li>
               <li>
                 <strong>Website hosting:</strong> Vercel

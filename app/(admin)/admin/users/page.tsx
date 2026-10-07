@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 type Role = "agency" | "client";
 
 type UserRow = {
-  clerk_id: string;
+  id: string;
   email: string;
   name: string | null;
   created_at: string;
@@ -38,7 +38,7 @@ export default async function AdminUsersPage({
 
   const rowsRaw = await sql`
     SELECT
-      u.clerk_id,
+      u.id,
       u.email,
       u.name,
       u.created_at,
@@ -70,7 +70,7 @@ export default async function AdminUsersPage({
             Users
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Everyone provisioned through Clerk. Read-only.
+            Everyone who has signed up. Read-only.
           </p>
         </div>
       </header>
@@ -152,12 +152,12 @@ export default async function AdminUsersPage({
             <tbody className="divide-y divide-border">
               {rows.map((r) => (
                 <tr
-                  key={r.clerk_id}
+                  key={r.id}
                   className="transition-colors hover:bg-accent/40"
                 >
                   <td className="px-5 py-3">
                     <Link
-                      href={`/admin/users/${encodeURIComponent(r.clerk_id)}`}
+                      href={`/admin/users/${r.id}`}
                       className={cn(
                         "font-medium text-foreground hover:underline",
                         focusRing,

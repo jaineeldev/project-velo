@@ -4,13 +4,13 @@ import { ArrowLeft, Inbox, ShieldOff } from "lucide-react";
 import { sql } from "@/lib/db";
 import { requireAdmin } from "@/lib/admin-auth";
 import { cn, focusRing } from "@/lib/utils";
+import { uuidSchema } from "@/lib/validation";
 import { SuspendButtons } from "./suspend-buttons";
 
 export const dynamic = "force-dynamic";
 
 type UserDetail = {
   id: string;
-  clerk_id: string;
   email: string;
   name: string | null;
   created_at: string;
@@ -57,16 +57,16 @@ function shortDateTime(value: string): string {
 export default async function AdminUserDetailPage({
   params,
 }: {
-  params: { clerkId: string };
+  params: { userId: string };
 }) {
-  await requireAdmin("/admin/users/[clerkId]");
+  await requireAdmin("/admin/users/[userId]");
 
-  const clerkId = decodeURIComponent(params.clerkId);
+  const userId = params.userId;
+  if (!uuidSchema.safeParse(userId).success) notFound();
 
   const userRaw = await sql`
     SELECT
       u.id,
-      u.clerk_id,
       u.email,
       u.name,
       u.created_at,
@@ -83,7 +83,7 @@ export default async function AdminUserDetailPage({
       up.suspended_at
     FROM users u
     LEFT JOIN user_profiles up ON up.user_id = u.id
-    WHERE u.clerk_id = ${clerkId}
+    WHERE u.id = ${userId}
     LIMIT 1
   `;
   const userRows = userRaw as unknown as UserDetail[];
@@ -171,7 +171,7 @@ export default async function AdminUserDetailPage({
             <RoleBadge role={user.role} />
           </div>
           <SuspendButtons
-            clerkId={user.clerk_id}
+            userId={user.id}
             isSuspended={Boolean(user.suspended_at)}
           />
         </div>
@@ -194,7 +194,7 @@ export default async function AdminUserDetailPage({
       ) : null}
 
       <section className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <Field label="Clerk ID" mono value={user.clerk_id} />
+        <Field label="User ID" mono value={user.id} />
         <Field label="Joined" value={shortDate(user.created_at)} />
         <Field
           label="Onboarded"

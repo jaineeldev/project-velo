@@ -38,7 +38,7 @@ export default async function ClientSignUpPage({
 
   return (
     <AuthLayout>
-      <SignUpForm afterSocialSignUp={finalizeUrl} />
+      <SignUpForm afterSignUp={finalizeUrl} />
     </AuthLayout>
   );
 }

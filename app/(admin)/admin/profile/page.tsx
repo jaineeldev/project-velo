@@ -35,7 +35,7 @@ export default async function AdminProfilePage() {
           </span>
         </div>
         <ProfileUploader
-          userId={user.clerk_id}
+          userId={user.id}
           name={user.name}
           email={user.email}
           initialHasAvatar={hasAvatar}

@@ -17,15 +17,16 @@ import {
 import { AuthDivider, AuthHeader } from "./chrome";
 
 type Props = {
-  // Where Supabase should land the browser after a *social* sign-up
-  // (email/password sign-up always stops at /verify-email while "Confirm
-  // email" is on - there's no session yet to redirect anywhere). Used by
-  // the client sign-up flow to land on the finalize endpoint that assigns
-  // the 'client' role. Defaults to /signing-up.
-  afterSocialSignUp?: string;
+  // Where to land the browser once the new account has a session, for
+  // every sign-up path: Google/GitHub, the emailed confirmation link, and
+  // email/password when confirmation is off. The client sign-up flow passes
+  // the finalize endpoint that assigns the 'client' role. When omitted, the
+  // agency defaults apply (/signing-in after an emailed link, /signing-up
+  // otherwise).
+  afterSignUp?: string;
 };
 
-export function SignUpForm({ afterSocialSignUp = "/signing-up" }: Props) {
+export function SignUpForm({ afterSignUp }: Props) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -70,7 +71,9 @@ export function SignUpForm({ afterSocialSignUp = "/signing-up" }: Props) {
       password,
       options: {
         data: { name: trimmedName },
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/signing-in`,
+        emailRedirectTo: afterSignUp
+          ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(afterSignUp)}`
+          : `${window.location.origin}/auth/callback?next=/signing-in`,
       },
     });
     setBusy(null);
@@ -101,7 +104,7 @@ export function SignUpForm({ afterSocialSignUp = "/signing-up" }: Props) {
       return;
     }
 
-    router.push("/signing-up");
+    router.push(afterSignUp ?? "/signing-up");
   }
 
   async function handleSocial(provider: "google" | "github") {
@@ -114,7 +117,7 @@ export function SignUpForm({ afterSocialSignUp = "/signing-up" }: Props) {
     const { error: socialError } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(afterSocialSignUp)}`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(afterSignUp ?? "/signing-up")}`,
       },
     });
     if (socialError) {

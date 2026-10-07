@@ -12,12 +12,10 @@ export default async function DashboardLayout({
 }) {
   const user = await getOrCreateUser();
 
-  // Route clients to their own dashboard. The middleware also does this
-  // when Clerk's session-token role claim is configured, but this DB
-  // read is the authoritative guard — Clerk lands users here via
-  // NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard regardless of role,
-  // and this catches the client before the agency layout/onboarding
-  // renders even for a frame.
+  // Route clients to their own dashboard. Sign-in lands everyone on
+  // /dashboard regardless of role, and middleware only checks that someone
+  // is signed in, so this DB read catches a client before the agency
+  // layout or onboarding renders even for a frame.
   const roleRows = await sql`
     SELECT role, suspended_at FROM user_profiles WHERE user_id = ${user.id}
   `;

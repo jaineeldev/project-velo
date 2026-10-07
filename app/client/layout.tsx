@@ -11,9 +11,8 @@ export default async function ClientLayout({
 }) {
   const user = await getOrCreateUser();
 
-  // Authoritative role guard: middleware also bounces agency users on the
-  // way in, but middleware depends on Clerk's session-token customization
-  // being wired up. This DB read is correct regardless of JWT state.
+  // Role guard. Middleware only checks that someone is signed in; the role
+  // lives in user_profiles, so this DB read is what keeps agency users out.
   const roleRows = await sql`
     SELECT role, suspended_at FROM user_profiles WHERE user_id = ${user.id}
   `;

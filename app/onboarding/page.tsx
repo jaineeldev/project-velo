@@ -11,15 +11,9 @@ export const metadata = {
 export default async function OnboardingPage() {
   const user = await getOrCreateUser();
 
-  // Hard server-side guard against a client landing on the agency
-  // onboarding form. The middleware should have already bounced them
-  // off /onboarding via role==='client', but that check rides on the
-  // session JWT carrying publicMetadata.role. If the JWT is still the
-  // pre-finalize one (Clerk's frontend reload hasn't run yet, or the
-  // session-token customization isn't wired up in the Clerk Dashboard),
-  // the middleware sees an undefined role and lets the request
-  // through. This DB read is authoritative and doesn't care about JWT
-  // state.
+  // Guard against a client landing on the agency onboarding form.
+  // Middleware only checks that someone is signed in; the role lives in
+  // user_profiles, so this DB read is what routes clients away.
   const roleRows = await sql`
     SELECT role, suspended_at FROM user_profiles WHERE user_id = ${user.id}
   `;

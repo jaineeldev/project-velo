@@ -7,7 +7,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { suspendUser, unsuspendUser } from "./actions";
 
 type Props = {
-  clerkId: string;
+  userId: string;
   isSuspended: boolean;
 };
 
@@ -17,7 +17,7 @@ type Props = {
 // guards against an accidental click on a row the operator is just
 // browsing.
 
-export function SuspendButtons({ clerkId, isSuspended }: Props) {
+export function SuspendButtons({ userId, isSuspended }: Props) {
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -25,7 +25,7 @@ export function SuspendButtons({ clerkId, isSuspended }: Props) {
   function runSuspend() {
     setError(null);
     startTransition(async () => {
-      const result = await suspendUser(clerkId);
+      const result = await suspendUser(userId);
       if (!result.ok) setError(result.error);
       setConfirming(false);
     });
@@ -34,7 +34,7 @@ export function SuspendButtons({ clerkId, isSuspended }: Props) {
   function runUnsuspend() {
     setError(null);
     startTransition(async () => {
-      const result = await unsuspendUser(clerkId);
+      const result = await unsuspendUser(userId);
       if (!result.ok) setError(result.error);
     });
   }

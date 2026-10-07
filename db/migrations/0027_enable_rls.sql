@@ -1,0 +1,22 @@
+-- Turn on row-level security for every table in the public schema.
+--
+-- Supabase serves the public schema through its REST API, authenticated with
+-- the publishable key that ships to every browser. With RLS on and no
+-- policies, that API can read and write nothing. The app's own queries are
+-- unaffected: they run server-side over DATABASE_URL as the table owner,
+-- which RLS doesn't apply to.
+--
+-- The live project already had RLS switched on in the Supabase dashboard
+-- (Security Advisor showed zero "RLS Disabled in Public" errors on
+-- 2026-10-07), so this is a no-op there. It exists so a database rebuilt
+-- from these migrations comes up locked down too.
+--
+-- Any table added by a later migration needs its own
+-- `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` — this loop only covers the
+-- tables that exist when it runs.
+--
+-- Kept on one line on purpose: scripts/migrate.mjs splits files on a
+-- semicolon at the end of a line, which would cut a multi-line DO block
+-- into broken fragments.
+
+DO $$ DECLARE t text; BEGIN FOR t IN SELECT tablename FROM pg_tables WHERE schemaname = 'public' LOOP EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', t); END LOOP; END $$;

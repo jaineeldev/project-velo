@@ -81,16 +81,7 @@ export const requireUser = async (): Promise<AppUser> => {
   redirect("/sign-in");
 };
 
-// TEMPORARY SHIM — kept only so the ~30 existing call sites (Session D scope,
-// see CLAUDE.md §13.2) keep compiling and working during the cutover.
-// `clerk_id` is a stub; any consumer that still reaches into it to call the
-// Clerk SDK directly (account-deletion, name-change) is already non-functional
-// today regardless of this shim, since Clerk isn't the live auth provider —
-// Session E rewires those call sites onto `supabase.auth.admin.*`. Session D
-// removes this shim in favor of calling `requireUser()` directly everywhere.
-export type LegacyAppUser = AppUser & { clerk_id: string };
-
-export const getOrCreateUser = async (): Promise<LegacyAppUser> => {
-  const user = await requireUser();
-  return { ...user, clerk_id: "" };
-};
+// Alias kept so the ~30 existing call sites don't churn. The name dates from
+// the Clerk era, when this also provisioned the users row; requireUser()
+// does that now.
+export const getOrCreateUser = requireUser;

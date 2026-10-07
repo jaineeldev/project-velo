@@ -1,9 +1,9 @@
 "use server";
 
 import { revalidatePath, revalidateTag } from "next/cache";
-import { clerkClient } from "@clerk/nextjs/server";
 import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
+import { deleteAuthUser } from "@/lib/supabase/admin";
 import { userProfileSchema } from "@/lib/validation";
 import {
   getUserProfile,
@@ -124,9 +124,9 @@ export async function checkDeletionEligibility(): Promise<DeletionEligibility> {
   return { canDelete: blockers.length === 0, blockers };
 }
 
-// Permanent. Removes every row owned by the user from the DB, then deletes
-// the Clerk user. Caller must collect a typed-email confirmation before
-// invoking — UI enforces, server double-checks.
+// Permanent. Deletes the Supabase login, then every row owned by the user.
+// Caller must collect a typed-email confirmation before invoking — UI
+// enforces, server double-checks.
 export async function deleteAccount(emailConfirmation: string): Promise<void> {
   const user = await getOrCreateUser();
 
@@ -146,54 +146,76 @@ export async function deleteAccount(emailConfirmation: string): Promise<void> {
     );
   }
 
-  // Single atomic batch — partial deletion would leave orphaned rows that
-  // could be re-claimed when the same email signs up again. postgres.js's
-  // real transaction API is callback-based (sql.begin), not an array of
-  // pre-built queries — each statement below must run on the tx-scoped `sql`
-  // passed into the callback, not the module-level `sql` import.
-  await sql.begin(async (sql) => {
-    await sql`DELETE FROM time_entries WHERE user_id = ${user.id}`;
-    await sql`
-      DELETE FROM change_requests
-      WHERE proposal_id IN (SELECT id FROM proposals WHERE user_id = ${user.id})
-    `;
-    await sql`
-      DELETE FROM proposal_events
-      WHERE proposal_id IN (SELECT id FROM proposals WHERE user_id = ${user.id})
-    `;
-    await sql`
-      DELETE FROM line_items
-      WHERE proposal_id IN (SELECT id FROM proposals WHERE user_id = ${user.id})
-    `;
-    await sql`
-      DELETE FROM milestones
-      WHERE proposal_id IN (SELECT id FROM proposals WHERE user_id = ${user.id})
-    `;
-    await sql`DELETE FROM invoices WHERE user_id = ${user.id}`;
-    await sql`DELETE FROM projects WHERE user_id = ${user.id}`;
-    await sql`DELETE FROM proposals WHERE user_id = ${user.id}`;
-    await sql`DELETE FROM clients WHERE user_id = ${user.id}`;
-    await sql`DELETE FROM user_profiles WHERE user_id = ${user.id}`;
-    await sql`DELETE FROM users WHERE id = ${user.id}`;
-  });
-
-  // DB is authoritative — if Clerk delete fails, the orphaned Clerk account
-  // can't sign back in to a missing user row. Log and continue.
+  // Login first: if this fails, nothing has been removed and the user can
+  // retry. Deleting the rows first would leave a working login, and the next
+  // request would have getSessionUser() quietly re-create an empty account.
   try {
-    const clerk = await clerkClient();
-    await clerk.users.deleteUser(user.clerk_id);
+    await deleteAuthUser(user.id);
   } catch (err) {
     logSecurityEvent({
-      event: "clerk_delete_failed",
+      event: "auth_user_delete_failed",
       route: "dashboard/settings/delete",
       outcome: "failure",
       reason: err instanceof Error ? err.message : "unknown",
     });
+    throw new Error(
+      "Couldn't delete your account. Nothing was removed, so try again in a minute.",
+    );
+  }
+
+  try {
+    await deleteAgencyRows(user.id);
+  } catch (err) {
+    // The login is already gone, so these rows are unreachable. Log the id
+    // so an operator can finish the cleanup by hand.
+    logSecurityEvent({
+      event: "account_delete_incomplete",
+      route: "dashboard/settings/delete",
+      outcome: "failure",
+      reason: err instanceof Error ? err.message : "unknown",
+      meta: { user_id: user.id },
+    });
+    throw new Error(
+      "Your login was deleted but some of your data wasn't. It's been flagged for manual cleanup.",
+    );
   }
 
   logSecurityEvent({
     event: "account_deleted",
     route: "dashboard/settings/delete",
     outcome: "success",
+  });
+}
+
+// Single atomic batch — partial deletion would leave orphaned rows that
+// could be re-claimed when the same email signs up again. postgres.js's
+// real transaction API is callback-based (sql.begin), not an array of
+// pre-built queries — each statement below must run on the tx-scoped `sql`
+// passed into the callback, not the module-level `sql` import.
+async function deleteAgencyRows(userId: string): Promise<void> {
+  await sql.begin(async (sql) => {
+    await sql`DELETE FROM time_entries WHERE user_id = ${userId}`;
+    await sql`
+      DELETE FROM change_requests
+      WHERE proposal_id IN (SELECT id FROM proposals WHERE user_id = ${userId})
+    `;
+    await sql`
+      DELETE FROM proposal_events
+      WHERE proposal_id IN (SELECT id FROM proposals WHERE user_id = ${userId})
+    `;
+    await sql`
+      DELETE FROM line_items
+      WHERE proposal_id IN (SELECT id FROM proposals WHERE user_id = ${userId})
+    `;
+    await sql`
+      DELETE FROM milestones
+      WHERE proposal_id IN (SELECT id FROM proposals WHERE user_id = ${userId})
+    `;
+    await sql`DELETE FROM invoices WHERE user_id = ${userId}`;
+    await sql`DELETE FROM projects WHERE user_id = ${userId}`;
+    await sql`DELETE FROM proposals WHERE user_id = ${userId}`;
+    await sql`DELETE FROM clients WHERE user_id = ${userId}`;
+    await sql`DELETE FROM user_profiles WHERE user_id = ${userId}`;
+    await sql`DELETE FROM users WHERE id = ${userId}`;
   });
 }

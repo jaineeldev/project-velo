@@ -1,9 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { clerkClient } from "@clerk/nextjs/server";
 import { sql } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
+import { deleteAuthUser } from "@/lib/supabase/admin";
 import { logSecurityEvent } from "@/lib/security-log";
 
 // Type guards used by the deletion eligibility check. The exact status set
@@ -67,25 +68,28 @@ export async function checkDeletionEligibility(): Promise<DeletionEligibility> {
   return { canDelete: blockers.length === 0, blockers };
 }
 
-export async function updateName(input: {
-  firstName: string;
-  lastName: string;
-}): Promise<void> {
+export async function updateName(rawName: string): Promise<void> {
   const user = await getOrCreateUser();
 
-  const firstName = input.firstName.trim().slice(0, 60);
-  const lastName = input.lastName.trim().slice(0, 60);
-  if (!firstName) throw new Error("First name is required.");
-  if (firstName.length < 1) throw new Error("First name is too short.");
+  const name = String(rawName ?? "").trim().replace(/\s+/g, " ");
+  if (!name) throw new Error("Name is required.");
+  if (name.length > 100) throw new Error("Keep your name under 100 characters.");
 
-  // Clerk is the source of truth for profile name. The webhook fires
-  // user.updated after this call returns, which syncs users.name and the
-  // matching agency clients rows. We don't write to users/clients here to
-  // avoid a brief inconsistent state where the DB is ahead of Clerk.
-  const clerk = await clerkClient();
-  await clerk.users.updateUser(user.clerk_id, {
-    firstName,
-    lastName: lastName || undefined,
+  // The name lives in three places, all updated here:
+  //   - Supabase Auth metadata, which the sidebars read client-side.
+  //   - users.name, which server-rendered pages read.
+  //   - every agency's clients row for this person (matched by email), so
+  //     the agencies they work with see the new name too.
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ data: { name } });
+  if (error) throw new Error("Couldn't update your name. Try again.");
+
+  await sql.begin(async (sql) => {
+    await sql`UPDATE users SET name = ${name} WHERE id = ${user.id}`;
+    await sql`
+      UPDATE clients SET name = ${name}
+      WHERE LOWER(email) = LOWER(${user.email})
+    `;
   });
 
   revalidatePath("/client/settings");
@@ -113,26 +117,46 @@ export async function deleteClientAccount(
     );
   }
 
+  // Login first: if this fails, nothing has been removed and the user can
+  // retry. Deleting the rows first would leave a working login, and the next
+  // request would have getSessionUser() quietly re-create an empty account.
+  try {
+    await deleteAuthUser(user.id);
+  } catch (err) {
+    logSecurityEvent({
+      event: "auth_user_delete_failed",
+      route: "client/settings/delete",
+      outcome: "failure",
+      reason: err instanceof Error ? err.message : "unknown",
+    });
+    throw new Error(
+      "Couldn't delete your account. Nothing was removed, so try again in a minute.",
+    );
+  }
+
   // Clients don't own any rows besides their own users + user_profiles.
   // Agency-owned data (proposals, projects, invoices, clients records)
   // stays put — that's the agency's data, not the client's. The clients
   // rows that reference this user's email by string match remain too;
   // they're just contact records the agency keeps.
-  await sql.begin(async (sql) => {
-    await sql`DELETE FROM user_profiles WHERE user_id = ${user.id}`;
-    await sql`DELETE FROM users WHERE id = ${user.id}`;
-  });
-
   try {
-    const clerk = await clerkClient();
-    await clerk.users.deleteUser(user.clerk_id);
+    await sql.begin(async (sql) => {
+      await sql`DELETE FROM user_profiles WHERE user_id = ${user.id}`;
+      await sql`DELETE FROM users WHERE id = ${user.id}`;
+    });
   } catch (err) {
+    // The login is already gone, so these rows are unreachable. Log the id
+    // so an operator can finish the cleanup by hand.
     logSecurityEvent({
-      event: "clerk_delete_failed",
+      event: "account_delete_incomplete",
       route: "client/settings/delete",
       outcome: "failure",
       reason: err instanceof Error ? err.message : "unknown",
+      meta: { user_id: user.id },
     });
+    throw new Error(
+      "Your login was deleted but some of your data wasn't. It's been flagged for manual cleanup.",
+    );
   }
 
   logSecurityEvent({

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { REPO_URL } from "@/lib/site";
 import { focusRing } from "../_lib/shared";
 
 const navLinks = [
@@ -60,15 +61,17 @@ export function MarketingNav() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <span className="hidden md:inline-block rounded-md border border-[#F59E0B]/30 bg-[#F59E0B]/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-[#F59E0B]">
-            In development
+          <span className="hidden md:inline-block rounded-md border border-[#2A2A2A] bg-[#111] px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-[#A0A0A0]">
+            Concept
           </span>
-          <Link
-            href="/waitlist"
+          <a
+            href={REPO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className={`hidden md:inline-flex items-center justify-center rounded-lg bg-[#4F7EF7] px-4 py-1.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#3B6AE8] motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98] ${focusRing}`}
           >
-            Join waitlist
-          </Link>
+            View the code
+          </a>
           <button
             type="button"
             onClick={() => setOpen((o) => !o)}
@@ -123,12 +126,14 @@ export function MarketingNav() {
                 );
               })}
               <li className="pt-3">
-                <Link
-                  href="/waitlist"
+                <a
+                  href={REPO_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className={`inline-flex w-full items-center justify-center rounded-lg bg-[#4F7EF7] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#3B6AE8] motion-safe:active:scale-[0.98] ${focusRing}`}
                 >
-                  Join waitlist
-                </Link>
+                  View the code
+                </a>
               </li>
             </ul>
           </div>

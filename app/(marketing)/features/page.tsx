@@ -46,14 +46,14 @@ export default function FeaturesPage() {
       <FeaturesList />
       <FeatureRoadmap />
       <FinalCTA
-        eyebrow="Ready when you are"
+        eyebrow="Concept project"
         heading={
           <>
-            See it in your own{" "}
-            <span className="text-[#4F7EF7]">browser.</span>
+            See how it&apos;s{" "}
+            <span className="text-[#4F7EF7]">built.</span>
           </>
         }
-        body="Waitlist only for now. I'll email you when public beta opens."
+        body="Velo isn't taking sign-ups. Everything on this page is in the repo, from the proposal builder to the client portal."
         secondaryCta={{ label: "See pricing", href: "/pricing" }}
       />
     </>

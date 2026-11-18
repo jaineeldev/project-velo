@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
+import { REPO_URL } from "@/lib/site";
 import { EASE_OUT, focusRing } from "../_lib/shared";
 
 export function FinalCTA({
@@ -41,13 +42,14 @@ export function FinalCTA({
       </>
     );
   const resolvedBody =
-    body ?? "Waitlist only for now. I'll email when public beta opens.";
-  const resolvedSubtle =
-    subtle ?? "In development. Things will break. Send feedback when they do.";
+    body ??
+    "Velo is a concept project, so it isn't taking sign-ups. The code is open if you want to see how it works.";
+  const resolvedSubtle = subtle;
   const resolvedPrimary = primaryCta ?? {
-    label: "Join the waitlist",
-    href: "/waitlist",
+    label: "View the code",
+    href: REPO_URL,
   };
+  const primaryIsExternal = resolvedPrimary.href.startsWith("http");
 
   return (
     <section className="border-t border-[#2A2A2A] bg-[#0A0A0A]">
@@ -78,6 +80,9 @@ export function FinalCTA({
         <div className="mt-10 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
           <Link
             href={resolvedPrimary.href}
+            {...(primaryIsExternal
+              ? { target: "_blank", rel: "noopener noreferrer" }
+              : {})}
             className={`inline-flex items-center justify-center rounded-xl bg-[#4F7EF7] px-8 py-3.5 text-base font-bold text-white transition-all duration-200 hover:bg-[#3B6AE8] motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98] ${focusRing}`}
           >
             {resolvedPrimary.label}

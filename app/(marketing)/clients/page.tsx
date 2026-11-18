@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { REPO_URL } from "@/lib/site";
 import {
   ArrowRight,
   Check,
@@ -124,7 +124,7 @@ export default function ClientsPage() {
             <span className="text-[#4F7EF7]">clients?</span>
           </>
         }
-        body="Velo is pre-beta. Join the waitlist and I'll email when public sign-up opens."
+        body="Velo is a concept project, so there's no sign-up. The code behind the client portal is open on GitHub."
         subtle=""
         secondaryCta={{ label: "See pricing", href: "/pricing" }}
       />
@@ -153,17 +153,19 @@ function ClientsHero() {
           itself.
         </p>
         <div className="mt-12 flex items-center justify-center">
-          <Link
-            href="/waitlist"
+          <a
+            href={REPO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className={`group inline-flex items-center justify-center gap-2 rounded-xl bg-[#4F7EF7] px-8 py-3.5 text-base font-bold text-white transition-all duration-200 hover:bg-[#3B6AE8] motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98] ${focusRing}`}
           >
-            Join the waitlist
+            View the code
             <ArrowRight
               aria-hidden
               className="h-4 w-4 transition-transform duration-200 motion-safe:group-hover:translate-x-0.5"
               strokeWidth={2}
             />
-          </Link>
+          </a>
         </div>
       </div>
     </section>

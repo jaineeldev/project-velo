@@ -146,7 +146,6 @@ export type Plan = {
   features: PlanFeature[];
   highlighted?: boolean;
   tagline?: string;
-  cta: { label: string; href: string };
 };
 
 export const plans: Plan[] = [
@@ -162,7 +161,6 @@ export const plans: Plan[] = [
       { label: "PDF export" },
       { label: "Stripe payments on invoices" },
     ],
-    cta: { label: "Join the waitlist", href: "/waitlist" },
   },
   {
     name: "Studio",
@@ -175,7 +173,6 @@ export const plans: Plan[] = [
       { label: "Lead pipeline", comingSoon: true },
     ],
     highlighted: true,
-    cta: { label: "Join the waitlist", href: "/waitlist" },
   },
   {
     name: "Agency",
@@ -186,7 +183,6 @@ export const plans: Plan[] = [
       { label: "Everything in Studio" },
       { label: "Multi-user workspaces", comingSoon: true },
     ],
-    cta: { label: "Join the waitlist", href: "/waitlist" },
   },
   {
     name: "Scale",
@@ -200,22 +196,7 @@ export const plans: Plan[] = [
       { label: "Dedicated support" },
       { label: "White-label client portal", comingSoon: true },
     ],
-    cta: { label: "Join the waitlist", href: "/waitlist" },
   },
-];
-
-export type TrialFeature = { label: string; note?: string };
-
-export const trialFeatures: TrialFeature[] = [
-  {
-    label: "Up to 2 active projects",
-    note: "Completed projects don't count toward the limit. All your data is kept if you upgrade or cancel.",
-  },
-  { label: "Proposals and client approvals" },
-  { label: "Project tracking and milestones" },
-  { label: "Deposit and final invoices" },
-  { label: "PDF export" },
-  { label: "Client portal" },
 ];
 
 export type Faq = { q: string; a: string };
@@ -347,7 +328,7 @@ export const stillRoughGroups: RoughGroup[] = [
       {
         title: "The product name might change",
         detail:
-          "\"Velo\" is a working name. The final name lands before public beta. Don't get attached.",
+          "\"Velo\" is a working name. Don't get attached.",
       },
     ],
   },

@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 import { AuthLayout } from "@/components/auth-layout";
 import { SignUpForm } from "@/components/auth/sign-up-form";
+import { SignUpsClosed } from "@/components/auth/sign-ups-closed";
 import { sql } from "@/lib/db";
+import { SIGNUPS_OPEN } from "@/lib/site";
 
 // Share-token-aware sign-up entry point. Reached from a proposal share
 // link by a client who wants to create an account; on completion the
@@ -18,6 +20,14 @@ export default async function ClientSignUpPage({
 }: {
   searchParams: { proposal?: string };
 }) {
+  if (!SIGNUPS_OPEN) {
+    return (
+      <AuthLayout>
+        <SignUpsClosed />
+      </AuthLayout>
+    );
+  }
+
   const token = searchParams.proposal;
 
   // Same discipline as the public share page: identical response for

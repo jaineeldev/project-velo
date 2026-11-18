@@ -5,7 +5,7 @@ import { FaqSection } from "../_components/faq-section";
 import { FinalCTA } from "../_components/final-cta";
 
 const pricingDescription =
-  "Simple, transparent pricing. Four plans from AU$9/mo. Built for freelance developers and dev agencies. Currently waitlist-only; public beta coming.";
+  "The planned pricing for Velo, a concept project: four plans from AU$9/mo, built for freelance developers and dev agencies. Not for sale.";
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -30,12 +30,12 @@ export default function PricingPage() {
       <FinalCTA
         heading={
           <>
-            Pick a plan when{" "}
-            <span className="text-[#4F7EF7]">sign-up opens.</span>
+            Pricing, as{" "}
+            <span className="text-[#4F7EF7]">planned.</span>
           </>
         }
-        body="Velo is pre-beta. Join the waitlist and I'll email you when public sign-up is ready."
-        subtle="If a plan doesn't fit, email me. It's just me building this, and I read every message."
+        body="Velo is a concept project, so none of these plans are for sale. They show how it was meant to work as a business."
+        subtle="Questions about the concept? Email me. I read every message."
         secondaryCta={{ label: "Email me", href: "mailto:jaineelk.dev@gmail.com" }}
       />
     </>
@@ -57,8 +57,8 @@ function PricingHero() {
           <span className="text-[#4F7EF7]">pricing.</span>
         </h1>
         <p className="mx-auto mt-10 max-w-2xl text-lg leading-relaxed text-[#A0A0A0]">
-          Velo is pre-beta and waitlist-only for now. These are the plans
-          public sign-up will open with. I never auto-charge.
+          Velo is a concept project, so these plans aren&apos;t for sale.
+          They&apos;re the pricing I designed it around.
         </p>
         <p className="mt-4 font-mono text-xs uppercase tracking-widest text-[#555]">
           All prices in AUD · GST included where applicable

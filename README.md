@@ -10,7 +10,7 @@ Velo handles the full client engagement lifecycle. An agency creates a proposal 
 
 ## status
 
-Early beta. Core workflow is fully functional. Not yet publicly launched. Payments and multi-user workspaces are v2.
+Concept project. The core workflow is fully functional, and the live site stays up as a showcase, but it isn't taking sign-ups or waitlist entries. To reopen sign-ups, flip `SIGNUPS_OPEN` in `lib/site.ts` and turn new sign-ups back on in Supabase.
 
 ## stack
 

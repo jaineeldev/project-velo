@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
+import { REPO_URL } from "@/lib/site";
 import { EASE_OUT, focusRing } from "../_lib/shared";
 
 const MARQUEE_ITEMS = [
@@ -44,7 +45,7 @@ export function Hero() {
           transition={transition(0)}
           className="mb-6 font-mono text-xs uppercase tracking-[0.2em] text-[#555]"
         >
-          Early access · Australian freelance developers
+          Concept project · Australian freelance developers
         </motion.p>
 
         <motion.h1
@@ -120,12 +121,14 @@ export function Hero() {
           transition={transition(0.2)}
           className="flex flex-col items-center justify-center gap-3 sm:flex-row"
         >
-          <Link
-            href="/waitlist"
+          <a
+            href={REPO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className={`inline-flex items-center justify-center rounded-xl bg-[#4F7EF7] px-8 py-3.5 text-base font-bold text-white transition-all duration-200 hover:bg-[#3B6AE8] motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98] ${focusRing}`}
           >
-            Join the waitlist
-          </Link>
+            View the code
+          </a>
           <Link
             href="#workflow"
             className={`group inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#2A2A2A] px-8 py-3.5 text-base font-medium text-[#A0A0A0] transition-all duration-200 hover:border-[#444] hover:text-white motion-safe:hover:-translate-y-0.5 ${focusRing}`}
@@ -143,7 +146,7 @@ export function Hero() {
           transition={transition(0.28)}
           className="mt-4 font-mono text-xs text-[#555]"
         >
-          Waitlist only for now · Public beta coming
+          A concept project · Not taking sign-ups
         </motion.p>
       </div>
       </div>

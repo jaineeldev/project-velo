@@ -4,7 +4,6 @@ import { ArrowRight, ArrowUpRight, Shield } from "lucide-react";
 import { stillRoughGroups, team, whatsNextItems } from "../_lib/data";
 import { StructuredData } from "../_components/structured-data";
 import { Reveal } from "../_components/reveal";
-import { Waitlist } from "../_components/waitlist";
 import { focusRing } from "../_lib/shared";
 
 const aboutDescription =
@@ -34,7 +33,6 @@ export default function AboutPage() {
       <KnownLimits />
       <WhatsNext />
       <CtaToSecurity />
-      <WaitlistSection />
     </>
   );
 }
@@ -112,10 +110,10 @@ function Manifesto() {
               multi-row write. Accessibility audited, not assumed.
             </p>
             <p>
-              Velo doesn&apos;t have paying customers yet. It&apos;s pre-beta.
-              But it&apos;s a real product, not a school assignment. The repo
-              is open, the decisions are documented, and I&apos;d happily walk
-              you through any part of it.
+              Velo is a concept, so it doesn&apos;t have customers. But
+              it&apos;s a real, working product, not a school assignment. The
+              repo is open, the decisions are documented, and I&apos;d happily
+              walk you through any part of it.
             </p>
           </div>
         </Reveal>
@@ -367,19 +365,6 @@ function CtaToSecurity() {
           </Link>
         </div>
       </Reveal>
-    </section>
-  );
-}
-
-function WaitlistSection() {
-  return (
-    <section
-      id="waitlist"
-      className="scroll-mt-24 border-t border-[#2A2A2A] bg-[#0A0A0A] py-24"
-    >
-      <div className="mx-auto max-w-3xl px-6">
-        <Waitlist />
-      </div>
     </section>
   );
 }

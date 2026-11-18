@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { motion } from "framer-motion";
+import { REPO_URL } from "@/lib/site";
 import { useReveal } from "./reveal";
 import { focusRing } from "../_lib/shared";
 
@@ -28,12 +28,14 @@ export function HomeFinalCta() {
           handle the work.
         </motion.p>
         <motion.div {...reveal(0.15)}>
-          <Link
-            href="/waitlist"
+          <a
+            href={REPO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className={`inline-flex items-center justify-center rounded-xl bg-[#4F7EF7] px-10 py-4 text-lg font-bold text-white transition-all duration-200 hover:bg-[#3B6AE8] motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98] ${focusRing}`}
           >
-            Join the waitlist
-          </Link>
+            View the code
+          </a>
         </motion.div>
         <motion.p
           {...reveal(0.22)}

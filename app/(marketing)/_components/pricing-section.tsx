@@ -1,12 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { useReveal } from "./reveal";
-import { plans, trialFeatures } from "../_lib/data";
-import { focusRing } from "../_lib/shared";
+import { plans } from "../_lib/data";
+import { conceptPlanTagCls, focusRing } from "../_lib/shared";
 
 type BillingPeriod = "monthly" | "annual";
 
@@ -181,11 +180,7 @@ export function PricingSection({
                   <div className="flex-1" />
 
                   <div className="mt-8">
-                    <PlanCta
-                      label={plan.cta.label}
-                      href="/waitlist"
-                      highlighted={plan.highlighted}
-                    />
+                    <span className={conceptPlanTagCls}>Concept pricing</span>
                   </div>
                 </div>
               </motion.div>
@@ -193,68 +188,13 @@ export function PricingSection({
           })}
         </div>
 
-        <motion.div
-          {...reveal(0.3)}
-          className="relative mx-auto mt-16 max-w-3xl rounded-xl border border-dashed border-[#333] bg-[#111] p-7 sm:p-8"
-        >
-          <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#1A1A1A] border border-[#2A2A2A] px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-widest text-[#A0A0A0]">
-            Early access
-          </span>
-          <div className="grid gap-5 text-left sm:grid-cols-[1fr_auto] sm:items-center sm:gap-8">
-            <div>
-              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <h3 className="text-2xl font-bold tracking-tight text-white">
-                  Waitlist
-                </h3>
-                <span className="font-mono text-xs font-bold uppercase tracking-widest text-[#555]">
-                  AU$0 · Free during early beta
-                </span>
-              </div>
-              <p className="mt-2 text-sm text-[#A0A0A0]">
-                Velo is pre-beta. Waitlist users get free access during the
-                early-beta period. I&apos;ll email when public sign-up opens.
-              </p>
-              <ul className="mt-5 grid gap-x-6 gap-y-1.5 sm:grid-cols-2">
-                {trialFeatures.map((feature) => (
-                  <li
-                    key={feature.label}
-                    className="flex items-start gap-2 text-sm text-white"
-                  >
-                    <Check
-                      aria-hidden
-                      className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#22C55E]"
-                      strokeWidth={2.5}
-                    />
-                    <span className="leading-snug">
-                      {feature.label}
-                      {feature.note ? (
-                        <span className="mt-1 block text-xs text-[#A0A0A0]">
-                          {feature.note}
-                        </span>
-                      ) : null}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="sm:shrink-0">
-              <Link
-                href="/waitlist"
-                className={`inline-flex w-full items-center justify-center rounded-xl border border-[#2A2A2A] px-6 py-3 text-sm font-bold text-[#A0A0A0] transition-all duration-200 hover:border-[#444] hover:text-white motion-safe:hover:-translate-y-0.5 sm:w-auto ${focusRing}`}
-              >
-                Join the waitlist
-              </Link>
-            </div>
-          </div>
-        </motion.div>
-
         <motion.p
           {...reveal(0.36)}
           className="mt-12 text-center text-sm text-[#A0A0A0]"
         >
-          More features rolling out through 2026. Got something you need?{" "}
+          Questions about how something works?{" "}
           <a
-            href="mailto:jaineelk.dev@gmail.com?subject=Velo%20feature%20request"
+            href="mailto:jaineelk.dev@gmail.com?subject=Velo%20question"
             className={`rounded-sm font-medium text-[#4F7EF7] hover:text-white ${focusRing}`}
           >
             Tell me.
@@ -262,30 +202,6 @@ export function PricingSection({
         </motion.p>
       </div>
     </section>
-  );
-}
-
-function PlanCta({
-  label,
-  href,
-  highlighted,
-}: {
-  label: string;
-  href: string;
-  highlighted?: boolean;
-}) {
-  const className = highlighted
-    ? `inline-flex w-full items-center justify-center rounded-lg bg-[#4F7EF7] px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-[#3B6AE8] motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98] ${focusRing}`
-    : `inline-flex w-full items-center justify-center rounded-lg border border-[#2A2A2A] px-6 py-3 text-sm font-bold text-[#A0A0A0] transition-all duration-200 hover:border-[#444] hover:text-white motion-safe:hover:-translate-y-0.5 ${focusRing}`;
-  const isExternal = href.startsWith("mailto:") || href.startsWith("http");
-  return isExternal ? (
-    <a href={href} className={className}>
-      {label}
-    </a>
-  ) : (
-    <Link href={href} className={className}>
-      {label}
-    </Link>
   );
 }
 

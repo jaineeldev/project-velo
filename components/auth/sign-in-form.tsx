@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/lib/auth-client";
 import { cn, focusRing } from "@/lib/utils";
+import { SIGNUPS_OPEN } from "@/lib/site";
 import {
   authCardCls,
   authInputCls,
@@ -298,18 +299,20 @@ export function SignInForm({ initialError }: Props) {
         </form>
       )}
 
-      <p className="text-center text-xs text-muted-foreground">
-        Don&apos;t have an account?{" "}
-        <Link
-          href="/sign-up"
-          className={cn(
-            "rounded-sm font-medium text-primary hover:underline",
-            focusRing,
-          )}
-        >
-          Sign up
-        </Link>
-      </p>
+      {SIGNUPS_OPEN ? (
+        <p className="text-center text-xs text-muted-foreground">
+          Don&apos;t have an account?{" "}
+          <Link
+            href="/sign-up"
+            className={cn(
+              "rounded-sm font-medium text-primary hover:underline",
+              focusRing,
+            )}
+          >
+            Sign up
+          </Link>
+        </p>
+      ) : null}
     </div>
   );
 }

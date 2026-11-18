@@ -10,8 +10,6 @@ const productLinks = [
   { label: "About", href: "/about" },
 ];
 
-const accountLinks = [{ label: "Join the waitlist", href: "/waitlist" }];
-
 const legalLinks = [
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Terms of Service", href: "/terms" },
@@ -36,9 +34,8 @@ export function Footer() {
             </p>
           </div>
 
-          <div className="grid flex-1 grid-cols-2 gap-10 md:max-w-2xl md:grid-cols-4">
+          <div className="grid flex-1 grid-cols-2 gap-10 md:max-w-xl md:grid-cols-3">
             <FooterCol heading="Product" links={productLinks} />
-            <FooterCol heading="Account" links={accountLinks} />
             <FooterCol heading="Legal" links={legalLinks} />
             <FooterCol heading="Contact" links={contactLinks} external />
           </div>
@@ -51,9 +48,9 @@ export function Footer() {
           <p className="flex items-center gap-2 font-mono text-xs text-[#555]">
             <span
               aria-hidden
-              className="inline-block h-1.5 w-1.5 rounded-full bg-[#F59E0B]"
+              className="inline-block h-1.5 w-1.5 rounded-full bg-[#555]"
             />
-            In development
+            Concept project
           </p>
         </div>
       </div>

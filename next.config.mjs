@@ -37,6 +37,11 @@ const securityHeaders = [
 ];
 
 const nextConfig = {
+  // The waitlist closed when Velo became a concept project. Old links and
+  // emails still point here, so send them to the homepage.
+  async redirects() {
+    return [{ source: "/waitlist", destination: "/", permanent: false }];
+  },
   async headers() {
     return [
       {

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useReveal } from "./reveal";
-import { focusRing } from "../_lib/shared";
+import { conceptPlanTagCls, focusRing } from "../_lib/shared";
 
 type Plan = {
   name: string;
@@ -91,16 +91,9 @@ export function PricingPreview() {
                 {plan.description}
               </p>
 
-              <Link
-                href="/waitlist"
-                className={`mt-auto inline-flex w-full items-center justify-center rounded-lg py-3 text-sm font-bold transition-all duration-200 motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.98] ${focusRing} ${
-                  plan.highlighted
-                    ? "bg-[#4F7EF7] text-white hover:bg-[#3B6AE8]"
-                    : "border border-[#2A2A2A] text-[#A0A0A0] hover:border-[#444] hover:text-white"
-                }`}
-              >
-                Join the waitlist
-              </Link>
+              <span className={`mt-auto ${conceptPlanTagCls}`}>
+                Concept pricing
+              </span>
             </motion.article>
           ))}
         </div>

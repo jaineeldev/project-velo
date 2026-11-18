@@ -31,7 +31,7 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
 
       <footer className="px-6 py-6 sm:px-10">
         <p className="text-center font-mono text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
-          Waitlist only &middot; Public beta coming
+          Concept project &middot; Not taking sign-ups
         </p>
       </footer>
     </main>
